@@ -1,10 +1,10 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
 
-import com.clover.core.factory.EntityFactory.EntityMethodInterceptor;
+import com.cloverframework.core.factory.EntityFactory.EntityMethodInterceptor;
 
 public final class CourseMethod{
 	/**
-	 * 为避免course的addLiteral方法公开，同时对factory组件可见，通过该类进行桥接
+	 * 涓洪伩鍏峜ourse鐨刟ddLiteral鏂规硶鍏紑锛屽悓鏃跺factory缁勪欢鍙锛岄�氳繃璇ョ被杩涜妗ユ帴
 	 * @param methodName
 	 * @param course
 	 * @param emi

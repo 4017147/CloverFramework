@@ -1,11 +1,11 @@
-package com.clover.core.factory;
+package com.cloverframework.core.factory;
 
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.clover.core.course.Course;
-import com.clover.core.course.CourseMethod;
+import com.cloverframework.core.course.Course;
+import com.cloverframework.core.course.CourseMethod;
 import com.domain.DomainService;
 import com.domain.annotation.Domain;
 
@@ -15,12 +15,12 @@ import net.sf.cglib.proxy.MethodProxy;
 
 public final class EntityFactory {
 	/**  
-	 * ±£´æÏß³ÌidºÍcourseµÄmap£¬ÕâÀïÊ¹ÓÃµÄÊÇConcurrentHashMap£¬Òò´ËĞŞ¸Ä²Ù×÷ÊÇÏß³Ì°²È«µÄ£¬µ«ÊÇgetºÍÄ³Ğ©²Ù×÷¿ÉÄÜ»á½»µü£¬
-	 * ÔÚÈ·±£Ïß³ÌºÍcourseÊÇÒ»¶ÔÒ»µÄÇé¿öÏÂ(Õı³£Ó¦ÓÃÇé¿öÏÂ)£¬²»»á´æÔÚÏß³Ì°²È«ÎÊÌâ£¬ÔÚ¶à¶ÔÒ»µÄÇé¿öÏÂ¾Í±ØĞè½øĞĞÍ¬²½¡£<p>
-	 * ÁíÍâÔÚÊ¹ÓÃ²»Í¬µÄweb·şÎñÈİÆ÷Ê±£¬ĞèÒª¿¼ÂÇÈİÆ÷µÄ²¢·¢¹æÔò£¬Í¨³£Ò»´ÎÒµÎñ¹ı³ÌµÄ´´½¨¶ÔÓ¦µÄÄ³¸ö£¨java£©Ïß³ÌÓ¦¸ÃÊÇÈ·¶¨µÄ£¬·ñÔò²»ÊÊÓÃ¡£
-	 * <p>¸ÃmapµÄ³õÊ¼´óĞ¡Îª1000£¬Êµ¼ÊÓ¦¸ù¾İweb·şÎñÈİÆ÷µÄ²¢·¢Ïß³ÌÊıÁ¿£¨ÈçÏß³Ì³ØµÄÊıÁ¿£©À´ÉèÖÃ£¬±ÈËüÉÙÉÔ´óÒ»µã²¢ÇÒÊÇ2µÄ±¶Êı
+	 * ä¿å­˜çº¿ç¨‹idå’Œcourseçš„mapï¼Œè¿™é‡Œä½¿ç”¨çš„æ˜¯ConcurrentHashMapï¼Œå› æ­¤ä¿®æ”¹æ“ä½œæ˜¯çº¿ç¨‹å®‰å…¨çš„ï¼Œä½†æ˜¯getå’ŒæŸäº›æ“ä½œå¯èƒ½ä¼šäº¤è¿­ï¼Œ
+	 * åœ¨ç¡®ä¿çº¿ç¨‹å’Œcourseæ˜¯ä¸€å¯¹ä¸€çš„æƒ…å†µä¸‹(æ­£å¸¸åº”ç”¨æƒ…å†µä¸‹)ï¼Œä¸ä¼šå­˜åœ¨çº¿ç¨‹å®‰å…¨é—®é¢˜ï¼Œåœ¨å¤šå¯¹ä¸€çš„æƒ…å†µä¸‹å°±å¿…éœ€è¿›è¡ŒåŒæ­¥ã€‚<p>
+	 * å¦å¤–åœ¨ä½¿ç”¨ä¸åŒçš„webæœåŠ¡å®¹å™¨æ—¶ï¼Œéœ€è¦è€ƒè™‘å®¹å™¨çš„å¹¶å‘è§„åˆ™ï¼Œé€šå¸¸ä¸€æ¬¡ä¸šåŠ¡è¿‡ç¨‹çš„åˆ›å»ºå¯¹åº”çš„æŸä¸ªï¼ˆjavaï¼‰çº¿ç¨‹åº”è¯¥æ˜¯ç¡®å®šçš„ï¼Œå¦åˆ™ä¸é€‚ç”¨ã€‚
+	 * <p>è¯¥mapçš„åˆå§‹å¤§å°ä¸º1000ï¼Œå®é™…åº”æ ¹æ®webæœåŠ¡å®¹å™¨çš„å¹¶å‘çº¿ç¨‹æ•°é‡ï¼ˆå¦‚çº¿ç¨‹æ± çš„æ•°é‡ï¼‰æ¥è®¾ç½®ï¼Œæ¯”å®ƒå°‘ç¨å¤§ä¸€ç‚¹å¹¶ä¸”æ˜¯2çš„å€æ•°
 	 **/
-	//TODO ÕâÀï½«Òª¿¼ÂÇ·ÖÉ¢Îª¶à¸ömapµÄ·½°¸
+	//TODO è¿™é‡Œå°†è¦è€ƒè™‘åˆ†æ•£ä¸ºå¤šä¸ªmapçš„æ–¹æ¡ˆ
 	private static ConcurrentHashMap<Long, Object[]> courses = new ConcurrentHashMap<Long, Object[]>(1000);
 	private static ConcurrentHashMap<String, Object> staple = new ConcurrentHashMap<String, Object>(100);
 	private static EntityFactory factory;
@@ -39,7 +39,7 @@ public final class EntityFactory {
 	
 	/**
 	 * 
-	 * cglib¶¯Ì¬´úÀí·½·¨À¹½ØÆ÷ÄÚ²¿Àà
+	 * cglibåŠ¨æ€ä»£ç†æ–¹æ³•æ‹¦æˆªå™¨å†…éƒ¨ç±»
 	 *
 	 */
 	public static final class EntityMethodInterceptor implements MethodInterceptor{
@@ -49,26 +49,26 @@ public final class EntityFactory {
 		public Object intercept(Object arg0, Method arg1, Object[] arg2, MethodProxy arg3) throws Throwable {
 			Thread t = Thread.currentThread();
 			String literalName = arg0.getClass().getSuperclass().getName()+"."+arg1.getName();
-			//µ÷Õû¸Ã·½·¨µÄÎ»ÖÃĞèÒªĞŞ¸ÄlengthµÄÖµ£¬Ã¿¶àÒ»¸öÉÏ¼¶·½·¨£¬length-1
+			//è°ƒæ•´è¯¥æ–¹æ³•çš„ä½ç½®éœ€è¦ä¿®æ”¹lengthçš„å€¼ï¼Œæ¯å¤šä¸€ä¸ªä¸Šçº§æ–¹æ³•ï¼Œlength-1
 			factory.setLiteral(literalName,t,t.getStackTrace().length);
 			arg3.invokeSuper(arg0,arg2);
-			//TODO ·µ»Ønull»¹ÊÇÔ­À´·½·¨µÄ½á¹û
+			//TODO è¿”å›nullè¿˜æ˜¯åŸæ¥æ–¹æ³•çš„ç»“æœ
 			return null;
 		}
 	}
 	
 	/**
-	 * ½«½Ø»ñµÄ·½·¨×ÖÃæÖµĞ´Èëµ±Ç°courseÖĞ
-	 * @param literalName µ÷ÓÃµÄÊµÌåÀàµÄÀàÃû+getter·½·¨Ãû
-	 * @param t ÕıÔÚÖ´ĞĞµÄÏß³Ì
-	 * @param length ¸ÃÏß³ÌµÄ·½·¨Õ»³¤
+	 * å°†æˆªè·çš„æ–¹æ³•å­—é¢å€¼å†™å…¥å½“å‰courseä¸­
+	 * @param literalName è°ƒç”¨çš„å®ä½“ç±»çš„ç±»å+getteræ–¹æ³•å
+	 * @param t æ­£åœ¨æ‰§è¡Œçš„çº¿ç¨‹
+	 * @param length è¯¥çº¿ç¨‹çš„æ–¹æ³•æ ˆé•¿
 	 * @throws Exception 
 	 */
 	private void setLiteral(String literalName,Thread t,int length) throws Exception {
 		Object[] courseInfo = null;
 		Course course = null;
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
-			byte le = 1;//Ö´ĞĞ´úÀíÀàµÄget·½·¨Ê±Ïß³ÌµÄ·½·¨Õ»³¤¸úcourse·½·¨Õ»³¤µÄ²îÖµ£¬²»Í¬µÄĞéÄâ»úÆ½Ì¨¿ÉÄÜµÃµ½²»Í¬µÄÖµ£¬Ôò¸ù¾İÊµ¼ÊÇé¿öµ÷Õû
+			byte le = 1;//æ‰§è¡Œä»£ç†ç±»çš„getæ–¹æ³•æ—¶çº¿ç¨‹çš„æ–¹æ³•æ ˆé•¿è·Ÿcourseæ–¹æ³•æ ˆé•¿çš„å·®å€¼ï¼Œä¸åŒçš„è™šæ‹Ÿæœºå¹³å°å¯èƒ½å¾—åˆ°ä¸åŒçš„å€¼ï¼Œåˆ™æ ¹æ®å®é™…æƒ…å†µè°ƒæ•´
 			if((course = (Course) courseInfo[0])!=null) {
 				if(course.getStatus()==Course.LAMBDA || course.getStatus()==Course.LAMBDA_TE) 
 					le = 2;
@@ -76,7 +76,7 @@ public final class EntityFactory {
 					le = 1;
 				if(length-le==(Integer)courseInfo[2]) {
 					if(course.getStatus()<Course.WAIT) 
-						//TODO Å×³öÒì³£´æÔÚÊ²Ã´Ó°Ïì
+						//TODO æŠ›å‡ºå¼‚å¸¸å­˜åœ¨ä»€ä¹ˆå½±å“
 						throw new Exception("Course status error:"+course.getStatus());
 					CourseMethod.addLiteral(literalName,course,interceptor);
 				}
@@ -95,9 +95,9 @@ public final class EntityFactory {
 
 	/**
 	 * 
-	 * @param threadId ´´½¨»òµ÷ÓÃcourseµÄÏß³Ìid
-	 * @param proxy ´´½¨µÄcourse
-	 * @param length ¸ÃÏß³Ì·½·¨µÄÕ»³¤
+	 * @param threadId åˆ›å»ºæˆ–è°ƒç”¨courseçš„çº¿ç¨‹id
+	 * @param proxy åˆ›å»ºçš„course
+	 * @param length è¯¥çº¿ç¨‹æ–¹æ³•çš„æ ˆé•¿
 	 * @throws Exception 
 	 */
 	public static Course putCourse(Course course,Thread t,int length) {
@@ -116,18 +116,18 @@ public final class EntityFactory {
 		
 		courses.remove(threadId);
 		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-			System.out.println("»¹ÓĞ"+entry.getKey()+":"+entry.getValue());
+			System.out.println("è¿˜æœ‰"+entry.getKey()+":"+entry.getValue());
 		}
 	}
 	
 	/**
-	 * »ñÈ¡»ù±¾µÄÊµÌåÀà£¬ÕâĞ©ÊµÌåÀàºÍÆÕÍ¨µÄÒ»Ñù£¬¶¼ÊÇ²»¿É±äµÄbean£¬²¢ÇÒ¶¼ÊÇ¿Õ°×µÄ£¬½ö×÷ÎªÄ£°åÔªËØÌá¹©×ÖÃæÒâË¼¡£
-	 * Í¨¹ıµ÷ÓÃÕâĞ©ÊµÌåÀàµÄgetter£¬¶¯Ì¬´úÀí»á¸ù¾İµ±Ç°µÄCourseµ÷ÓÃ£¬À´½«getter·½·¨ÌîÈëCourseÖĞ¡£
-	 * ÕâĞ©Ä£°åÔªËØ¶¼Ö»»á»º´æÒ»·İ
+	 * è·å–åŸºæœ¬çš„å®ä½“ç±»ï¼Œè¿™äº›å®ä½“ç±»å’Œæ™®é€šçš„ä¸€æ ·ï¼Œéƒ½æ˜¯ä¸å¯å˜çš„beanï¼Œå¹¶ä¸”éƒ½æ˜¯ç©ºç™½çš„ï¼Œä»…ä½œä¸ºæ¨¡æ¿å…ƒç´ æä¾›å­—é¢æ„æ€ã€‚
+	 * é€šè¿‡è°ƒç”¨è¿™äº›å®ä½“ç±»çš„getterï¼ŒåŠ¨æ€ä»£ç†ä¼šæ ¹æ®å½“å‰çš„Courseè°ƒç”¨ï¼Œæ¥å°†getteræ–¹æ³•å¡«å…¥Courseä¸­ã€‚
+	 * è¿™äº›æ¨¡æ¿å…ƒç´ éƒ½åªä¼šç¼“å­˜ä¸€ä»½
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> E getStaple(Class<E> E) {
-		//TODO ÖØĞ´¶¯Ì¬´úÀíÀàµÄtoString·½·¨
+		//TODO é‡å†™åŠ¨æ€ä»£ç†ç±»çš„toStringæ–¹æ³•
 		String className = E.getName();
 		if(staple.get(className)==null) {
 			enhancer.setSuperclass(E);
@@ -139,7 +139,7 @@ public final class EntityFactory {
 		
 	}
 	/**
-	 * Ìá¹©Ó¦ÓÃ²ãÊ¹ÓÃ£¬Ó¦ÓÃ²ã¸ù¾İ±íÊ¾²ã´«µİ¹ıÀ´µÄ¶ÔÏó£¬²»±ØÖªµÀ¶ÔÓ¦µÄÊµÌå£¬Ö»ĞèÌá¹©ÇëÇóµÄservice¸ø¹¤³§´´½¨¶ÔÓ¦µÄÊµÌå²¢´«¸øservice
+	 * æä¾›åº”ç”¨å±‚ä½¿ç”¨ï¼Œåº”ç”¨å±‚æ ¹æ®è¡¨ç¤ºå±‚ä¼ é€’è¿‡æ¥çš„å¯¹è±¡ï¼Œä¸å¿…çŸ¥é“å¯¹åº”çš„å®ä½“ï¼Œåªéœ€æä¾›è¯·æ±‚çš„serviceç»™å·¥å‚åˆ›å»ºå¯¹åº”çš„å®ä½“å¹¶ä¼ ç»™service
 	 * @param entityClass
 	 * @param service
 	 * @return
@@ -163,7 +163,7 @@ public final class EntityFactory {
 	
 
 	/**
-	 * ½âÎöCourseÖĞÊ¹ÓÃµÄÊµÌåÀàĞÍÊÇ·ñ·ûºÏÁìÓò·şÎñ²Ù×÷·¶Î§£¬Èç²»·ûºÏ·µ»Ønull
+	 * è§£æCourseä¸­ä½¿ç”¨çš„å®ä½“ç±»å‹æ˜¯å¦ç¬¦åˆé¢†åŸŸæœåŠ¡æ“ä½œèŒƒå›´ï¼Œå¦‚ä¸ç¬¦åˆè¿”å›null
 	 */
 	public Course resolve(Course process) {
 		// TODO Auto-generated method stub
@@ -171,7 +171,7 @@ public final class EntityFactory {
 	}
 
 	/**
-	 * ½«²Ö´¢·µ»ØµÄ½á¹ûÖØĞÂ×°Åäµ½Course
+	 * å°†ä»“å‚¨è¿”å›çš„ç»“æœé‡æ–°è£…é…åˆ°Course
 	 */
 	public Course assemble(Course process) {
 		// TODO Auto-generated method stub
@@ -179,7 +179,7 @@ public final class EntityFactory {
 	}
 
 	/**
-	 * ÅĞ¶Ï¸ø¶¨µÄÒ»¸öÊµÌåÀàºÍÒ»¸öÁìÓò·şÎñËùÊôµÄÁìÓòÊÇ·ñ·ûºÏ»ò¼æÈİ
+	 * åˆ¤æ–­ç»™å®šçš„ä¸€ä¸ªå®ä½“ç±»å’Œä¸€ä¸ªé¢†åŸŸæœåŠ¡æ‰€å±çš„é¢†åŸŸæ˜¯å¦ç¬¦åˆæˆ–å…¼å®¹
 	 */
 	public static boolean isMatchDomain(Class<?> entityClass, Class<?> serviceClass) {
 		if(entityClass.isAnnotationPresent(Domain.class)&&serviceClass.isAnnotationPresent(Domain.class)) {
@@ -192,10 +192,10 @@ public final class EntityFactory {
 	}
 
 	/**
-	 * ¸ĞÖªµ÷ÓÃÕß£¬¸Ã·½·¨ÓÃÓÚ»ñÈ¡µ÷ÓÃ¸Ä·½·¨µÄÁìÓò·şÎñÀàÃû;
-	 * ÓÉÓÚThread.currentThread().getStackTrace()¿ªÏú½Ï´ó¶øÇÒÊÇ·Ç³£¹æµÄ·½·¨£¬¶øÇÒÊÜµ½native·½·¨Ó°Ïì½Ï´ó£¬²»Í¬Æ½Ì¨ĞéÄâ»ú¿ÉÄÜ·µ»Ø²»Í¬µÄÕ»Ë³Ğò
-	 * Òò´ËÈç²»È·¶¨ĞéÄâ»úµÈÆ½Ì¨ÌØĞÔÇé¿öÏÂ£¬²»½¨ÒéÊ¹ÓÃ¸Ã·½·¨¡£
-	 * @param depth ·½·¨µ÷ÓÃµÄÕ»Éî¶È£¬¸Ã·½·¨×îµÍÎª2£¬Ã¿Ôö¼ÓÒ»²ã·½·¨£¬Éî¶È+1
+	 * æ„ŸçŸ¥è°ƒç”¨è€…ï¼Œè¯¥æ–¹æ³•ç”¨äºè·å–è°ƒç”¨æ”¹æ–¹æ³•çš„é¢†åŸŸæœåŠ¡ç±»å;
+	 * ç”±äºThread.currentThread().getStackTrace()å¼€é”€è¾ƒå¤§è€Œä¸”æ˜¯éå¸¸è§„çš„æ–¹æ³•ï¼Œè€Œä¸”å—åˆ°nativeæ–¹æ³•å½±å“è¾ƒå¤§ï¼Œä¸åŒå¹³å°è™šæ‹Ÿæœºå¯èƒ½è¿”å›ä¸åŒçš„æ ˆé¡ºåº
+	 * å› æ­¤å¦‚ä¸ç¡®å®šè™šæ‹Ÿæœºç­‰å¹³å°ç‰¹æ€§æƒ…å†µä¸‹ï¼Œä¸å»ºè®®ä½¿ç”¨è¯¥æ–¹æ³•ã€‚
+	 * @param depth æ–¹æ³•è°ƒç”¨çš„æ ˆæ·±åº¦ï¼Œè¯¥æ–¹æ³•æœ€ä½ä¸º2ï¼Œæ¯å¢åŠ ä¸€å±‚æ–¹æ³•ï¼Œæ·±åº¦+1
 	 * @return
 	 */
 	public String getCallerServiceName(int depth) {
@@ -208,7 +208,7 @@ public final class EntityFactory {
 
 	/**
 	 * 
-	 * @return ·µ»Øµ±Ç°ËùÓĞÔÚÉú³ÉµÄCourseµÄÊıÁ¿¹À¼ÆÖµ
+	 * @return è¿”å›å½“å‰æ‰€æœ‰åœ¨ç”Ÿæˆçš„Courseçš„æ•°é‡ä¼°è®¡å€¼
 	 */
 	public static int getCoursesSize() {
 		return courses.size();
@@ -216,7 +216,7 @@ public final class EntityFactory {
 	
 	/**
 	 * 
-	 * @return ·µ»Øµ±Ç°ËùÓĞ»º´æµÄÊµÌåÑù°åÊµÀıµÄÊıÁ¿¹À¼ÆÖµ
+	 * @return è¿”å›å½“å‰æ‰€æœ‰ç¼“å­˜çš„å®ä½“æ ·æ¿å®ä¾‹çš„æ•°é‡ä¼°è®¡å€¼
 	 */
 	public static int getStaplesSize() {
 		return staple.size();

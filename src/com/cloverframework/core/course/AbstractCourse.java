@@ -1,63 +1,63 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
-import com.clover.core.factory.EntityFactory;
+import com.cloverframework.core.factory.EntityFactory;
 import com.domain.DomainService;
 
 /**
- * ÕâÊÇcourseµÄ³éÏóµÄ¸¸Àà£¬¶¨ÒåÁËÒ»ÖÖÁ´±í½á¹¹ÊôĞÔ£¬²¢ÊµÏÖÁË´ó²¿·Ö»ù´¡ÌØĞÔ
+ * è¿™æ˜¯courseçš„æŠ½è±¡çš„çˆ¶ç±»ï¼Œå®šä¹‰äº†ä¸€ç§é“¾è¡¨ç»“æ„å±æ€§ï¼Œå¹¶å®ç°äº†å¤§éƒ¨åˆ†åŸºç¡€ç‰¹æ€§
  * @author yl
  * 
  * 
  */
 public abstract class AbstractCourse<T> {
-	DomainService domainService;//ÉÏ¼¶´«µİ
+	DomainService domainService;//ä¸Šçº§ä¼ é€’
 	
-	/**course´úÀí*/
-	CourseProxy proxy;//ÉÏ¼¶´«µİ
+	/**courseä»£ç†*/
+	CourseProxy proxy;//ä¸Šçº§ä¼ é€’
 	
-	/**½ÚµãÔªËØ*/
+	/**èŠ‚ç‚¹å…ƒç´ */
 	private Object[] elements;
 	
-	/**¸¸½Úµã*/
+	/**çˆ¶èŠ‚ç‚¹*/
 	AbstractCourse<?> parent;
 	
-	/**×ÖÃæÁĞ±í*/
-	List<String> literalList;//ÉÏ¼¶´«µİ
+	/**å­—é¢åˆ—è¡¨*/
+	List<String> literalList;//ä¸Šçº§ä¼ é€’
 	
-	/**ÊÇ·ñÊä³ösimpleName */
-	public volatile boolean condition1;//¸ù´«µİ£¬´¦ÓÚĞÔÄÜ¿¼ÂÇÃ»ÓĞÊ¹ÓÃÒıÓÃÀàĞÍ£¬Èç¹ûÊÇÒıÓÃÀàĞÍÔòÓ¦¸ÃÉÏ¼¶´«µİ
+	/**æ˜¯å¦è¾“å‡ºsimpleName */
+	public volatile boolean condition1;//æ ¹ä¼ é€’ï¼Œå¤„äºæ€§èƒ½è€ƒè™‘æ²¡æœ‰ä½¿ç”¨å¼•ç”¨ç±»å‹ï¼Œå¦‚æœæ˜¯å¼•ç”¨ç±»å‹åˆ™åº”è¯¥ä¸Šçº§ä¼ é€’
 	
-	/**ÊÇ·ñÊä³öÑÕÉ« */
-	public volatile boolean condition2;//¸ù´«µİ
+	/**æ˜¯å¦è¾“å‡ºé¢œè‰² */
+	public volatile boolean condition2;//æ ¹ä¼ é€’
 	
-	/**´ıÌî³ä*/
+	/**å¾…å¡«å……*/
 	public static final byte WAIT 		= 0;
-	/**Ìí¼Ó×ÖÃæÖµ(´Ólambda)*/
+	/**æ·»åŠ å­—é¢å€¼(ä»lambda)*/
 	public static final byte LAMBDA 	= 1;
-	/**Ìí¼Ó×ÖÃæÖµ(´Ó·½·¨)*/
+	/**æ·»åŠ å­—é¢å€¼(ä»æ–¹æ³•)*/
 	public static final byte METHOD 	= 2;
-	/**Ìí¼Ó×ÖÃæÖµ(´ÓlambdaÈıÔª)*/
+	/**æ·»åŠ å­—é¢å€¼(ä»lambdaä¸‰å…ƒ)*/
 	public static final byte LAMBDA_TE 	= 3;
-	/**ÕıÔÚÌî³ä*/
+	/**æ­£åœ¨å¡«å……*/
 	public static final byte FILL 		=-1;
-	/**¹Ø±Õ*/
+	/**å…³é—­*/
 	public static final byte END 		=-2;
-	/**Òì³£*/
+	/**å¼‚å¸¸*/
 	public static final byte ERROR 		=-3;
 	
 	/**
-	 * ±íÊ¾¸Ãcourseµ±Ç°×´Ì¬
-	 * ÔÚÒ»¸öÏß³ÌÖĞ£¬proxy´´½¨courseºÍ¶¯Ì¬´úÀí»ñÈ¡×ÖÃæÖµ·½·¨ÊÇ°´Ë³ĞòÖ´ĞĞµÄ£¬Ò²¾ÍÊÇµ±Ç°µÄstatusÎªÕı³££¬
-	 * Èç¹ûÔÚÕâĞ©·½·¨»ñÈ¡µ½µÄstatusÒì³££¬ÔòÒâÎ¶×ÅÆäËûÏß³Ì·¢ÉúÁË²»¿ÉÔ¤ÁÏµÄ´íÎó¶ø±»ÖÕÖ¹£¬
-	 * µ«ÊÇ¼¯ºÏÖĞµÄcourse¿ÉÄÜ²¢Î´ÒÆ³ı£¬µ±Ç°Ïß³ÌÈç¹û¸´ÓÃÁËÏàÍ¬µÄID£¬ÓĞ¿ÉÄÜ·¢ÉúÎó¶Á£¬
-	 * ÕâÒ»°ã·¢ÉúÔÚÒ»¸öcourseÖĞ¶Ïºó£¬ÁíÒ»¸öcourse¿ªÆôÖ®Ç°£¬¾¡¹ÜÕâ¸ö¸ÅÂÊÊÇºÜµÍµÄ¡£
+	 * è¡¨ç¤ºè¯¥courseå½“å‰çŠ¶æ€
+	 * åœ¨ä¸€ä¸ªçº¿ç¨‹ä¸­ï¼Œproxyåˆ›å»ºcourseå’ŒåŠ¨æ€ä»£ç†è·å–å­—é¢å€¼æ–¹æ³•æ˜¯æŒ‰é¡ºåºæ‰§è¡Œçš„ï¼Œä¹Ÿå°±æ˜¯å½“å‰çš„statusä¸ºæ­£å¸¸ï¼Œ
+	 * å¦‚æœåœ¨è¿™äº›æ–¹æ³•è·å–åˆ°çš„statuså¼‚å¸¸ï¼Œåˆ™æ„å‘³ç€å…¶ä»–çº¿ç¨‹å‘ç”Ÿäº†ä¸å¯é¢„æ–™çš„é”™è¯¯è€Œè¢«ç»ˆæ­¢ï¼Œ
+	 * ä½†æ˜¯é›†åˆä¸­çš„courseå¯èƒ½å¹¶æœªç§»é™¤ï¼Œå½“å‰çº¿ç¨‹å¦‚æœå¤ç”¨äº†ç›¸åŒçš„IDï¼Œæœ‰å¯èƒ½å‘ç”Ÿè¯¯è¯»ï¼Œ
+	 * è¿™ä¸€èˆ¬å‘ç”Ÿåœ¨ä¸€ä¸ªcourseä¸­æ–­åï¼Œå¦ä¸€ä¸ªcourseå¼€å¯ä¹‹å‰ï¼Œå°½ç®¡è¿™ä¸ªæ¦‚ç‡æ˜¯å¾ˆä½çš„ã€‚
 	 * 
 	 */
-	volatile byte status = WAIT;//ÉÏ¼¶´«µİ
+	volatile byte status = WAIT;//ä¸Šçº§ä¼ é€’
 	
 	
 	/*----------------------private method-------------------- */
@@ -65,15 +65,15 @@ public abstract class AbstractCourse<T> {
 	
 	
 	/**
-	 * ÉèÖÃ½ÚµãµÄÔªËØ£¬¸Ã·½·¨ÊÇ¸¸ÀàÎ¯ÍĞ×ÓÀàµÄ¹¹Ôì·½·¨µ÷ÓÃµÄ¡£
-	 * Èç¹û¸ù½ÚµãstatusÒì³££¬Ôò²»»áÖ´ĞĞ£¬·ñÔòÕı³£Ö´ĞĞ²¢Ë¢ĞÂ¸ù½ÚµãµÄstatus¡£
-	 * Ö´ĞĞºó¶¼»á½«×ÖÃæÁĞ±íÇå¿Õ
+	 * è®¾ç½®èŠ‚ç‚¹çš„å…ƒç´ ï¼Œè¯¥æ–¹æ³•æ˜¯çˆ¶ç±»å§”æ‰˜å­ç±»çš„æ„é€ æ–¹æ³•è°ƒç”¨çš„ã€‚
+	 * å¦‚æœæ ¹èŠ‚ç‚¹statuså¼‚å¸¸ï¼Œåˆ™ä¸ä¼šæ‰§è¡Œï¼Œå¦åˆ™æ­£å¸¸æ‰§è¡Œå¹¶åˆ·æ–°æ ¹èŠ‚ç‚¹çš„statusã€‚
+	 * æ‰§è¡Œåéƒ½ä¼šå°†å­—é¢åˆ—è¡¨æ¸…ç©º
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
 		try {
 			status = parent==null?null:parent.status;
-			//TODO ¸ÃÒì³£Çé¿öÏÂÈçºÎ´¦Àí
+			//TODO è¯¥å¼‚å¸¸æƒ…å†µä¸‹å¦‚ä½•å¤„ç†
 			if(status>=WAIT) {
 				status = FILL;
 				literalList = parent==null?literalList:parent.literalList;
@@ -104,16 +104,16 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	/**
-	 * Ïú»Ù¸ÃCourse
+	 * é”€æ¯è¯¥Course
 	 */
 	protected void destroy() {}
 
 
 	/**
-	 * ½«ÁìÓòÊµÌåµÄgetter·½·¨×ÖÃæÖµÌî³äµ½elementÊı×éÖĞ
-	 * 1¡¢Èç¹ûÊı×éÔªËØÎªnullÔòÌî³ä£¨Èç¹û×ÖÃæÖµÁĞ±íÔªËØµÄnext´æÔÚ£©
-	 * 2¡¢Èç¹ûÊı×éÔªËØÎªÁìÓòÊµÌå£¬Èç¹ûÎªºÏ·¨µÄÁìÓòÊµÌåÔòÌí¼Ó£¬Èç¹û²»ºÏ·¨ÔòÒÆ³ı¡£
-	 * 3¡¢Èç¹û¸ÃÔªËØ²»ÊÇÊµÌå£¬Ôò½øĞĞ×ÖÃæÖµÌî³ä¡£
+	 * å°†é¢†åŸŸå®ä½“çš„getteræ–¹æ³•å­—é¢å€¼å¡«å……åˆ°elementæ•°ç»„ä¸­
+	 * 1ã€å¦‚æœæ•°ç»„å…ƒç´ ä¸ºnullåˆ™å¡«å……ï¼ˆå¦‚æœå­—é¢å€¼åˆ—è¡¨å…ƒç´ çš„nextå­˜åœ¨ï¼‰
+	 * 2ã€å¦‚æœæ•°ç»„å…ƒç´ ä¸ºé¢†åŸŸå®ä½“ï¼Œå¦‚æœä¸ºåˆæ³•çš„é¢†åŸŸå®ä½“åˆ™æ·»åŠ ï¼Œå¦‚æœä¸åˆæ³•åˆ™ç§»é™¤ã€‚
+	 * 3ã€å¦‚æœè¯¥å…ƒç´ ä¸æ˜¯å®ä½“ï¼Œåˆ™è¿›è¡Œå­—é¢å€¼å¡«å……ã€‚
 	 * 
 	 * @param elements
 	 * @param literalList
@@ -138,24 +138,24 @@ public abstract class AbstractCourse<T> {
 					t++;
 				} 
 			}
-			for(;t<temps.length;t++) {//½«Ê£ÓàµÄ×ÖÃæÖµÌî³ä£¨Èç¹û»¹ÓĞÊ£Óà£©
+			for(;t<temps.length;t++) {//å°†å‰©ä½™çš„å­—é¢å€¼å¡«å……ï¼ˆå¦‚æœè¿˜æœ‰å‰©ä½™ï¼‰
 				if(k>=literalList.size()) 
 					break;
 				temps[t] = literalList.get(k);
 				k++;
 			}
-			return Arrays.copyOf(temps, t);//È¥³ıÎªnullµÄÎŞĞ§ÏÂ±ê
+			return Arrays.copyOf(temps, t);//å»é™¤ä¸ºnullçš„æ— æ•ˆä¸‹æ ‡
 		}
 		return null;
 	}
 
 
 	/**
-	 * ´òÓ¡½ÚµãÔªËØ£¬java.lang°üÀàĞÍ»áÖ±½ÓÊä³ö£¬Èç¹ûÊÇStringÀàĞÍÔòÊä³öÀàĞÍ.·½·¨Ãû£¬ÆäËûÊµÌåÀàĞÍÔòÊä³öÀàĞÍÃû
+	 * æ‰“å°èŠ‚ç‚¹å…ƒç´ ï¼Œjava.langåŒ…ç±»å‹ä¼šç›´æ¥è¾“å‡ºï¼Œå¦‚æœæ˜¯Stringç±»å‹åˆ™è¾“å‡ºç±»å‹.æ–¹æ³•åï¼Œå…¶ä»–å®ä½“ç±»å‹åˆ™è¾“å‡ºç±»å‹å
 	 * @param course
 	 * @param elements
-	 * @param condition1 ÊÇ·ñÊä³ösimpleName
-	 * @param condition2 ÊÇ·ñÊä³öÑÕÉ«,¸ÄÑÕÉ«Í¨¹ıANSI×ªÒåĞòÁĞ¶¨Òå
+	 * @param condition1 æ˜¯å¦è¾“å‡ºsimpleName
+	 * @param condition2 æ˜¯å¦è¾“å‡ºé¢œè‰²,æ”¹é¢œè‰²é€šè¿‡ANSIè½¬ä¹‰åºåˆ—å®šä¹‰
 	 * @return
 	 */
 	private String DataString(AbstractCourse<T> course,Object[] elements,boolean condition1,boolean condition2) {
@@ -175,15 +175,15 @@ public abstract class AbstractCourse<T> {
 					continue;					
 				}
 				if(i==0)
-					builder.append(blank);//Ê×¸öÔªËØËõ½ø
+					builder.append(blank);//é¦–ä¸ªå…ƒç´ ç¼©è¿›
 				else
 					builder.append(comma);	
 				if (elements[i].getClass().getPackage() == Package.getPackage("java.lang")) {
 					if(elements[i].getClass()==String.class){
 						if(condition1) {
 							String fullName = elements[i].toString();
-							//»ñÈ¡°üÀ¨ÀàĞÍºÍÊôĞÔÃûµÄsimpleName
-							//·ÀÖ¹substringÄÚ´æÕ¼ÓÃ
+							//è·å–åŒ…æ‹¬ç±»å‹å’Œå±æ€§åçš„simpleName
+							//é˜²æ­¢substringå†…å­˜å ç”¨
 							String simpleName = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
 							builder.append(simpleName).append(blank);	
 						}else
@@ -192,7 +192,7 @@ public abstract class AbstractCourse<T> {
 						builder.append(elements[i]).append(blank);	
 				}else {
 					String simpleName = elements[i].getClass().getSimpleName();
-					int index = simpleName.indexOf("$$");//´úÀíÀàÀàÃûĞè½ØÈ¡
+					int index = simpleName.indexOf("$$");//ä»£ç†ç±»ç±»åéœ€æˆªå–
 					builder.append(new String(simpleName.substring(0, index==-1?simpleName.length():index))).append(blank);					
 				}
 			}
@@ -202,7 +202,7 @@ public abstract class AbstractCourse<T> {
 
 
 	/**
-	 * ´òÓ¡×Ó½Úµã
+	 * æ‰“å°å­èŠ‚ç‚¹
 	 * @param course
 	 * @return
 	 */
@@ -249,9 +249,9 @@ public abstract class AbstractCourse<T> {
 
 	
 	/**
-	 * ½áÊøµ±Ç°µÄÒ»ÌõcourseÓï¾ä£¬Ôò¸Ãcourse²»¿ÉÔÙÌí¼ÓÓï¾ä£¬
-	 * ²¢ÇÒÖ´ĞĞend·½·¨ÔÚ´ó¶àÇé¿öÏÂ¶¼ÊÇ±ØĞëµÄ£¬Èç¹ûÃ»ÓĞÕı³£µÄÖ´ĞĞend£¬
-	 * »áµ¼ÖÂµ±Ç°¶¨ÒåµÄcourse±»ÏÂÒ»´Î²Ù×÷¿ìËÙÅ×Æú¶ø²»»á½øĞĞ»º´æ
+	 * ç»“æŸå½“å‰çš„ä¸€æ¡courseè¯­å¥ï¼Œåˆ™è¯¥courseä¸å¯å†æ·»åŠ è¯­å¥ï¼Œ
+	 * å¹¶ä¸”æ‰§è¡Œendæ–¹æ³•åœ¨å¤§å¤šæƒ…å†µä¸‹éƒ½æ˜¯å¿…é¡»çš„ï¼Œå¦‚æœæ²¡æœ‰æ­£å¸¸çš„æ‰§è¡Œendï¼Œ
+	 * ä¼šå¯¼è‡´å½“å‰å®šä¹‰çš„courseè¢«ä¸‹ä¸€æ¬¡æ“ä½œå¿«é€ŸæŠ›å¼ƒè€Œä¸ä¼šè¿›è¡Œç¼“å­˜
 	 */
 	public void END() {
 		try {
@@ -272,7 +272,7 @@ public abstract class AbstractCourse<T> {
 	}
 
 	/**
-	 * Ö±½ÓEND()²¢Ö´ĞĞµ±Ç°¶ÔÏócourseÓï¾ä
+	 * ç›´æ¥END()å¹¶æ‰§è¡Œå½“å‰å¯¹è±¡courseè¯­å¥
 	 * @return
 	 */
 	public Object execute() {
@@ -286,8 +286,8 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	/**
-	 * Ìá¹©Ò»¸ö¸ÃcourseµÄ½á¹¹µÄ×ÖÃæÃèÊö£¬Îªµ÷ÊÔÌá¹©·½±ã£¬Êµ¼Ê¹ı³ÌºÍËù¼ûÃèÊöµÄ²¢²»ÄÜ»­ÉÏµÈºÅ¡£
-	 * ²»ÄÜÔÚÄÚ²¿Àà³õÊ¼»¯·½·¨ÖĞµ÷ÓÃ,ÒòÎªthis
+	 * æä¾›ä¸€ä¸ªè¯¥courseçš„ç»“æ„çš„å­—é¢æè¿°ï¼Œä¸ºè°ƒè¯•æä¾›æ–¹ä¾¿ï¼Œå®é™…è¿‡ç¨‹å’Œæ‰€è§æè¿°çš„å¹¶ä¸èƒ½ç”»ä¸Šç­‰å·ã€‚
+	 * ä¸èƒ½åœ¨å†…éƒ¨ç±»åˆå§‹åŒ–æ–¹æ³•ä¸­è°ƒç”¨,å› ä¸ºthis
 	 */
 	@Override
 	public String toString() {

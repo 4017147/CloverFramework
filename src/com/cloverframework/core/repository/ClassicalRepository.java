@@ -1,9 +1,9 @@
-package com.clover.core.repository;
+package com.cloverframework.core.repository;
 
 import com.domain.DomainService;
 
 /**
- * Ò»¸öµÄ¾­µädao²ã²Ö´¢£¬²»ÊÊÓÃCourse¹¤¾ßÌá½»£¬µ«ËüÈÔÈ»ÊÇÍ¨ÓÃµÄ£¬Ö±½ÓÓÉÁìÓò·şÎñÖ±½Óµ÷ÓÃ½Ó¿Ú·½·¨»ñµÃdao²ãÊı¾İ¡£
+ * ä¸€ä¸ªçš„ç»å…¸daoå±‚ä»“å‚¨ï¼Œä¸é€‚ç”¨Courseå·¥å…·æäº¤ï¼Œä½†å®ƒä»ç„¶æ˜¯é€šç”¨çš„ï¼Œç›´æ¥ç”±é¢†åŸŸæœåŠ¡ç›´æ¥è°ƒç”¨æ¥å£æ–¹æ³•è·å¾—daoå±‚æ•°æ®ã€‚
  * @author yl
  *
  */

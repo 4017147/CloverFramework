@@ -1,34 +1,34 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
 
 import java.util.HashMap;
 
-import com.clover.core.factory.EntityFactory;
-import com.clover.core.repository.CourseRepository;
+import com.cloverframework.core.factory.EntityFactory;
+import com.cloverframework.core.repository.CourseRepository;
 import com.domain.DomainService;
 import com.infrastructure.util.lambda.Literal;
 /**
- * course´úÀíÌá¹©ÁËÃæÏòÓÃ»§µÄcourse²Ù×÷ºÍ¹ÜÀí·½·¨£¬Í¨³£Ê¹ÓÃ¸ÃÀà´´½¨ÒµÎñ¹ı³Ì¶ø²»ÊÇcourse£¬
- * ¸ÃÀà´ó²¿·Ö·½·¨ÊÇÏß³Ì²»°²È«µÄ¡£
+ * courseä»£ç†æä¾›äº†é¢å‘ç”¨æˆ·çš„courseæ“ä½œå’Œç®¡ç†æ–¹æ³•ï¼Œé€šå¸¸ä½¿ç”¨è¯¥ç±»åˆ›å»ºä¸šåŠ¡è¿‡ç¨‹è€Œä¸æ˜¯courseï¼Œ
+ * è¯¥ç±»å¤§éƒ¨åˆ†æ–¹æ³•æ˜¯çº¿ç¨‹ä¸å®‰å…¨çš„ã€‚
  * @author yl
  *
  */
 public class CourseProxy implements CourseOperation{
-	/** ÓÃÓÚ¼ÆËã²úÉú×ÖÃæÖµµÄ·½·¨Õ»³¤ÊÇ·ñºÏ·¨£¬
-	 * Èç¹û±ğµÄ·½·¨ÖĞµ÷ÓÃ¸ÃÀàÖĞµÄSTART()»òSTART(args)·½·¨£¨½ö¿ª·¢¹ı³ÌÖĞ¿ÉÉèÖÃ£¬¶ÔÍâÒş²Ø£©£¬ĞèÒªÏàÓ¦µÄ+1*/
+	/** ç”¨äºè®¡ç®—äº§ç”Ÿå­—é¢å€¼çš„æ–¹æ³•æ ˆé•¿æ˜¯å¦åˆæ³•ï¼Œ
+	 * å¦‚æœåˆ«çš„æ–¹æ³•ä¸­è°ƒç”¨è¯¥ç±»ä¸­çš„START()æˆ–START(args)æ–¹æ³•ï¼ˆä»…å¼€å‘è¿‡ç¨‹ä¸­å¯è®¾ç½®ï¼Œå¯¹å¤–éšè—ï¼‰ï¼Œéœ€è¦ç›¸åº”çš„+1*/
 	byte level = 1;
 	
-	/**×îºó²úÉúµÄcourse¶ÔÏó*/
+	/**æœ€åäº§ç”Ÿçš„courseå¯¹è±¡*/
 	Course newest;
-	/**edenÇø£¬ÓÃÓÚ»º´æcourse¶ÔÏó*/
+	/**edenåŒºï¼Œç”¨äºç¼“å­˜courseå¯¹è±¡*/
 	HashMap<String,Course> eden = new HashMap<String,Course>();
 	
 	protected DomainService service;
 	
 	CourseRepository repository;
 	/*
-	 * ÏÂÃæÖØĞ´½Ó¿ÚµÄ·½·¨ÓÃÓÚÕë¶ÔcourseProxy²»Í¬edenºÍnewestµÄ²Ù×÷ÊµÏÖ£¬
-	 * ÔÚÊµ¼ÊÖĞ£¬¸ù¾İĞèÒªÊ¹ÓÃºÏÊÊµÄ¼¯ºÏºÍ¶ÔÓ¦µÄ²Ù×÷£¬Èç²¢·¢¡¢»òÕß¶ÓÁĞ£¬
-	 * ¿ÉÒÔÍ¨¹ı×ÓÀàÖØĞ´ÕâĞ©·½·¨¼´¿ÉÊµÏÖ£¬ÎŞĞë¶ÔÆäËûÌØĞÔ½øĞĞ¸Ä¶¯
+	 * ä¸‹é¢é‡å†™æ¥å£çš„æ–¹æ³•ç”¨äºé’ˆå¯¹courseProxyä¸åŒedenå’Œnewestçš„æ“ä½œå®ç°ï¼Œ
+	 * åœ¨å®é™…ä¸­ï¼Œæ ¹æ®éœ€è¦ä½¿ç”¨åˆé€‚çš„é›†åˆå’Œå¯¹åº”çš„æ“ä½œï¼Œå¦‚å¹¶å‘ã€æˆ–è€…é˜Ÿåˆ—ï¼Œ
+	 * å¯ä»¥é€šè¿‡å­ç±»é‡å†™è¿™äº›æ–¹æ³•å³å¯å®ç°ï¼Œæ— é¡»å¯¹å…¶ä»–ç‰¹æ€§è¿›è¡Œæ”¹åŠ¨
 	 */
 	
 	@Override
@@ -65,7 +65,7 @@ public class CourseProxy implements CourseOperation{
 	
 	/*----------------------private method-------------------- */
 	/**
-	 * ³õÊ¼»¯Ò»¸öcourse
+	 * åˆå§‹åŒ–ä¸€ä¸ªcourse
 	 */
 	private Course initCourse(Course course,DomainService service,CourseProxy proxy,byte status) {
 		course.domainService = service;
@@ -75,24 +75,24 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ¸Ã·½·¨»á³õÊ¼»¯Ò»¸öcourse²¢·¢ËÍµ½factoryµÄcourse¼¯ºÏÖĞ£¬
-	 * ²¢ÇÒ»áÅĞ¶Ï´æÈëµÄcourseÓë¸Õ¸Õ´´½¨µÄcourseÊÇ·ñÒıÓÃÏàÍ¬£¬
-	 * Èç¹û²»ÏàÍ¬ÔòÅ×³öÒì³££¬Îª·ÀÖ¹»ñÈ¡µ½¿ìÕÕ»òÕß±»jvmÓÅ»¯¡£
-	 * @return ·µ»ØÒ»¸ö¸ù½Úµã
+	 * è¯¥æ–¹æ³•ä¼šåˆå§‹åŒ–ä¸€ä¸ªcourseå¹¶å‘é€åˆ°factoryçš„courseé›†åˆä¸­ï¼Œ
+	 * å¹¶ä¸”ä¼šåˆ¤æ–­å­˜å…¥çš„courseä¸åˆšåˆšåˆ›å»ºçš„courseæ˜¯å¦å¼•ç”¨ç›¸åŒï¼Œ
+	 * å¦‚æœä¸ç›¸åŒåˆ™æŠ›å‡ºå¼‚å¸¸ï¼Œä¸ºé˜²æ­¢è·å–åˆ°å¿«ç…§æˆ–è€…è¢«jvmä¼˜åŒ–ã€‚
+	 * @return è¿”å›ä¸€ä¸ªæ ¹èŠ‚ç‚¹
 	 */
 	private Course begin() {
 		Thread t = Thread.currentThread();
-		//µ÷Õû¸Ã·½·¨µÄÎ»ÖÃĞèÒªĞŞ¸ÄlengthµÄÖµ£¬Ã¿¶àÒ»¸öÉÏ¼¶·½·¨µ÷ÓÃlength-1
+		//è°ƒæ•´è¯¥æ–¹æ³•çš„ä½ç½®éœ€è¦ä¿®æ”¹lengthçš„å€¼ï¼Œæ¯å¤šä¸€ä¸ªä¸Šçº§æ–¹æ³•è°ƒç”¨length-1
 		Course course = EntityFactory.putCourse(getCurrCourse(), t, t.getStackTrace().length-level);
 		if(course.status==Course.WAIT) {
 			return course;
 		}
-		//Èç¹û¼¯ºÏ·µ»ØµÄ²»ÊÇ¸Õ¸Õ´´½¨µÄ¶ÔÏó
+		//å¦‚æœé›†åˆè¿”å›çš„ä¸æ˜¯åˆšåˆšåˆ›å»ºçš„å¯¹è±¡
 		return null;
 	}
 
 	/**
-	 * ÉèÖÃcourseÄÚ²¿µÄÊ±¼äÊôĞÔ
+	 * è®¾ç½®courseå†…éƒ¨çš„æ—¶é—´å±æ€§
 	 * @param course
 	 */
 	private void setCourseTime(Course course) {
@@ -124,7 +124,7 @@ public class CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * »ñÈ¡course listµÄÓÑºÃĞÅÏ¢
+	 * è·å–course listçš„å‹å¥½ä¿¡æ¯
 	 * @see CourseProxy#getInfo()
 	 */
 	@Override
@@ -140,7 +140,7 @@ public class CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * ´òÓ¡course listµÄÏêÏ¸£¬ÈçÃ»±ØÒª£¬Ê¹ÓÃtoString()
+	 * æ‰“å°course listçš„è¯¦ç»†ï¼Œå¦‚æ²¡å¿…è¦ï¼Œä½¿ç”¨toString()
 	 * @return
 	 */
 	public String getInfo() {
@@ -148,8 +148,8 @@ public class CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * ½«Ò»¸öĞÂµÄcourseÌæ»»ÉÏÒ»¸öcourse£¬·µ»ØÉÏÒ»¸öcourse
-	 * @param cover false£º²»¸²¸Ç¼¯ºÏÖĞµÄÉÏÒ»¸öcourse£¬true£º¸²¸Ç¼¯ºÏÖĞµÄÉÏÒ»¸öcourse
+	 * å°†ä¸€ä¸ªæ–°çš„courseæ›¿æ¢ä¸Šä¸€ä¸ªcourseï¼Œè¿”å›ä¸Šä¸€ä¸ªcourse
+	 * @param cover falseï¼šä¸è¦†ç›–é›†åˆä¸­çš„ä¸Šä¸€ä¸ªcourseï¼Œtrueï¼šè¦†ç›–é›†åˆä¸­çš„ä¸Šä¸€ä¸ªcourse
 	 * @return
 	 */
 	protected Course addCourse(String id,boolean cover) {
@@ -163,12 +163,12 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	
-	/*------Èç¹ûÏ£Íûµ÷ÓÃÕßÖ»ÄÜÒÔÄäÃûÀàµÄĞÎÊ½Ê¹ÓÃ£¬ÕâĞ©·½·¨»òÖØĞ´Ó¦µ±Îªprotected------*/
+	/*------å¦‚æœå¸Œæœ›è°ƒç”¨è€…åªèƒ½ä»¥åŒ¿åç±»çš„å½¢å¼ä½¿ç”¨ï¼Œè¿™äº›æ–¹æ³•æˆ–é‡å†™åº”å½“ä¸ºprotected------*/
 	
 	
 	/**
-	 * ¿ªÊ¼Ò»¸öcourseµÄ·½·¨£¬Í¨¹ı¸Ã·½·¨¿ÉÒÔÁ´Ê½Ö´ĞĞGET ADD PUT REMVEµÈ·½·¨
-	 * @return ·µ»ØÒ»¸ö¸ù½Úµã
+	 * å¼€å§‹ä¸€ä¸ªcourseçš„æ–¹æ³•ï¼Œé€šè¿‡è¯¥æ–¹æ³•å¯ä»¥é“¾å¼æ‰§è¡ŒGET ADD PUT REMVEç­‰æ–¹æ³•
+	 * @return è¿”å›ä¸€ä¸ªæ ¹èŠ‚ç‚¹
 	 */
 	public Course START() {
 		addCourse(null,false);
@@ -176,9 +176,9 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ÔÚ¿ªÊ¼courseÊ±Ìá¹©Ò»¸öid×÷ÎªËüµÄ±êÊ¶£¬Í¬Ê±¸ÃcourseÔÚendÖ®ºó»á±»»º´æ£¬
-	 * Èç¹ûÖ´ĞĞÊ±¸ÃidµÄcourse´æÔÚ»º´æ£¬ÔòÊ¹ÓÃ»º´æµÄcourse
-	 * @param id Õâ¸öcourseµÄ±êÊ¶£¬²»ÄÜ°üº¬¿Õ¸ñ
+	 * åœ¨å¼€å§‹courseæ—¶æä¾›ä¸€ä¸ªidä½œä¸ºå®ƒçš„æ ‡è¯†ï¼ŒåŒæ—¶è¯¥courseåœ¨endä¹‹åä¼šè¢«ç¼“å­˜ï¼Œ
+	 * å¦‚æœæ‰§è¡Œæ—¶è¯¥idçš„courseå­˜åœ¨ç¼“å­˜ï¼Œåˆ™ä½¿ç”¨ç¼“å­˜çš„course
+	 * @param id è¿™ä¸ªcourseçš„æ ‡è¯†ï¼Œä¸èƒ½åŒ…å«ç©ºæ ¼
 	 * @return
 	 */
 	public Course START(String id) {
@@ -193,9 +193,9 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ½«µ±Ç°course±ê¼ÇÎªend×´Ì¬²¢»º´æ
-	 * 1¡¢Èç¹ûcourseÃ»ÓĞÒ»¸öÓĞĞ§µÄidÔò²»»á»º´æ¡£
-	 * 2¡¢Èç¹ûÃ»ÓĞ¶Ôµ±Ç°course½øĞĞend£¬ÔÚÏÂÒ»´ÎstartĞÂcourseÊ±µ±Ç°course»á±»È¡´ú¡£
+	 * å°†å½“å‰courseæ ‡è®°ä¸ºendçŠ¶æ€å¹¶ç¼“å­˜
+	 * 1ã€å¦‚æœcourseæ²¡æœ‰ä¸€ä¸ªæœ‰æ•ˆçš„idåˆ™ä¸ä¼šç¼“å­˜ã€‚
+	 * 2ã€å¦‚æœæ²¡æœ‰å¯¹å½“å‰courseè¿›è¡Œendï¼Œåœ¨ä¸‹ä¸€æ¬¡startæ–°courseæ—¶å½“å‰courseä¼šè¢«å–ä»£ã€‚
 	 */
 	public void END() {
 		Course course = getCurrCourse();
@@ -206,7 +206,7 @@ public class CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * Ö±½ÓÖ´ĞĞµ±Ç°µÄÒ»ÌõcourseÓï¾ä
+	 * ç›´æ¥æ‰§è¡Œå½“å‰çš„ä¸€æ¡courseè¯­å¥
 	 * @return
 	 */
 	public Object executeOne() {
@@ -215,9 +215,9 @@ public class CourseProxy implements CourseOperation{
 	
 	
 	/**
-	 * Ò»ÏµÁĞµÄ×ÖÃæÖµ²ÎÊıµÄ¿ªÍ·£¬ÀıÈç£ºÈç¹ûÔÚGET($(),user.getName(),user.getId())Ö®Ç°£¬
-	 * ÔÚcourse·½·¨ÒÔÍâµÄµØ·½Ê¹ÓÃÁËUser.getName()µÈ·½·¨£¬
-	 * Ôò$()·½·¨ÊÇ±ØĞè³öÏÖÔÚ²ÎÊıµÄµÚÒ»Î»£¬ÒÔÄ¨³ıÖ®Ç°ÎŞ¹ØµÄ×ÖÃæÖµ¡£
+	 * ä¸€ç³»åˆ—çš„å­—é¢å€¼å‚æ•°çš„å¼€å¤´ï¼Œä¾‹å¦‚ï¼šå¦‚æœåœ¨GET($(),user.getName(),user.getId())ä¹‹å‰ï¼Œ
+	 * åœ¨courseæ–¹æ³•ä»¥å¤–çš„åœ°æ–¹ä½¿ç”¨äº†User.getName()ç­‰æ–¹æ³•ï¼Œ
+	 * åˆ™$()æ–¹æ³•æ˜¯å¿…éœ€å‡ºç°åœ¨å‚æ•°çš„ç¬¬ä¸€ä½ï¼Œä»¥æŠ¹é™¤ä¹‹å‰æ— å…³çš„å­—é¢å€¼ã€‚
 	 * @return null
 	 */
 	public Object $() {
@@ -226,15 +226,15 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ·½·¨ÒıÓÃ£¬ÒÔlambdaµÄ·½Ê½Ìá¹©·½·¨×ÖÃæ²ÎÊı£¬
-	 * ÈçGET($(user::getName))Ïàµ±ÓÚGET(user.getName()),µ±ÓĞ¶à¸ö·½·¨×ÖÃæÖµĞèÒª»ñÈ¡£¬×îºÃÓÃ¸Ã·½Ê½¡£<p>
-	 * ÀıÈç£ºGET($(user::getName,user::getId,user,user::getCode),Ê×ÏîÎªlambdaµÄÇé¿öÏÂ²»ĞèÒª$()¡£
-	 * Èç¹û¸úuser.getName()ÕâÑùµÄ·½·¨»ìÓÃ£¬ÄÇÃ´lambdaµÄÈÎÒâÒ»¸ö±í´ïÊ½±ØĞèĞ´ÔÚ²ÎÊıµÄµÚÒ»Î»¡£
+	 * æ–¹æ³•å¼•ç”¨ï¼Œä»¥lambdaçš„æ–¹å¼æä¾›æ–¹æ³•å­—é¢å‚æ•°ï¼Œ
+	 * å¦‚GET($(user::getName))ç›¸å½“äºGET(user.getName()),å½“æœ‰å¤šä¸ªæ–¹æ³•å­—é¢å€¼éœ€è¦è·å–ï¼Œæœ€å¥½ç”¨è¯¥æ–¹å¼ã€‚<p>
+	 * ä¾‹å¦‚ï¼šGET($(user::getName,user::getId,user,user::getCode),é¦–é¡¹ä¸ºlambdaçš„æƒ…å†µä¸‹ä¸éœ€è¦$()ã€‚
+	 * å¦‚æœè·Ÿuser.getName()è¿™æ ·çš„æ–¹æ³•æ··ç”¨ï¼Œé‚£ä¹ˆlambdaçš„ä»»æ„ä¸€ä¸ªè¡¨è¾¾å¼å¿…éœ€å†™åœ¨å‚æ•°çš„ç¬¬ä¸€ä½ã€‚
 	 * 
-	 * @param lt ÊµÌåÀàµÄlambda±í´ïÊ½£¬Èçuser::getName£¬½¨Òé²ÉÓÃ´ËÖÖÓï·¨¶ø·Ç()->user.getName(),
-	 * ÒòÎªÕâÖÖĞ´·¨»á´øÀ´Òş»¼£¬±ÈÈç¿ÉÔÚlambdaÖĞÖ´ĞĞ¶à¸ö¾ä±ú£¬ÕâÑù»áÁî×ÖÃæÖµ²ÎÊı¸úÆÚÍûµÄ²»Ò»ÖÂ£¬
-	 * ¾¡¹ÜCourseÒÑ¾­¾¡Á¦±ÜÃâÕâÖÖÇé¿ö£¬µ«ÊÇÎŞ·¨ÍêÈ«×èÖ¹Í¨¹ıÕâÖÖÊÖ¶ÎÊäÈë£¬ÕâÊÇÓÉÓÚjavaÓïÑÔ»úÖÆÏŞÖÆÁË£¬Òò´ËÔÚÊµ¼ÊÊ¹ÓÃÖĞ
-	 * ĞèÒª¶à¼ÓÁôÒâ¡£²¢ÇÒ£¬ÔÚÆäËû²ãÃæ£¨ÈçdomainMatch¡¢EntityFactory£©»á¶Ô¸ÃÎÊÌâ½øĞĞÔ­ÔòÉÏµÄ´¦Àí¡£
+	 * @param lt å®ä½“ç±»çš„lambdaè¡¨è¾¾å¼ï¼Œå¦‚user::getNameï¼Œå»ºè®®é‡‡ç”¨æ­¤ç§è¯­æ³•è€Œé()->user.getName(),
+	 * å› ä¸ºè¿™ç§å†™æ³•ä¼šå¸¦æ¥éšæ‚£ï¼Œæ¯”å¦‚å¯åœ¨lambdaä¸­æ‰§è¡Œå¤šä¸ªå¥æŸ„ï¼Œè¿™æ ·ä¼šä»¤å­—é¢å€¼å‚æ•°è·ŸæœŸæœ›çš„ä¸ä¸€è‡´ï¼Œ
+	 * å°½ç®¡Courseå·²ç»å°½åŠ›é¿å…è¿™ç§æƒ…å†µï¼Œä½†æ˜¯æ— æ³•å®Œå…¨é˜»æ­¢é€šè¿‡è¿™ç§æ‰‹æ®µè¾“å…¥ï¼Œè¿™æ˜¯ç”±äºjavaè¯­è¨€æœºåˆ¶é™åˆ¶äº†ï¼Œå› æ­¤åœ¨å®é™…ä½¿ç”¨ä¸­
+	 * éœ€è¦å¤šåŠ ç•™æ„ã€‚å¹¶ä¸”ï¼Œåœ¨å…¶ä»–å±‚é¢ï¼ˆå¦‚domainMatchã€EntityFactoryï¼‰ä¼šå¯¹è¯¥é—®é¢˜è¿›è¡ŒåŸåˆ™ä¸Šçš„å¤„ç†ã€‚
 	 * @return null
 	 */
 	public Object $(Literal ...lt) {
@@ -250,7 +250,7 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ÈıÔª·½·¨ÒıÓÃ£¬¿É»ñÈ¡ÈıÔªÔËËã½á¹ûµÄlambda£¬½¨Òé×÷ÎªÔÚ×ÖÃæÖµ²ÎÊıÁĞ±íµÄ×îºóÒ»Ïî
+	 * ä¸‰å…ƒæ–¹æ³•å¼•ç”¨ï¼Œå¯è·å–ä¸‰å…ƒè¿ç®—ç»“æœçš„lambdaï¼Œå»ºè®®ä½œä¸ºåœ¨å­—é¢å€¼å‚æ•°åˆ—è¡¨çš„æœ€åä¸€é¡¹
 	 * @param li @see {@link CourseProxy#$(Literal...)}
 	 * @return
 	 * @
@@ -269,7 +269,7 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ¿É»ñÈ¡ÈıÔªÔËËã½á¹ûµÄ×ÖÃæÖµ
+	 * å¯è·å–ä¸‰å…ƒè¿ç®—ç»“æœçš„å­—é¢å€¼
 	 * @param obj @see {@link CourseProxy#$(Literal...)}
 	 * @return
 	 */

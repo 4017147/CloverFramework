@@ -1,17 +1,17 @@
-package com.clover.core.repository;
+package com.cloverframework.core.repository;
 
-import com.clover.core.course.Action;
-import com.clover.core.course.Course;
-import com.clover.core.course.CourseProxy;
+import com.cloverframework.core.course.Action;
+import com.cloverframework.core.course.Course;
+import com.cloverframework.core.course.CourseProxy;
 
 /**
- * Ò»¸öÕë¶ÔCourse¹¤¾ßÌá½»µÄ²Ö´¢£¬´ó²¿·ÖÒµÎñÒÑcourse¶¨ÒåµÄ²Ù×÷¶¼¿ÉÒÔÊ¹ÓÃ¸Ã²Ö´¢
+ * ä¸€ä¸ªé’ˆå¯¹Courseå·¥å…·æäº¤çš„ä»“å‚¨ï¼Œå¤§éƒ¨åˆ†ä¸šåŠ¡å·²courseå®šä¹‰çš„æ“ä½œéƒ½å¯ä»¥ä½¿ç”¨è¯¥ä»“å‚¨
 * @author yl  
 * 
 *    
 */
 public class CourseRepository extends AbstractRepository{
-	//½¨ÒéÊ¹ÓÃIOCÈİÆ÷×¢Èë
+	//å»ºè®®ä½¿ç”¨IOCå®¹å™¨æ³¨å…¥
 	private ICourseMode mode;
 	public void setMode(ICourseMode mode) {
 		this.mode = mode;

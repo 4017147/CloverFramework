@@ -1,34 +1,34 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
 
 import java.util.ArrayList;
 
 /**
- * CourseÊÇ»ùÓÚAbstractCourseÊµÏÖµÄ»ù´¡ÉÏ£¬Ìá¹©ÁËÃæÏòÓÃ»§ÒµÎñ¹ı³ÌÓïÑÔ¶¨ÒåµÄ·½·¨£¬
- * Í¨¹ı·½·¨ºÍ±êÊ¶µÄÊ¹ÓÃÄÜ¹»×é×°Ò»¸öÒµÎñ¹ı³Ì¡£
+ * Courseæ˜¯åŸºäºAbstractCourseå®ç°çš„åŸºç¡€ä¸Šï¼Œæä¾›äº†é¢å‘ç”¨æˆ·ä¸šåŠ¡è¿‡ç¨‹è¯­è¨€å®šä¹‰çš„æ–¹æ³•ï¼Œ
+ * é€šè¿‡æ–¹æ³•å’Œæ ‡è¯†çš„ä½¿ç”¨èƒ½å¤Ÿç»„è£…ä¸€ä¸ªä¸šåŠ¡è¿‡ç¨‹ã€‚
  * @author yl  
  */
 public final class Course extends AbstractCourse<Course>{
 	 /*
-	  * ¹æÔòËµÃ÷£º
-	  * 1¡¢ÀàÃûÈ«²¿´óĞ´,Á½¸öÒÔÉÏµ¥´ÊµÄÓÃÍÕ·åÃüÃû
-	  * 2¡¢¹«¿ªµÄsql·½·¨ÃûÈ«²¿´óĞ´
-	  * 3¡¢ÎªÁË±£Ö¤±Õ°üĞÔ£¬´ËÀàºÍÄÚ²¿ÀàµÄ¹¹Ôì·½·¨ĞŞÊÎÎªprotected,ÀàÔòÊÇstatic final
+	  * è§„åˆ™è¯´æ˜ï¼š
+	  * 1ã€ç±»åå…¨éƒ¨å¤§å†™,ä¸¤ä¸ªä»¥ä¸Šå•è¯çš„ç”¨é©¼å³°å‘½å
+	  * 2ã€å…¬å¼€çš„sqlæ–¹æ³•åå…¨éƒ¨å¤§å†™
+	  * 3ã€ä¸ºäº†ä¿è¯é—­åŒ…æ€§ï¼Œæ­¤ç±»å’Œå†…éƒ¨ç±»çš„æ„é€ æ–¹æ³•ä¿®é¥°ä¸ºprotected,ç±»åˆ™æ˜¯static final
 	  */
 	
-	/** course±êÊ¶*/
+	/** courseæ ‡è¯†*/
 	protected String id;
-	/** ´´½¨Ê±¼ä*/
+	/** åˆ›å»ºæ—¶é—´*/
 	protected long createTime = System.currentTimeMillis();
-	/** Æ½¾ùÖ´ĞĞÊ±¼ä*/
+	/** å¹³å‡æ‰§è¡Œæ—¶é—´*/
 	protected long avg_exe;
-	/** ×î´óÖ´ĞĞÊ±¼ä*/
+	/** æœ€å¤§æ‰§è¡Œæ—¶é—´*/
 	protected long max_exe;
-	/** ×î¶ÌÖ´ĞĞÊ±¼ä*/
+	/** æœ€çŸ­æ‰§è¡Œæ—¶é—´*/
 	protected long min_exe;
 	
 	/**
 	 * 
-	 * @param id Õâ¸öcourseµÄ±êÊ¶£¬¸ø¶¨µÄ×Ö·û´®²»ÄÜ°üº¬¿Õ¸ñ
+	 * @param id è¿™ä¸ªcourseçš„æ ‡è¯†ï¼Œç»™å®šçš„å­—ç¬¦ä¸²ä¸èƒ½åŒ…å«ç©ºæ ¼
 	 */
 	protected Course(String id){
 		literalList = new ArrayList<String>(50);
@@ -44,7 +44,7 @@ public final class Course extends AbstractCourse<Course>{
 		return type;
 	}
 
-	//ÓÃÓÚ²âÊÔ
+	//ç”¨äºæµ‹è¯•
 	@SuppressWarnings("unused")
 	private void eachlist() {
 		for(String s:literalList) {
@@ -58,28 +58,28 @@ public final class Course extends AbstractCourse<Course>{
 	private REMOVE 	remove;
 	
 	/**
-	 * ¿ªÆôÒ»¸öGETÃèÊöµÄCourse£¬´ú±í´ÓÊı¾İÌá¹©·½»ñÈ¡ÏàÓ¦µÄÄÚÈİ
+	 * å¼€å¯ä¸€ä¸ªGETæè¿°çš„Courseï¼Œä»£è¡¨ä»æ•°æ®æä¾›æ–¹è·å–ç›¸åº”çš„å†…å®¹
 	 * @param obj
 	 * @return
 	 */
 	public GET GET(Object ...obj){type = CourseType.GET;get = new GET(this,obj);return get;}
 	
 	/**
-	 * ¿ªÆôÒ»¸öADDÃèÊöµÄCourse£¬´ú±íÔÚÊı¾İÌá¹©·½Ìí¼ÓÏàÓ¦µÄÄÚÈİ
+	 * å¼€å¯ä¸€ä¸ªADDæè¿°çš„Courseï¼Œä»£è¡¨åœ¨æ•°æ®æä¾›æ–¹æ·»åŠ ç›¸åº”çš„å†…å®¹
 	 * @param obj
 	 * @return
 	 */
 	public ADD ADD(Object ...obj){type = CourseType.ADD;add = new ADD(this,obj);return add;}
 	
 	/**
-	 * ¿ªÆôÒ»¸öPUTÃèÊöµÄCourse£¬´ú±íÔÚÊı¾İÌá¹©·½¸üĞÂ/Ìæ»»ÏàÓ¦µÄÄÚÈİ
+	 * å¼€å¯ä¸€ä¸ªPUTæè¿°çš„Courseï¼Œä»£è¡¨åœ¨æ•°æ®æä¾›æ–¹æ›´æ–°/æ›¿æ¢ç›¸åº”çš„å†…å®¹
 	 * @param obj
 	 * @return
 	 */
 	public PUT PUT(Object ...obj){type = CourseType.PUT;put = new PUT(this,obj);return put;}
 	
 	/**
-	 * ¿ªÆôÒ»¸öREMOVEÃèÊöµÄCourse£¬´ú±íÔÚÊı¾İÌá¹©·½É¾³ıÏàÓ¦µÄÄÚÈİ
+	 * å¼€å¯ä¸€ä¸ªREMOVEæè¿°çš„Courseï¼Œä»£è¡¨åœ¨æ•°æ®æä¾›æ–¹åˆ é™¤ç›¸åº”çš„å†…å®¹
 	 * @param obj
 	 * @return
 	 */
@@ -121,7 +121,7 @@ public final class Course extends AbstractCourse<Course>{
 			setElements(obj);
 		}
 		//-------------------------------------------------------
-		//Ô¤ÁôBy
+		//é¢„ç•™By
 		private By by;
 		public By By(Object ...obj){by = new By(this,obj);return by;}
 		}
@@ -137,7 +137,7 @@ public final class Course extends AbstractCourse<Course>{
 			setElements(obj);
 		}
 		//-------------------------------------------------------
-		//Ô¤ÁôBy
+		//é¢„ç•™By
 		private By by;
 		public By By(Object ...obj){by = new By(this,obj);return by;}
 	}

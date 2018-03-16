@@ -1,16 +1,16 @@
-package com.clover.core.repository;
+package com.cloverframework.core.repository;
 
-import com.clover.core.course.Action;
-import com.clover.core.course.Course;
-import com.clover.core.course.CourseProxy;
+import com.cloverframework.core.course.Action;
+import com.cloverframework.core.course.Course;
+import com.cloverframework.core.course.CourseProxy;
 import com.domain.DomainService;
 /**
- * Ò»¸öÍ¨ÓÃµÄ²Ö´¢£¬ÕûºÏÁËCourseºÍ¾­µä²Ö´¢
+ * ä¸€ä¸ªé€šç”¨çš„ä»“å‚¨ï¼Œæ•´åˆäº†Courseå’Œç»å…¸ä»“å‚¨
  * @author yl
  *
  */
 public class GeneralRepository extends AbstractRepository{
-	//½¨ÒéÊ¹ÓÃIOCÈİÆ÷×¢Èë
+	//å»ºè®®ä½¿ç”¨IOCå®¹å™¨æ³¨å…¥
 		private ICourseMode courseMode;
 		private IClassicalMode baseMode;
 		
@@ -40,7 +40,7 @@ public class GeneralRepository extends AbstractRepository{
 		}
 		
 		
-		/*====================¼òµ¥CRUDÄ£Ê½Ä£°å·½·¨================== */
+		/*====================ç®€å•CRUDæ¨¡å¼æ¨¡æ¿æ–¹æ³•================== */
 		public <E> E get(Class<E> Class,Integer key,DomainService service) {
 			return super.get(Class,key,baseMode, service);
 		}

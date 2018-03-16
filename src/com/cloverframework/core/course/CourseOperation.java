@@ -1,8 +1,9 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
+
 /**
- * ��д�ӿڵķ����������courseProxy��ͬeden��newest�Ĳ���ʵ�֣�
- * ��ʵ���У�������Ҫ��ʹ�ú��ʵļ��ϺͶ�Ӧ�Ĳ������粢�������߶��У�
- * ����ͨ��������д��Щ��������ʵ�֣�������������Խ��иĶ���
+ * 重写接口的方法用于针对courseProxy不同eden和newest的操作实现，
+ * 在实际中，根据需要，使用合适的集合和对应的操作，如并发、或者队列，
+ * 可以通过子类重写这些方法即可实现，无须对其他特性进行改动。
  */
 public interface CourseOperation {
 	

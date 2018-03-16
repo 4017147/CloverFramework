@@ -1,9 +1,2 @@
-/**
- * 
- */
-/**
- * @author yl 
- * @version 1.0 2017Äê12ÔÂ1ÈÕ
- * 
- */
-package com.clover.core.factory;
+
+package com.cloverframework.core.factory;

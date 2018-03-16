@@ -1,7 +1,6 @@
-package com.clover.core.repository;
+package com.cloverframework.core.repository;
 
-import com.clover.core.course.Course;
-import com.clover.core.course.CourseProxy;
+import com.cloverframework.core.course.Course;
 
 /**
 * @author yl  

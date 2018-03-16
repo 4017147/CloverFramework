@@ -1,4 +1,4 @@
-package com.clover.core.course;
+package com.cloverframework.core.course;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,32 +7,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.domain.DomainService;
 
 /**
- * ActionÊÇÒ»¸öÖ§³Ö¶àÏß³ÌµÄcourse´úÀí£¬ÔÚ·şÎñ³ÌĞòÖĞ½¨ÒéÊ¹ÓÃ¸ÃÀàÀ´´´½¨ÒµÎñ¹ı³Ì¶ø·ÇÊ¹ÓÃCourseProxy£¬
- * ¸ÃÀà»¹Ìá¹©ÁËÅúÁ¿Ìá½»²¢Ö´ĞĞÒµÎñ¹ı³ÌµÄÌØĞÔ¡£
+ * Actionæ˜¯ä¸€ä¸ªæ”¯æŒå¤šçº¿ç¨‹çš„courseä»£ç†ï¼Œåœ¨æœåŠ¡ç¨‹åºä¸­å»ºè®®ä½¿ç”¨è¯¥ç±»æ¥åˆ›å»ºä¸šåŠ¡è¿‡ç¨‹è€Œéä½¿ç”¨CourseProxyï¼Œ
+ * è¯¥ç±»è¿˜æä¾›äº†æ‰¹é‡æäº¤å¹¶æ‰§è¡Œä¸šåŠ¡è¿‡ç¨‹çš„ç‰¹æ€§ã€‚
  * @author yl
  *
  * @param <T>
  */
 public class Action<T> extends CourseProxy implements CourseOperation{
 	{
-		/** ÓÃÓÚ¼ÆËã²úÉú×ÖÃæÖµµÄ·½·¨Õ»³¤ÊÇ·ñºÏ·¨£¬
-		 * Èç¹û±ğµÄ·½·¨ÖĞµ÷ÓÃ¸ÃÀàÖĞµÄSTART()»òSTART(args)·½·¨£¨½ö¿ª·¢¹ı³ÌÖĞ¿ÉÉèÖÃ£¬¶ÔÍâÒş²Ø£©£¬ĞèÒªÏàÓ¦µÄ+1*/
+		/** ç”¨äºè®¡ç®—äº§ç”Ÿå­—é¢å€¼çš„æ–¹æ³•æ ˆé•¿æ˜¯å¦åˆæ³•ï¼Œ
+		 * å¦‚æœåˆ«çš„æ–¹æ³•ä¸­è°ƒç”¨è¯¥ç±»ä¸­çš„START()æˆ–START(args)æ–¹æ³•ï¼ˆä»…å¼€å‘è¿‡ç¨‹ä¸­å¯è®¾ç½®ï¼Œå¯¹å¤–éšè—ï¼‰ï¼Œéœ€è¦ç›¸åº”çš„+1*/
 		level +=1;		
 	}
 	
-	/** Ã¿¸öÏß³Ì²Ù×÷µÄcourse¶ÔÏóÊÇÏà»¥¶ÀÁ¢µÄ£¬¶Ôcourse²Ù×÷Ç°»áÏÈ½«courseÉèÖÃµ½localÖĞ£¬È·±£Ïß³Ì°²È«¡£*/
+	/** æ¯ä¸ªçº¿ç¨‹æ“ä½œçš„courseå¯¹è±¡æ˜¯ç›¸äº’ç‹¬ç«‹çš„ï¼Œå¯¹courseæ“ä½œå‰ä¼šå…ˆå°†courseè®¾ç½®åˆ°localä¸­ï¼Œç¡®ä¿çº¿ç¨‹å®‰å…¨ã€‚*/
 	private static ThreadLocal<Course> newest = new ThreadLocal<Course>();
 	
-	/** edenÇø£¬ÓÃÓÚ»º´æÃ¿¸öÏß³Ì²úÉúµÄcouse*/
+	/** edenåŒºï¼Œç”¨äºç¼“å­˜æ¯ä¸ªçº¿ç¨‹äº§ç”Ÿçš„couse*/
 	private ConcurrentHashMap<String,Course> eden = new ConcurrentHashMap<String,Course>();
 	
-	/** workÇø£¬Ã¿¸öÏß³Ì³ÖÓĞµÄÒ»¸öÏà»¥¶ÀÁ¢µÄwork¼¯ºÏ£¬²¢ÇÒ»á±»ÅúÁ¿µÄÌá½»ÖÁ²Ö´¢Ö´ĞĞ*/
+	/** workåŒºï¼Œæ¯ä¸ªçº¿ç¨‹æŒæœ‰çš„ä¸€ä¸ªç›¸äº’ç‹¬ç«‹çš„worké›†åˆï¼Œå¹¶ä¸”ä¼šè¢«æ‰¹é‡çš„æäº¤è‡³ä»“å‚¨æ‰§è¡Œ*/
 	private static ThreadLocal<List<Course>> work = new ThreadLocal<List<Course>>();
 	
-	/** Ã¿¸öwork¼¯ºÏ³õÊ¼´óĞ¡*/
+	/** æ¯ä¸ªworké›†åˆåˆå§‹å¤§å°*/
 	private static byte workSize = 10;
 	
-	/** Ö»ÓĞµ±workableÎª1µÄÊ±ºò£¬course²Å»á±»ÌîÈëworkÇø*/
+	/** åªæœ‰å½“workableä¸º1çš„æ—¶å€™ï¼Œcourseæ‰ä¼šè¢«å¡«å…¥workåŒº*/
 	private static ThreadLocal<Byte> workable = new  ThreadLocal<Byte>();
 	
 
@@ -78,7 +78,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	
 
 	/**
-	 * »ñÈ¡µ±Ç°Ïß³ÌµÄworkÇø
+	 * è·å–å½“å‰çº¿ç¨‹çš„workåŒº
 	 * @return
 	 */
 	public static List<Course> getWork() {
@@ -86,7 +86,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * »ñÈ¡workÇø´óĞ¡Öµ
+	 * è·å–workåŒºå¤§å°å€¼
 	 * @return
 	 */
 	public static byte getWorkSize() {
@@ -94,7 +94,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * ÉèÖÃworkÇø´óĞ¡
+	 * è®¾ç½®workåŒºå¤§å°
 	 * @param workSize
 	 */
 	public static void setWorkSize(byte workSize) {
@@ -102,7 +102,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 
 	/**
-	 * ÔÚ´Ë·½·¨Ö®ºó¶¨Òå»ò»ñÈ¡µÄcourseÌîÈëworkÇøµÄ²Ù×÷ÊÇÓĞĞ§µÄ
+	 * åœ¨æ­¤æ–¹æ³•ä¹‹åå®šä¹‰æˆ–è·å–çš„courseå¡«å…¥workåŒºçš„æ“ä½œæ˜¯æœ‰æ•ˆçš„
 	 */
 	public void startWork() {
 		work.remove();
@@ -112,7 +112,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ´Ë·½·¨»áÁ¢¿ÌÌá½»workÇø£¬ÌîÈëworkÇøÊÇÎŞĞ§µÄ
+	 * æ­¤æ–¹æ³•ä¼šç«‹åˆ»æäº¤workåŒºï¼Œå¡«å…¥workåŒºæ˜¯æ— æ•ˆçš„
 	 * @return
 	 */
 	public int endWork() {
@@ -123,7 +123,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * ´Ë·½·¨»áÁ¢¿ÌÌá½»workÇø£¬²¢Çå¿Õ£¬workÌîÈëÈÔÈ»ÊÇÓĞĞ§×´Ì¬,µ«ÊÇ²¢²»ÄÜÍ¨¹ı¸Ã·½·¨¿ªÆôÔÊĞí×´Ì¬
+	 * æ­¤æ–¹æ³•ä¼šç«‹åˆ»æäº¤workåŒºï¼Œå¹¶æ¸…ç©ºï¼Œworkå¡«å…¥ä»ç„¶æ˜¯æœ‰æ•ˆçŠ¶æ€,ä½†æ˜¯å¹¶ä¸èƒ½é€šè¿‡è¯¥æ–¹æ³•å¼€å¯å…è®¸çŠ¶æ€
 	 * @return
 	 */
 	public int execute() {
@@ -140,7 +140,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	
 	/**
 	 * {@inheritDoc}
-	 * µ± {@link Action#startWork()}¿ªÆô£¬Ëù²úÉúµÄcourse»áÌîÈëworkÇø
+	 * å½“ {@link Action#startWork()}å¼€å¯ï¼Œæ‰€äº§ç”Ÿçš„courseä¼šå¡«å…¥workåŒº
 	 */
 	@Override
 	public Course START() {
@@ -152,7 +152,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 
 	/**
 	 * {@inheritDoc}
-	 * µ± {@link Action#startWork()}¿ªÆô£¬Ëù²úÉúµÄcourse»áÌîÈëworkÇø
+	 * å½“ {@link Action#startWork()}å¼€å¯ï¼Œæ‰€äº§ç”Ÿçš„courseä¼šå¡«å…¥workåŒº
 	 */
 	@Override
 	public Course START(String id) {

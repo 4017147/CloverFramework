@@ -1,6 +1,6 @@
-package com.clover.core.factory;
+package com.cloverframework.core.factory;
 
-import com.clover.core.course.Course;
+import com.cloverframework.core.course.Course;
 
 public abstract class AbstractEntityFactory {
 	public abstract boolean isMatchDomain(Class<?> entityClass,Class<?> serviceClass);

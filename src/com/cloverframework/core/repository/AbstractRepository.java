@@ -1,16 +1,16 @@
-package com.clover.core.repository;
+package com.cloverframework.core.repository;
 
 import java.util.List;
 import java.util.Map;
 
-import com.clover.core.course.Action;
-import com.clover.core.course.Course;
-import com.clover.core.course.CourseProxy;
-import com.clover.core.course.Course.CourseType;
-import com.clover.core.factory.EntityFactory;
+import com.cloverframework.core.course.Action;
+import com.cloverframework.core.course.Course;
+import com.cloverframework.core.course.Course.CourseType;
+import com.cloverframework.core.course.CourseProxy;
+import com.cloverframework.core.factory.EntityFactory;
 import com.domain.DomainService;
 /**
- * ÕâÊÇÒ»¸ö³éÏóµÄ²Ö´¢£¬Æä×ÓÀàÃæÏòÁìÓò·şÎñ²ã£¬ÓÉ×ÓÀà¸ºÔğ²Ö´¢½Ó¿ÚµÄÊµ¼Êµ÷ÓÃ¡£
+ * è¿™æ˜¯ä¸€ä¸ªæŠ½è±¡çš„ä»“å‚¨ï¼Œå…¶å­ç±»é¢å‘é¢†åŸŸæœåŠ¡å±‚ï¼Œç”±å­ç±»è´Ÿè´£ä»“å‚¨æ¥å£çš„å®é™…è°ƒç”¨ã€‚
  * @author yl
  *
  */
@@ -73,7 +73,7 @@ public abstract class AbstractRepository{
 		return doOther(course,mode);
 	}
 	
-	/*====================¼òµ¥CRUDÄ£Ê½Ä£°å·½·¨================== */
+	/*====================ç®€å•CRUDæ¨¡å¼æ¨¡æ¿æ–¹æ³•================== */
 	
 	
 	public final <E> E get(Class<E> Class,Integer key,IClassicalMode mode,DomainService service) {
