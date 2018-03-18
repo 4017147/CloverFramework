@@ -67,6 +67,7 @@ public final class EntityFactory {
 	private void setLiteral(String literalName,Thread t,int length) throws Exception {
 		Object[] courseInfo = null;
 		Course course = null;
+		//System.out.println(length);
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
 			byte le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
 			if((course = (Course) courseInfo[0])!=null) {

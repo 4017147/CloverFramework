@@ -1,6 +1,7 @@
 package com.cloverframework.core.course;
 
 import java.util.ArrayList;
+import java.util.function.BiFunction;
 
 /**
  * Course是基于AbstractCourse实现的基础上，提供了面向用户业务过程语言定义的方法，
@@ -9,10 +10,7 @@ import java.util.ArrayList;
  */
 public final class Course extends AbstractCourse<Course>{
 	 /*
-	  * 规则说明：
-	  * 1、类名全部大写,两个以上单词的用驼峰命名
-	  * 2、公开的sql方法名全部大写
-	  * 3、为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
+	  * 为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
 	  */
 	
 	/** course标识*/
@@ -52,61 +50,73 @@ public final class Course extends AbstractCourse<Course>{
 		}
 	}
 
-	private GET 	get;
-	private ADD 	add;
-	private PUT 	put;
-	private REMOVE 	remove;
+	/**
+	 * 如果节点已存在，则不会重复创建
+	 */
+	@SuppressWarnings("rawtypes")
+	private static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], Object> constructor,AbstractCourse a,Object b[]) {
+		if(a.status<WAIT)return old;
+		old = (AbstractCourse) constructor.apply(a, b);
+		return old;
+	}
+	
+	
+	private Get 	get;
+	private Add 	add;
+	private Put 	put;
+	private Remove 	remove;
 	
 	/**
 	 * 开启一个GET描述的Course，代表从数据提供方获取相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public GET GET(Object ...obj){type = CourseType.GET;get = new GET(this,obj);return get;}
+	public Get get(Object ...obj){type = CourseType.GET;return get = (Get) create(get,Get::new,this,obj);
+		//return get!=null?get:(get = new GET(this,obj));
+	}
 	
 	/**
 	 * 开启一个ADD描述的Course，代表在数据提供方添加相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public ADD ADD(Object ...obj){type = CourseType.ADD;add = new ADD(this,obj);return add;}
+	public Add add(Object ...obj){type = CourseType.ADD;return add = (Add) create(add, Add::new,this,obj);}
 	
 	/**
 	 * 开启一个PUT描述的Course，代表在数据提供方更新/替换相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public PUT PUT(Object ...obj){type = CourseType.PUT;put = new PUT(this,obj);return put;}
+	public Put put(Object ...obj){type = CourseType.PUT;return put = (Put) create(put, Put::new,this,obj);}
 	
 	/**
 	 * 开启一个REMOVE描述的Course，代表在数据提供方删除相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public REMOVE REMOVE(Object ...obj){type = CourseType.REMOVE;remove = new REMOVE(this,obj);return remove;}
+	public Remove remove(Object ...obj){type = CourseType.REMOVE;return remove = (Remove) create(remove, Remove::new,this,obj);}
 
 	/**
 	 * Get
 	 * @author yl
 	 *
 	 */
-	public static final class GET extends AbstractCourse<GET>{
+	public static final class Get extends AbstractCourse<Get>{
 
-		protected GET(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+		public Get(AbstractCourse<?> previous, Object[] obj) {
+			super(previous, obj);
 		}
 
 		//-------------------------------------------------------
 		private By 		by;
 		private GroupBy groupBy;
 		private OrderBy orderBy;
-		private LIMIT 	limit;
+		private Limit 	limit;
 			
-		public By 		By(Object obj){by = new By(this,obj);return by;}
-		public GroupBy 	GroupBy(Object obj){groupBy = new GroupBy(this,obj);return groupBy;}
-		public OrderBy 	OrderBy(Object obj){orderBy = new OrderBy(this,obj);return orderBy;}
-		public LIMIT 	LIMIT(int start,int end){limit = new LIMIT(this,start,end);return limit;}
+		public By 		by(Object... obj){return by = (By) create(by,By::new,this,obj);}
+		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
+		public GroupBy 	groupBy(Object... obj){return groupBy = (GroupBy) create(groupBy, GroupBy::new,this,obj);}
+		public Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
 	}
 		
 		
@@ -115,15 +125,14 @@ public final class Course extends AbstractCourse<Course>{
 	 * @author yl
 	 *
 	 */
-	public static final class ADD extends AbstractCourse<ADD>{
-		protected ADD(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+	public static final class Add extends AbstractCourse<Add>{
+		protected Add(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 		//-------------------------------------------------------
 		//预留By
 		private By by;
-		public By By(Object ...obj){by = new By(this,obj);return by;}
+		public By By(Object ...obj){return by = (By) create(by,By::new,this,obj);}
 		}
 		
 	/**
@@ -131,15 +140,14 @@ public final class Course extends AbstractCourse<Course>{
 	 * @author yl
 	 *
 	 */
-	public static final class PUT extends AbstractCourse<PUT>{
-		protected PUT(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+	public static final class Put extends AbstractCourse<Put>{
+		protected Put(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 		//-------------------------------------------------------
 		//预留By
 		private By by;
-		public By By(Object ...obj){by = new By(this,obj);return by;}
+		public By By(Object ...obj){return by = (By) create(by,By::new,this,obj);}
 	}
 		
 	/**
@@ -147,14 +155,13 @@ public final class Course extends AbstractCourse<Course>{
 	* @author yl
 	*
 	*/
-	public static final class REMOVE extends AbstractCourse<REMOVE>{
-		protected REMOVE(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+	public static final class Remove extends AbstractCourse<Remove>{
+		protected Remove(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 		//-------------------------------------------------------
 		private By by;
-		public By By(Object ...obj){by = new By(this,obj);return by;}
+		public By By(Object ...obj){return by = (By) create(by,By::new,this,obj);}
 		}
 		
 		
@@ -170,9 +177,8 @@ public final class Course extends AbstractCourse<Course>{
 		public Enum<CourseType> getType() {
 			return type;
 		}
-		protected By(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+		protected By(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 		
 		public Object getValue() {
@@ -199,11 +205,11 @@ public final class Course extends AbstractCourse<Course>{
 		//-------------------------------------------------------
 		private OrderBy orderBy;
 		private GroupBy groupBy;
-		private LIMIT 	limit;
+		private Limit 	limit;
 			
-		public OrderBy 	OrderBy(Object ...obj){orderBy = new OrderBy(this,obj);return orderBy;}
-		public GroupBy 	GroupBy(Object ...obj){groupBy = new GroupBy(this,obj);return groupBy;}
-		public LIMIT 	LIMIT(int start,int end){limit = new LIMIT(this,start,end);return limit;}
+		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
+		public GroupBy 	GroupBy(Object ...obj){return groupBy = (GroupBy) create(groupBy, GroupBy::new,this,obj);}
+		public Limit 	LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 		}
 		
 		/**
@@ -212,13 +218,12 @@ public final class Course extends AbstractCourse<Course>{
 		 *
 		 */
 	public static final class GroupBy extends AbstractCourse<GroupBy>{
-		protected GroupBy(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+		protected GroupBy(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 			//-------------------------------------------------------
-		private LIMIT limit;
-		public LIMIT LIMIT(int start,int end){limit = new LIMIT(this,start,end);return limit;}
+		private Limit limit;
+		public Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 	}
 		
 	/**
@@ -227,13 +232,12 @@ public final class Course extends AbstractCourse<Course>{
 	*
 	*/
 	public static final class OrderBy extends AbstractCourse<OrderBy>{
-		public OrderBy(AbstractCourse<?> parent,Object ...obj){
-			this.parent = parent;
-			setElements(obj);
+		public OrderBy(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
 		}
 		//-------------------------------------------------------
-		private LIMIT limit;
-		public LIMIT LIMIT(int start,int end){limit = new LIMIT(this,start,end);return limit;}
+		private Limit limit;
+		public Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 	}
 	
 	/**
@@ -241,11 +245,12 @@ public final class Course extends AbstractCourse<Course>{
 	* @author yl
 	*
 	*/
-	public static final class LIMIT extends AbstractCourse<LIMIT>{
+	public static final class Limit extends AbstractCourse<Limit>{
+		@SuppressWarnings("unused")
 		private Object[] element;
-		protected LIMIT(AbstractCourse<?> parent,int start,int end){
+		protected Limit(AbstractCourse<?> previous,int start,int end){
 			String obj = String.valueOf(start)+","+String.valueOf(end);
-			this.parent = parent;
+			this.previous = previous;
 			setElements(obj);
 		}
 

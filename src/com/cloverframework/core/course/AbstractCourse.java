@@ -8,7 +8,7 @@ import com.cloverframework.core.factory.EntityFactory;
 import com.domain.DomainService;
 
 /**
- * 这是course的抽象的父类，定义了一种链表结构属性，并实现了大部分基础特性
+ * 定义了一种双向链表结构属性，并实现了大部分基础特性
  * @author yl
  * 
  * 
@@ -22,8 +22,11 @@ public abstract class AbstractCourse<T> {
 	/**节点元素*/
 	private Object[] elements;
 	
-	/**父节点*/
-	AbstractCourse<?> parent;
+	/**前级*/
+	AbstractCourse<?> previous;
+	
+	/**后级*/
+	AbstractCourse<?> next;
 	
 	/**字面列表*/
 	List<String> literalList;//上级传递
@@ -34,6 +37,12 @@ public abstract class AbstractCourse<T> {
 	/**是否输出颜色 */
 	public volatile boolean condition2;//根传递
 	
+	/**正在填充*/
+	public static final byte FILL 		=-1;
+	/**关闭*/
+	public static final byte END 		=-2;
+	/**异常*/
+	public static final byte ERROR 		=-3;
 	/**待填充*/
 	public static final byte WAIT 		= 0;
 	/**添加字面值(从lambda)*/
@@ -42,12 +51,6 @@ public abstract class AbstractCourse<T> {
 	public static final byte METHOD 	= 2;
 	/**添加字面值(从lambda三元)*/
 	public static final byte LAMBDA_TE 	= 3;
-	/**正在填充*/
-	public static final byte FILL 		=-1;
-	/**关闭*/
-	public static final byte END 		=-2;
-	/**异常*/
-	public static final byte ERROR 		=-3;
 	
 	/**
 	 * 表示该course当前状态
@@ -72,15 +75,17 @@ public abstract class AbstractCourse<T> {
 	 */
 	protected void setElements(Object... elements) {
 		try {
-			status = parent==null?null:parent.status;
+			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
 			if(status>=WAIT) {
+				//System.out.println(status);
 				status = FILL;
-				literalList = parent==null?literalList:parent.literalList;
-				domainService = parent==null?domainService:parent.domainService;
-				proxy = parent==null?proxy:parent.proxy;
+				literalList = previous==null?literalList:previous.literalList;
+				domainService = previous==null?domainService:previous.domainService;
+				proxy = previous==null?proxy:previous.proxy;
 				this.elements = fill(elements,literalList,domainService);
-				parent.status = status = WAIT;
+				previous.status = status = WAIT;
+				previous.next = this;
 			}
 		}finally {
 			if(literalList!=null) 
@@ -99,7 +104,7 @@ public abstract class AbstractCourse<T> {
 				condition2 = p.condition2;
 				break;
 			}
-			p = (AbstractCourse) p.parent;
+			p = (AbstractCourse) p.previous;
 		}
 	}
 	
@@ -232,9 +237,12 @@ public abstract class AbstractCourse<T> {
 	
 	/*----------------------public method-------------------- */
 	
-	
-	
 	public AbstractCourse() {}
+	
+	public AbstractCourse(AbstractCourse<?> previous,Object ...obj) {
+		this.previous = previous;
+		setElements(obj);
+	}
 	
 	protected void addLiteral(String methodName) {
 		if(literalList.size()>49)
@@ -256,18 +264,21 @@ public abstract class AbstractCourse<T> {
 	public void END() {
 		try {
 			if(status!=END) {
-				if (parent!=null) 
-					parent.END(); 
+				status = END;
+				if (previous!=null) 
+					previous.END(); 
 				else {
-					status = END;
 					proxy.END();
+					EntityFactory.removeCourse(Thread.currentThread().getId());				
 				}				
 			}
 		}
 		finally {
-			proxy = null;
-			literalList = null;
-			EntityFactory.removeCourse(Thread.currentThread().getId());				
+			if(status!=END) {
+				proxy = null;
+				literalList = null;
+				EntityFactory.removeCourse(Thread.currentThread().getId());
+			}
 		}
 	}
 
@@ -291,7 +302,7 @@ public abstract class AbstractCourse<T> {
 	 */
 	@Override
 	public String toString() {
-		setCondition(parent);
+		setCondition(previous);
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
 	}
 

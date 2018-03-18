@@ -56,7 +56,7 @@ public abstract class AbstractRepository{
 	}
 	
 	public final int fromAction(Action<?> action,ICourseMode mode) {
-		List<Course> list = Action.getWork();
+		List<Course> list = Action.getWorkSpace();
 		for(Course course:list) {
 			if(course.getType()==CourseType.GET)
 				doGet(course,mode);

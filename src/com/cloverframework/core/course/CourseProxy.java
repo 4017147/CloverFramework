@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
+import com.cloverframework.core.util.lambda.Literal;
 import com.domain.DomainService;
-import com.infrastructure.util.lambda.Literal;
 /**
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程而不是course，
  * 该类大部分方法是线程不安全的。
@@ -19,8 +19,8 @@ public class CourseProxy implements CourseOperation{
 	
 	/**最后产生的course对象*/
 	Course newest;
-	/**eden区，用于缓存course对象*/
-	HashMap<String,Course> eden = new HashMap<String,Course>();
+	/**share区，用于缓存course对象*/
+	HashMap<String,Course> shareSpace = new HashMap<String,Course>();
 	
 	protected DomainService service;
 	
@@ -50,17 +50,17 @@ public class CourseProxy implements CourseOperation{
 	
 	@Override
 	public Course getCourse(String id) {
-		return eden.get(id);
+		return shareSpace.get(id);
 	}
 	
 	@Override
 	public void addCourse(String id,Course course) {
-		eden.put(id, course);
+		shareSpace.put(id, course);
 	}
 	
 	@Override
 	public Course removeCourse(String id) {
-		return eden.remove(id);
+		return shareSpace.remove(id);
 	}
 	
 	/*----------------------private method-------------------- */
@@ -83,6 +83,7 @@ public class CourseProxy implements CourseOperation{
 	private Course begin() {
 		Thread t = Thread.currentThread();
 		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
+		//System.out.println(t.getStackTrace().length-level);
 		Course course = EntityFactory.putCourse(getCurrCourse(), t, t.getStackTrace().length-level);
 		if(course.status==Course.WAIT) {
 			return course;
@@ -116,7 +117,7 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	public HashMap<String, Course> getEden() {
-		return eden;
+		return shareSpace;
 	}
 	
 	public void setRepository(CourseRepository repository) {
@@ -130,8 +131,8 @@ public class CourseProxy implements CourseOperation{
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();	
-		for(String key:eden.keySet()) {
-			Course course = eden.get(key);
+		for(String key:shareSpace.keySet()) {
+			Course course = shareSpace.get(key);
 			course.condition1 = true;
 			course.condition2 = true;
 			sb.append(course.toString()+"\n");
@@ -177,18 +178,22 @@ public class CourseProxy implements CourseOperation{
 	
 	/**
 	 * 在开始course时提供一个id作为它的标识，同时该course在end之后会被缓存，
-	 * 如果执行时该id的course存在缓存，则使用缓存的course
+	 * 如果执行时该id的course存在缓存，则使用缓存的course。
+	 * 如果取出的course已经被缓存，则后面\重复的修改不会生效
 	 * @param id 这个course的标识，不能包含空格
 	 * @return
 	 */
 	public Course START(String id) {
-		Course cache = null;
+		Course old = null;
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
-			cache = getCourse(id);
-		if(cache!=null)
-			return cache;
+			old = getCourse(id);
+		if(old!=null) {
+			old.status = -2;
+			return old;
+		}
 		addCourse(id,false);
+		//System.out.println("begin");
 		return begin();
 	}
 	
