@@ -1,14 +1,17 @@
 package com.cloverframework.core.course;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
-import com.domain.DomainService;
+import com.cloverframework.core.util.ELOperation;
 
 /**
- * 定义了一种双向链表结构属性，并实现了大部分基础特性
+ * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
+ * 当status属性级别低于或等于END，对Elements和status的任何操作都是无效的。
  * @author yl
  * 
  * 
@@ -20,7 +23,7 @@ public abstract class AbstractCourse<T> {
 	CourseProxy proxy;//上级传递
 	
 	/**节点元素*/
-	private Object[] elements;
+	private Object[] elements;	
 	
 	/**前级*/
 	AbstractCourse<?> previous;
@@ -29,7 +32,9 @@ public abstract class AbstractCourse<T> {
 	AbstractCourse<?> next;
 	
 	/**字面列表*/
-	List<String> literalList;//上级传递
+	List<String> literal;//上级传递
+	
+	List<String> literal_te;
 	
 	/**是否输出simpleName */
 	public volatile boolean condition1;//根传递，处于性能考虑没有使用引用类型，如果是引用类型则应该上级传递
@@ -51,6 +56,10 @@ public abstract class AbstractCourse<T> {
 	public static final byte METHOD 	= 2;
 	/**添加字面值(从lambda三元)*/
 	public static final byte LAMBDA_TE 	= 3;
+	/**添加字面值(三元)*/
+	public static final byte TE 		= 4;
+	
+	enum Te{te}
 	
 	/**
 	 * 表示该course当前状态
@@ -60,17 +69,53 @@ public abstract class AbstractCourse<T> {
 	 * 这一般发生在一个course中断后，另一个course开启之前，尽管这个概率是很低的。
 	 * 
 	 */
-	volatile byte status = WAIT;//上级传递
+	private volatile byte status = WAIT;//上级传递
+	
+	/** 是否是一个fork*/
+	protected boolean isFork;
+	
+	/**并集 */
+	public static final String U = "U";
+	/**交集 */
+	public static final String I = "I";
+	/**补集*/
+	public static final String C = "C";
+	/**前置并集 */
+	public static final String UB = "UB";
+	/**后置并集 */
+	public static final String UA = "UA";
+	/**前置混合 */
+	public static final String MB = "MB";
+	/**后置混合 */
+	public static final String MA = "MA";
+	/**正交 */
+	public static final String M = "M";
+	/**反交 */
+	public static final String RM = "RM";
+	/**左补 */
+	public static final String CB = "CB";
+	/**右补 */
+	public static final String CA = "CA";
 	
 	
+	public static final String[] Model = {U,I,C,UB,UA,MB,MA,M,RM,CB,CA};
+	
+	private String model;
+	
+	
+	
+	/** 基线course*/
+	protected Course origin;
+
+
 	/*----------------------private method-------------------- */
-	
-	
-	
+
 	/**
 	 * 设置节点的元素，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
 	 * 执行后都会将字面列表清空
+	 * 通常情况下，值传入要先于方法返回值传入，
+	 * 在传入节点参数的时候，按照直接值->实体->方法字面值->三元
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
@@ -78,21 +123,39 @@ public abstract class AbstractCourse<T> {
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
 			if(status>=WAIT) {
-				//System.out.println(status);
 				status = FILL;
-				literalList = previous==null?literalList:previous.literalList;
+				literal = previous==null?literal:previous.literal;
+				literal_te = previous==null?literal_te:previous.literal_te;
 				domainService = previous==null?domainService:previous.domainService;
 				proxy = previous==null?proxy:previous.proxy;
-				this.elements = fill(elements,literalList,domainService);
+				isFork = previous==null?isFork:previous.isFork;
+				if(isFork) 
+					setModel(elements[0]);
+				this.elements = fill(elements,literal,literal_te,domainService);
+				//ELOperation.mergeElements((Object[]) origin.getElements(), this.elements,model);
 				previous.status = status = WAIT;
 				previous.next = this;
 			}
 		}finally {
-			if(literalList!=null) 
-				literalList.clear();
+			if(literal!=null) 
+				literal.clear();
+			if(literal_te!=null) 
+				literal_te.clear();
 		}
 	}
 
+	private void setModel(Object o) {
+		if(o.getClass()==String.class) {
+			for(String s:Model) {
+				if(s.equals(elements[0])) {
+					model = s;
+					break;
+				}
+			}
+		}
+	}
+	
+	
 	@SuppressWarnings("rawtypes")
 	private void setCondition(AbstractCourse parent) {		
 		AbstractCourse p = parent;
@@ -119,41 +182,60 @@ public abstract class AbstractCourse<T> {
 	 * 1、如果数组元素为null则填充（如果字面值列表元素的next存在）
 	 * 2、如果数组元素为领域实体，如果为合法的领域实体则添加，如果不合法则移除。
 	 * 3、如果该元素不是实体，则进行字面值填充。
+	 * <p>
+	 * 通常情况下，值要先于方法字面值填充，按照值->实体->方法字面值->三元
 	 * 
 	 * @param elements
-	 * @param literalList
+	 * @param literal
 	 * @param domainService
 	 */
-	private Object[] fill(Object[] elements,List<String> literalList,DomainService domainService) {
-		if(elements.length>0 && literalList.size()>0) {
-			Object[] temps = new Object[elements.length];
-			if(elements.length<literalList.size()) {
-				temps = new Object[literalList.size()];
-			}
-			byte k = 0,i = 0,t = 0;
-			for(;i<elements.length;i++) {
-				if(elements[i]!=null && !EntityFactory.isMatchDomain(elements[i].getClass(), domainService.getClass())) {
-					if(k<literalList.size()) {
-						temps[t] = literalList.get(k);
-						k++;
+	private Object[] fill(Object[] elements,List<String> literal,List<String> literal_te,DomainService domainService) {
+		Object[] temps = new Object[elements.length+literal.size()+literal_te.size()];
+		if(elements.length>0) {
+			byte a = 0;//跟踪literal
+			byte b = 0;//跟踪literal_te
+			byte e = 0;//跟踪elements
+			byte t = 0;//跟踪temp
+			for(;e<elements.length;e++) {
+				if(elements[e]==null) {
+					if(a<literal.size()) {
+						temps[t] = literal.get(a);
+						a++;
 						t++;
 					}
-				}else if(elements[i]!=null){
-					temps[t] = elements[i];
-					t++;
-				} 
+				}else if(elements[e]!=null){
+					if(elements[e]==Te.te) {
+						int size = literal_te.size();
+						if(size>0) {
+							temps[t] = literal_te.get(b);
+							b++;
+							t++;
+						}
+					}else if(EntityFactory.isMatchDomain(elements[e].getClass(), domainService.getClass())||
+							elements[e].getClass().isEnum()||proxy.getPattern().isMatch(elements[e])){
+						temps[t] = elements[e];
+						t++;				
+					}else{
+						if(a<literal.size()) {
+							temps[t] = literal.get(a);
+							a++;
+							t++;
+							} 
+						}
+				}
 			}
 			for(;t<temps.length;t++) {//将剩余的字面值填充（如果还有剩余）
-				if(k>=literalList.size()) 
+				if(a>=literal.size()) 
 					break;
-				temps[t] = literalList.get(k);
-				k++;
+				temps[t] = literal.get(a);
+				a++;
 			}
 			return Arrays.copyOf(temps, t);//去除为null的无效下标
 		}
 		return null;
 	}
-
+	
+	
 
 	/**
 	 * 打印节点元素，java.lang包类型会直接输出，如果是String类型则输出类型.方法名，其他实体类型则输出类型名
@@ -183,21 +265,30 @@ public abstract class AbstractCourse<T> {
 					builder.append(blank);//首个元素缩进
 				else
 					builder.append(comma);	
+				
+				//处理枚举,字典的第一个元素必需是对应的实体类名
+				if(elements[i].getClass().isEnum()) {
+					builder.append(elements[i].getClass().getFields()[0].getName()).append(".").append(elements[i].toString()).append(blank);
+				}else
+				//处理方法字面值
 				if (elements[i].getClass().getPackage() == Package.getPackage("java.lang")) {
 					if(elements[i].getClass()==String.class){
 						if(condition1) {
 							String fullName = elements[i].toString();
 							//获取包括类型和属性名的simpleName
 							//防止substring内存占用
+							//产生类名.属性字符串
 							String simpleName = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
 							builder.append(simpleName).append(blank);	
 						}else
 							builder.append(elements[i]).append(blank);												
 					}else
 						builder.append(elements[i]).append(blank);	
-				}else {
+				}else
+				//处理类型
+				{
 					String simpleName = elements[i].getClass().getSimpleName();
-					int index = simpleName.indexOf("$$");//代理类类名需截取
+					int index = simpleName.indexOf("$$");//代理类类名截取
 					builder.append(new String(simpleName.substring(0, index==-1?simpleName.length():index))).append(blank);					
 				}
 			}
@@ -245,10 +336,17 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	protected void addLiteral(String methodName) {
-		if(literalList.size()>49)
-			System.out.println(this.literalList.size());
+		if(literal.size()>49)
+			System.out.println(this.literal.size());
 		else
-			this.literalList.add(methodName);			
+			this.literal.add(methodName);			
+	}
+	
+	protected void addLiteral_te(String methodName) {
+		if(literal_te.size()>49)
+			System.out.println(this.literal_te.size());
+		else
+			this.literal_te.add(methodName);			
 	}
 	
 	public Object getElements() {
@@ -256,6 +354,11 @@ public abstract class AbstractCourse<T> {
 	}
 
 	
+	
+	public String getModel() {
+		return model;
+	}
+
 	/**
 	 * 结束当前的一条course语句，则该course不可再添加语句，
 	 * 并且执行end方法在大多情况下都是必须的，如果没有正常的执行end，
@@ -276,7 +379,7 @@ public abstract class AbstractCourse<T> {
 		finally {
 			if(status!=END) {
 				proxy = null;
-				literalList = null;
+				literal = null;
 				EntityFactory.removeCourse(Thread.currentThread().getId());
 			}
 		}
@@ -292,10 +395,6 @@ public abstract class AbstractCourse<T> {
 		return cp.executeOne();
 	}
 	
-	public byte getStatus() {
-		return status;
-	}
-	
 	/**
 	 * 提供一个该course的结构的字面描述，为调试提供方便，实际过程和所见描述的并不能画上等号。
 	 * 不能在内部类初始化方法中调用,因为this
@@ -304,6 +403,19 @@ public abstract class AbstractCourse<T> {
 	public String toString() {
 		setCondition(previous);
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
+	}
+
+	/**
+	 * Warning!If the status is less than END,you can not change status
+	 * @param status
+	 */
+	public void setStatus(byte status) {
+		if(this.status>END)
+			this.status = status;
+	}
+
+	public byte getStatus() {
+		return status;
 	}
 
 	

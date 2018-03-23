@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.domain.DomainService;
+import com.cloverframework.core.domain.DomainService;
 
 /**
  * Action是一个支持多线程的course代理，在服务程序中建议使用该类来创建业务过程而非使用CourseProxy，
@@ -141,28 +141,50 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	
 	/**
 	 * {@inheritDoc}
-	 * 当 {@link Action#startWork()}开启，所产生的course会填入work区
 	 */
 	@Override
 	public Course START() {
-		Course course = super.START();
-		if(workable.get()!=null && workable.get()==1)
-			workSpace.get().add(course);
-		return course;
+		//必需
+		return super.START();
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 当 {@link Action#startWork()}开启，所产生的course会填入work区
+	 * {@inheritDoc}，
+	 * 当 {@link Action#startWork()}开启，匹配到的course会填入workspace
 	 */
 	@Override
 	public Course START(String id) {
+		//必需
 		Course course = super.START(id);
-		if(workable.get()!=null && workable.get()==1)
+		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
 			workSpace.get().add(course);
 		return course;
 	}
 
+	public Course FORK(String id) {
+		//必需
+		Course course = super.FORK(id);
+		if(course==null) {
+			course = super.START();
+			course.id = id+"-"+course.hashCode();
+		}	
+		course = super.cross(id,course);
+		return course;
+	}
+	
+	/**
+	 * {@inheritDoc}，
+	 * 当 {@link Action#startWork()}开启，将fork或无给定id的course加入工作区
+	 */
+	protected void END() {
+		//必需
+		super.END();
+		Course course = getCurrCourse();
+		if(workable.get()!=null && workable.get()==1)
+			workSpace.get().add(course);
+
+	}
+	
 	
 	@Override
 	public String toString() {

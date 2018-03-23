@@ -1,9 +1,9 @@
 package com.cloverframework.core.course;
 
 /**
- * 重写接口的方法用于针对courseProxy不同eden和newest的操作实现，
+ * 重写接口的方法用于针对courseProxy的sharespace和newest的操作实现，
  * 在实际中，根据需要，使用合适的集合和对应的操作，如并发、或者队列，
- * 可以通过子类重写这些方法即可实现，无须对其他特性进行改动。
+ * 子类和父类都必需实现该接口，避免courseProxy子类继承发生的委托影响。
  */
 public interface CourseOperation {
 	

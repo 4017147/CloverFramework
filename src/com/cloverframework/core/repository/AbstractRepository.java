@@ -6,9 +6,9 @@ import java.util.Map;
 import com.cloverframework.core.course.Action;
 import com.cloverframework.core.course.Course;
 import com.cloverframework.core.course.Course.CourseType;
+import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.factory.EntityFactory;
-import com.domain.DomainService;
 /**
  * 这是一个抽象的仓储，其子类面向领域服务层，由子类负责仓储接口的实际调用。
  * @author yl

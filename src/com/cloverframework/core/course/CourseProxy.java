@@ -2,10 +2,11 @@ package com.cloverframework.core.course;
 
 import java.util.HashMap;
 
+import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
+import com.cloverframework.core.util.Pattern;
 import com.cloverframework.core.util.lambda.Literal;
-import com.domain.DomainService;
 /**
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程而不是course，
  * 该类大部分方法是线程不安全的。
@@ -25,11 +26,8 @@ public class CourseProxy implements CourseOperation{
 	protected DomainService service;
 	
 	CourseRepository repository;
-	/*
-	 * 下面重写接口的方法用于针对courseProxy不同eden和newest的操作实现，
-	 * 在实际中，根据需要使用合适的集合和对应的操作，如并发、或者队列，
-	 * 可以通过子类重写这些方法即可实现，无须对其他特性进行改动
-	 */
+	
+	Pattern pattern;
 	
 	@Override
 	public Course getCurrCourse() {
@@ -70,12 +68,12 @@ public class CourseProxy implements CourseOperation{
 	private Course initCourse(Course course,DomainService service,CourseProxy proxy,byte status) {
 		course.domainService = service;
 		course.proxy = proxy;
-		course.status = status;
+		course.setStatus(status);
 		return course;
 	}
 	
 	/**
-	 * 该方法会初始化一个course并发送到factory的course集合中，
+	 * 该方法会初始化一个course并发送到filter的course集合中，
 	 * 并且会判断存入的course与刚刚创建的course是否引用相同，
 	 * 如果不相同则抛出异常，为防止获取到快照或者被jvm优化。
 	 * @return 返回一个根节点
@@ -85,7 +83,7 @@ public class CourseProxy implements CourseOperation{
 		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
 		//System.out.println(t.getStackTrace().length-level);
 		Course course = EntityFactory.putCourse(getCurrCourse(), t, t.getStackTrace().length-level);
-		if(course.status==Course.WAIT) {
+		if(course.getStatus()==Course.WAIT) {
 			return course;
 		}
 		//如果集合返回的不是刚刚创建的对象
@@ -96,13 +94,13 @@ public class CourseProxy implements CourseOperation{
 	 * 设置course内部的时间属性
 	 * @param course
 	 */
-	private void setCourseTime(Course course) {
-		long exe = System.currentTimeMillis()-course.createTime;
-		course.max_exe = (exe>course.max_exe?exe:course.max_exe);
-		course.min_exe = (exe<course.min_exe?exe:course.min_exe);
-		if(course.min_exe==0)
-			course.min_exe = exe;
-		course.avg_exe = (exe+course.avg_exe)/(course.avg_exe==0?1:2);
+	protected void setCourseTime(Course course) {
+		long exe = System.currentTimeMillis()-course.create;
+		course.max = (exe>course.max?exe:course.max);
+		course.min = (exe<course.min?exe:course.min);
+		if(course.min==0)
+			course.min = exe;
+		course.avg = (exe+course.avg)/(course.avg==0?1:2);
 	}
 
 	
@@ -185,29 +183,45 @@ public class CourseProxy implements CourseOperation{
 	 */
 	public Course START(String id) {
 		Course old = null;
-		String reg = "^[\\S]*$";
-		if(id!=null && id.matches(reg))
-			old = getCourse(id);
+		old = getCourse(id);
 		if(old!=null) {
-			old.status = -2;
+			setCurrCourse(old);
 			return old;
 		}
-		addCourse(id,false);
 		//System.out.println("begin");
+		addCourse(id,false);
 		return begin();
 	}
 	
+	public Course FORK(String id) {
+		Course old = getCourse(id);
+		return old;
+	}
+	
+	
+	public Course cross(String id,Course course) {
+		if(course==null)
+			
+		
+		return getCurrCourse();
+		return course;
+	}
+
 	/**
-	 * 将当前course标记为end状态并缓存
-	 * 1、如果course没有一个有效的id则不会缓存。
+	 * 将当前course标记为end状态并放入sharespace
+	 * 1、如果course没有一个有效的id则不会放入sharespace
 	 * 2、如果没有对当前course进行end，在下一次start新course时当前course会被取代。
+	 * 3、分支course不会放入sharespace
 	 */
-	public void END() {
+	protected void END() {
 		Course course = getCurrCourse();
-		setCourseTime(course);
-		if(course.status==Course.END && course.id!=null)
-			addCourse(course.id, course);
-		removeCurrCourse();
+		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
+			setCourseTime(course);
+			addCourse(course.id, course);			
+		}else if(course.getStatus()==Course.END && course.id==null){
+			setCourseTime(course);
+			course.id = String.valueOf(course.hashCode());
+		}
 	}
 
 	/**
@@ -226,7 +240,7 @@ public class CourseProxy implements CourseOperation{
 	 * @return null
 	 */
 	public Object $() {
-		getCurrCourse().literalList.clear();
+		getCurrCourse().literal.clear();
 		return null;
 	}
 	
@@ -234,7 +248,7 @@ public class CourseProxy implements CourseOperation{
 	 * 方法引用，以lambda的方式提供方法字面参数，
 	 * 如GET($(user::getName))相当于GET(user.getName()),当有多个方法字面值需要获取，最好用该方式。<p>
 	 * 例如：GET($(user::getName,user::getId,user,user::getCode),首项为lambda的情况下不需要$()。
-	 * 如果跟user.getName()这样的方法混用，那么lambda的任意一个表达式必需写在参数的第一位。
+	 * 如果字面值中还有user.getName()这样的方法引用，那么lambda的任意一个表达式必需写在字面值参数的第一位。
 	 * 
 	 * @param lt 实体类的lambda表达式，如user::getName，建议采用此种语法而非()->user.getName(),
 	 * 因为这种写法会带来隐患，比如可在lambda中执行多个句柄，这样会令字面值参数跟期望的不一致，
@@ -244,34 +258,35 @@ public class CourseProxy implements CourseOperation{
 	 */
 	public Object $(Literal ...lt) {
 		Course course = getCurrCourse();
-		if(course.status==Course.WAIT)
-			course.literalList.clear();
-		course.status = Course.LAMBDA;
+		if(course.getStatus()==Course.WAIT)
+			course.literal.clear();
+		course.setStatus(Course.LAMBDA);
 		for(Literal li:lt) {
 			li.literal();
 		}
-		course.status = Course.METHOD;
+		course.setStatus(Course.METHOD);
 		return null;
 	}
 	
-	/**
+/*	*//**
 	 * 三元方法引用，可获取三元运算结果的lambda，建议作为在字面值参数列表的最后一项
 	 * @param li @see {@link CourseProxy#$(Literal...)}
 	 * @return
 	 * @
-	 */
+	 *//*
 	public Object $te(Literal li) {
 		Course course = getCurrCourse();
-		int c = course.status;
-		if(course.status==Course.WAIT)
-			course.literalList.clear();
-		course.status = Course.LAMBDA;
+		int c = course.getStatus();
+		if(course.getStatus()==Course.WAIT)
+			course.literal.clear();
+		course.setStatus(Course.LAMBDA_TE);
 		li.literal();
-		course.status = Course.METHOD;
-		if(c!=0)
-			course.literalList.remove(course.literalList.size()-2);
-		return null;
-	}
+		course.setStatus(Course.METHOD);
+		course.literal_te.add(course.literal.get(course.literal.size()-1));
+		course.literal.remove(course.literal.size()-1);
+		course.literal.remove(course.literal.size()-1);
+		return Course.Te.te;
+	}*/
 	
 	/**
 	 * 可获取三元运算结果的字面值
@@ -280,9 +295,20 @@ public class CourseProxy implements CourseOperation{
 	 */
 	public Object te(Object obj) {
 		Course course = getCurrCourse();
-		course.literalList.remove(course.literalList.size()-2);
-		return null;
+		course.literal_te.add(course.literal.get(course.literal.size()-1));
+		course.literal.remove(course.literal.size()-1);
+		course.literal.remove(course.literal.size()-1);
+		return Course.Te.te;
 	}
+
+	public Pattern getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(Pattern pattern) {
+		this.pattern = pattern;
+	}
+	
 	
 	
 }

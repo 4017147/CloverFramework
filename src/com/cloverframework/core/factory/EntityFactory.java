@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloverframework.core.course.Course;
 import com.cloverframework.core.course.CourseMethod;
-import com.domain.DomainService;
-import com.domain.annotation.Domain;
+import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.domain.annotation.Domain;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -42,12 +42,14 @@ public final class EntityFactory {
 	 * cglib动态代理方法拦截器内部类
 	 *
 	 */
+	
 	public static final class EntityMethodInterceptor implements MethodInterceptor{
 		protected EntityMethodInterceptor() {}
 		
 		@Override
 		public Object intercept(Object arg0, Method arg1, Object[] arg2, MethodProxy arg3) throws Throwable {
 			Thread t = Thread.currentThread();
+			//产生全限定名
 			String literalName = arg0.getClass().getSuperclass().getName()+"."+arg1.getName();
 			//调整该方法的位置需要修改length的值，每多一个上级方法，length-1
 			factory.setLiteral(literalName,t,t.getStackTrace().length);
@@ -71,7 +73,7 @@ public final class EntityFactory {
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
 			byte le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
 			if((course = (Course) courseInfo[0])!=null) {
-				if(course.getStatus()==Course.LAMBDA || course.getStatus()==Course.LAMBDA_TE) 
+				if(course.getStatus()==Course.LAMBDA) 
 					le = 2;
 				else if(course.getStatus()==Course.METHOD)
 					le = 1;
@@ -79,7 +81,14 @@ public final class EntityFactory {
 					if(course.getStatus()<Course.WAIT) 
 						//TODO 抛出异常存在什么影响
 						throw new Exception("Course status error:"+course.getStatus());
+//					if(course.getStatus()>=Course.LAMBDA_TE) {
+//						CourseMethod.addLiteral_te(literalName,course,interceptor);
+//						CourseMethod.addLiteral(literalName,course,interceptor);
+//						System.out.println(literalName);
+//					}else {
 					CourseMethod.addLiteral(literalName,course,interceptor);
+					//System.out.println(literalName);
+					
 				}
 			}		
 		}
@@ -112,7 +121,7 @@ public final class EntityFactory {
 
 	public static void removeCourse(long threadId) {
 		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-			System.out.println("remove:"+entry.getKey()+":"+entry.getValue());
+			//System.out.println("remove:"+entry.getKey()+":"+entry.getValue());
 		}
 		
 		courses.remove(threadId);
@@ -185,7 +194,7 @@ public final class EntityFactory {
 	public static boolean isMatchDomain(Class<?> entityClass, Class<?> serviceClass) {
 		if(entityClass.isAnnotationPresent(Domain.class)&&serviceClass.isAnnotationPresent(Domain.class)) {
 			if(serviceClass.getAnnotation(Domain.class).toString().equals(entityClass.getAnnotation(Domain.class).toString())) {
-				System.out.println(entityClass+" "+serviceClass);
+				//System.out.println(entityClass+" "+serviceClass);
 				return true;			
 			}			
 		}

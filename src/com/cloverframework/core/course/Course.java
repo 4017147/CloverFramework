@@ -16,26 +16,31 @@ public final class Course extends AbstractCourse<Course>{
 	/** course标识*/
 	protected String id;
 	/** 创建时间*/
-	protected long createTime = System.currentTimeMillis();
+	protected long create = System.currentTimeMillis();
 	/** 平均执行时间*/
-	protected long avg_exe;
+	protected long avg;
 	/** 最大执行时间*/
-	protected long max_exe;
+	protected long max;
 	/** 最短执行时间*/
-	protected long min_exe;
+	protected long min;
 	
 	/**
 	 * 
 	 * @param id 这个course的标识，给定的字符串不能包含空格
 	 */
 	protected Course(String id){
-		literalList = new ArrayList<String>(50);
+		literal = new ArrayList<String>(50);
+		literal_te = new ArrayList<String>(50);
 		//String reg = "^\\s*$";
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
 			this.id = id;
 	}
 	
+	public String getId() {
+		return id;
+	}
+
 	public enum CourseType {GET,ADD,PUT,REMOVE}	
 	private Enum<CourseType> type;
 	public Enum<CourseType> getType() {
@@ -45,17 +50,17 @@ public final class Course extends AbstractCourse<Course>{
 	//用于测试
 	@SuppressWarnings("unused")
 	private void eachlist() {
-		for(String s:literalList) {
+		for(String s:literal) {
 			System.out.println(s);
 		}
 	}
 
 	/**
-	 * 如果节点已存在，则不会重复创建
+	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
 	 */
 	@SuppressWarnings("rawtypes")
 	private static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], Object> constructor,AbstractCourse a,Object b[]) {
-		if(a.status<WAIT)return old;
+		if(a.getStatus()<WAIT)return old;
 		old = (AbstractCourse) constructor.apply(a, b);
 		return old;
 	}

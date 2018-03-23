@@ -12,4 +12,7 @@ public final class CourseMethod{
 	public static void addLiteral(String methodName,Course course,EntityMethodInterceptor emi) {
 		course.addLiteral(methodName);
 	}
+	public static void addLiteral_te(String methodName,Course course,EntityMethodInterceptor emi) {
+		course.addLiteral_te(methodName);
+	}
 }
