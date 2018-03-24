@@ -3,6 +3,8 @@ package com.cloverframework.core.course;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import com.cloverframework.core.domain.DomainService;
@@ -35,6 +37,11 @@ public abstract class AbstractCourse<T> {
 	List<String> literal;//上级传递
 	
 	List<String> literal_te;
+	
+	ArrayList<Object> entities;
+	
+	String jsonString;
+	
 	
 	/**是否输出simpleName */
 	public volatile boolean condition1;//根传递，处于性能考虑没有使用引用类型，如果是引用类型则应该上级传递
@@ -135,6 +142,10 @@ public abstract class AbstractCourse<T> {
 				//ELOperation.mergeElements((Object[]) origin.getElements(), this.elements,model);
 				previous.status = status = WAIT;
 				previous.next = this;
+				if(entities==null) {
+					entities = new ArrayList<>();
+				}
+				toJSONString();
 			}
 		}finally {
 			if(literal!=null) 
@@ -323,17 +334,6 @@ public abstract class AbstractCourse<T> {
 		}
 		return builder.toString();
 	}
-
-
-	
-	/*----------------------public method-------------------- */
-	
-	public AbstractCourse() {}
-	
-	public AbstractCourse(AbstractCourse<?> previous,Object ...obj) {
-		this.previous = previous;
-		setElements(obj);
-	}
 	
 	protected void addLiteral(String methodName) {
 		if(literal.size()>49)
@@ -341,12 +341,21 @@ public abstract class AbstractCourse<T> {
 		else
 			this.literal.add(methodName);			
 	}
-	
+
 	protected void addLiteral_te(String methodName) {
 		if(literal_te.size()>49)
 			System.out.println(this.literal_te.size());
 		else
 			this.literal_te.add(methodName);			
+	}
+
+	/*----------------------public method-------------------- */
+	
+	public AbstractCourse() {}
+	
+	public AbstractCourse(AbstractCourse<?> previous,Object ...obj) {
+		this.previous = previous;
+		setElements(obj);
 	}
 	
 	public Object getElements() {
@@ -403,6 +412,61 @@ public abstract class AbstractCourse<T> {
 	public String toString() {
 		setCondition(previous);
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
+	}
+
+	public String toJSONString() {
+		if(this.elements==null)return null;
+		if(jsonString!=null)
+			return jsonString;
+		StringBuilder sb = new StringBuilder();
+		HashSet<String> a = new HashSet<>();
+		//HashSet<Object> b = new HashSet<>();
+		sb.append("{").append(this.getClass().getSimpleName()).append(":\n");
+		sb.append("\t{field:[");
+		for(Object obj:this.elements) {
+			if(obj.getClass()==String.class) {
+				String name = obj.toString();
+				sb.append(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length())).append(",");
+				a.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
+			}else if(obj.getClass().isEnum()) {
+				a.add(obj.getClass().getFields()[0].getName());
+				sb.append(obj.getClass().getFields()[0].getName()+"."+obj.toString()).append(",");
+			}else {
+				entities.add(obj);
+			}
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("]},\n");
+		sb.append("\t{type:[");
+		for(String s:a) {	
+			sb.append(s).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("]},\n");
+		sb.append("\t{entity:[");
+		for(Object obj:entities) {
+			sb.append(obj.getClass().getSimpleName()).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("]}");
+		sb.append("}");
+		jsonString = sb.toString();
+		return jsonString;
+		
+	}
+	
+	
+	
+	public ArrayList<Object> getEntities() {
+		return entities;
+	}
+
+	public void setEntities(ArrayList<Object> entities) {
+		this.entities = entities;
+	}
+	
+	public void addEntity(Object entity) {
+		entities.add(entity);
 	}
 
 	/**

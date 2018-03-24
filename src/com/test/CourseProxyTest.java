@@ -39,7 +39,7 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	@Test
+	//@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getField10();de.getField9();
@@ -60,7 +60,7 @@ public class CourseProxyTest implements DomainService{
 		de.getField10();de.getField9();
 		get.by(demo.getField5(),
 				demo.getField6()).LIMIT(0, 10).END();
-		System.out.println(cp.toString());
+		println(cp.toString());
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class CourseProxyTest implements DomainService{
 	 * 内部类
 	 * 实体方法+实体对象+字典
 	 */
-	@Test
+	//@Test
 	public void test2() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get($(),
@@ -83,7 +83,7 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.field3,
 							Demo_D.field4).END();
 		}};
-		System.out.println(cp.toString());
+		println(cp.toString());
 	}
 	
 	
@@ -91,6 +91,7 @@ public class CourseProxyTest implements DomainService{
 	 * 构造测试,输出测试
 	 * 内部类
 	 * 实体方法+实体对象+字典+lambda
+	 * toJsonString测试
 	 */
 	@Test
 	public void test3() {
@@ -107,7 +108,8 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.field1,
 							Demo_D.field2).END();
 		}};
-		System.out.println(cp.toString());
+		println(cp.toString());
+		println(cp.START("b").toJSONString());
 	}
 	
 	/**
@@ -116,7 +118,7 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * 三元表达式
 	 */
-	@Test
+	//@Test
 	public void test4() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
@@ -132,20 +134,21 @@ public class CourseProxyTest implements DomainService{
 					demo,demo
 					).END();
 		}};
-		System.out.println(cp.toString());
+		println(cp.toString());
 	}
 	
 	
 	/**
 	 * sharespace区测试
 	 */
-	@Test
+	//@Test
 	public void test5() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.field1,Demo_D.field2).END();
 			START("b").get(Demo_D.field3,Demo_D.field4).END();
 			START("c").get(Demo_D.field5,Demo_D.field6).END();
 		}};
-		System.out.println(cp.toString());
+		println(cp.toString());
 	}
+	
 }

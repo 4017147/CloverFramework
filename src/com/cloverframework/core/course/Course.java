@@ -55,6 +55,14 @@ public final class Course extends AbstractCourse<Course>{
 		}
 	}
 
+	
+	
+	@Override
+	public String toJSONString() {
+		// TODO Auto-generated method stub
+		return next.toJSONString();
+	}
+
 	/**
 	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
 	 */
@@ -78,6 +86,7 @@ public final class Course extends AbstractCourse<Course>{
 	 */
 	public Get get(Object ...obj){type = CourseType.GET;return get = (Get) create(get,Get::new,this,obj);
 		//return get!=null?get:(get = new GET(this,obj));
+	
 	}
 	
 	/**
@@ -111,7 +120,6 @@ public final class Course extends AbstractCourse<Course>{
 		public Get(AbstractCourse<?> previous, Object[] obj) {
 			super(previous, obj);
 		}
-
 		//-------------------------------------------------------
 		private By 		by;
 		private GroupBy groupBy;

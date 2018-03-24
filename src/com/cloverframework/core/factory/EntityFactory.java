@@ -9,6 +9,7 @@ import com.cloverframework.core.course.CourseMethod;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
 
+import net.sf.cglib.beans.BeanCopier;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -32,7 +33,7 @@ public final class EntityFactory {
 		if(enhancer==null) {
 			enhancer = new Enhancer();
 			enhancer.setUseCache(true);
-			enhancer.setCallback(interceptor);	
+			enhancer.setCallback(interceptor);
 		}
 	}
 	private EntityFactory() {}
