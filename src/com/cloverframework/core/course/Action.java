@@ -163,13 +163,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 
 	public Course FORK(String id) {
 		//必需
-		Course course = super.FORK(id);
-		if(course==null) {
-			course = super.START();
-			course.id = id+"-"+course.hashCode();
-		}	
-		course = super.cross(id,course);
-		return course;
+		return super.FORK(id);
 	}
 	
 	/**
@@ -182,7 +176,6 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 		Course course = getCurrCourse();
 		if(workable.get()!=null && workable.get()==1)
 			workSpace.get().add(course);
-
 	}
 	
 	

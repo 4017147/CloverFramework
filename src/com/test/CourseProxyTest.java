@@ -23,9 +23,9 @@ public class CourseProxyTest implements DomainService{
 	@BeforeClass
 	public static void setup() {
 		 demo= EntityFactory.getInstance().getStaple(Demo.class);
-		 demo.setField5("f5");
-		 demo.setField6("f6");
-		 demo.setField7("f7");
+		 demo.setF5("f5");
+		 demo.setF6("f6");
+		 demo.setF7("f7");
 	}
 	
 	@Rule public TestName name = new TestName();
@@ -42,24 +42,24 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test1() {
 		Demo de = new Demo();
-		de.getField10();de.getField9();
+		de.getF10();de.getF9();
 		CourseProxy cp = new CourseProxy(this);
 		cp.START("a").get(cp.$(),
-				demo.getField1(),
-				demo.getField2(),
-				demo.getField3(),
-				demo.getField4()).by(
-						demo.getField5(),
-						demo.getField6()).LIMIT(0, 10).END();
+				demo.getF1(),
+				demo.getF2(),
+				demo.getF3(),
+				demo.getF4()).by(
+						demo.getF5(),
+						demo.getF6()).LIMIT(0, 10).END();
 		
 		Get get = cp.START("b").get(cp.$(),
-				demo.getField1(),
-				demo.getField2(),
-				demo.getField3(),
-				demo.getField4());
-		de.getField10();de.getField9();
-		get.by(demo.getField5(),
-				demo.getField6()).LIMIT(0, 10).END();
+				demo.getF1(),
+				demo.getF2(),
+				demo.getF3(),
+				demo.getF4());
+		de.getF10();de.getF9();
+		get.by(demo.getF5(),
+				demo.getF6()).LIMIT(0, 10).END();
 		println(cp.toString());
 	}
 	
@@ -72,16 +72,16 @@ public class CourseProxyTest implements DomainService{
 	public void test2() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get($(),
-					demo.getField1(),
-					demo.getField2(),
+					demo.getF1(),
+					demo.getF2(),
 					demo,demo,
-					Demo_D.field3,
-					Demo_D.field4).by($(),
-							demo.getField1(),
-							demo.getField2(),
+					Demo_D.f3,
+					Demo_D.f4).by($(),
+							demo.getF1(),
+							demo.getF2(),
 							demo,demo,
-							Demo_D.field3,
-							Demo_D.field4).END();
+							Demo_D.f3,
+							Demo_D.f4).END();
 		}};
 		println(cp.toString());
 	}
@@ -93,20 +93,20 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * toJsonString测试
 	 */
-	@Test
+	//@Test
 	public void test3() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
 					//
-					$(demo::getField5,demo::getField6),
-					Demo_D.field1,
-					Demo_D.field2,
-					demo.getField3(),
-					demo.getField4(),
+					$(demo::getF5,demo::getF6),
+					Demo_D.f1,
+					Demo_D.f2,
+					demo.getF3(),
+					demo.getF4(),
 					demo,demo).by(
 							demo,
-							Demo_D.field1,
-							Demo_D.field2).END();
+							Demo_D.f1,
+							Demo_D.f2).END();
 		}};
 		println(cp.toString());
 		println(cp.START("b").toJSONString());
@@ -122,15 +122,15 @@ public class CourseProxyTest implements DomainService{
 	public void test4() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
-					Demo_D.field1,
-					$(demo::getField5,demo::getField6,demo::getField9),
-					demo.getField7(),
-					demo.getField8(),
-					$(demo!=null?demo::getField4:demo::getField3),
-					$(demo==null?demo::getField4:demo::getField3),
-					te(demo.getField5()==null?demo.getField3():demo.getField4()),
-					te(demo.getField5()!=null?demo.getField3():demo.getField4()),
-					Demo_D.field2,
+					Demo_D.f1,
+					$(demo::getF5,demo::getF6,demo::getF9),
+					demo.getF7(),
+					demo.getF8(),
+					$(demo!=null?demo::getF4:demo::getF3),
+					$(demo==null?demo::getF4:demo::getF3),
+					te(demo.getF5()==null?demo.getF3():demo.getF4()),
+					te(demo.getF5()!=null?demo.getF3():demo.getF4()),
+					Demo_D.f2,
 					demo,demo
 					).END();
 		}};
@@ -144,11 +144,78 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test5() {
 		CourseProxy cp = new CourseProxy(this) {{
-			START("a").get(Demo_D.field1,Demo_D.field2).END();
-			START("b").get(Demo_D.field3,Demo_D.field4).END();
-			START("c").get(Demo_D.field5,Demo_D.field6).END();
+			START("a").get(Demo_D.f1,Demo_D.f2).END();
+			START("b").get(Demo_D.f3,Demo_D.f4).END();
+			START("c").get(Demo_D.f5,Demo_D.f6).END();
 		}};
 		println(cp.toString());
+	}
+	
+	/**
+	 * FORK基础测试
+	 * FROK()不缓存分支
+	 * FORKM()存入sharespace
+	 */
+	//@Test
+	public void test6() {
+		CourseProxy cp = new CourseProxy(this) {{
+			START("a").get(Demo_D.f1,Demo_D.f2).END();
+			FORK("a").get(Demo_D.f3,Demo_D.f4).END();
+			FORKM("a").get(Demo_D.f5,Demo_D.f6).by(Demo_D.f7,Demo_D.f8).END();
+		}};
+		println(cp.toString());
+		
+	}
+	
+	/**
+	 * FORK模式测试
+	 */
+	//@Test
+	public void test7() {
+		CourseProxy cp = new CourseProxy(this) {{
+			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
+			//FORKM("a").get(U,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			
+			//FORKM("a").get(I,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			
+			//FORKM("a").get(C,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			//FORKM("a").get(CA,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			//FORKM("a").get(CB,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			
+			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
+			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
+			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
+			
+			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6).END();
+			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6).END();
+			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+			
+			//FORKM("a").get(MA,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+			//FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+		}};
+		println(cp.toString());
+		
+	}
+	
+	/**
+	 * FORK模式测试
+	 * 首个参数开启FORK模式，参数不匹配不开启
+	 * 节点不匹配关闭该节点和后续节点FORK模式
+	 */
+	@Test
+	public void test8() {
+		CourseProxy cp = new CourseProxy(this) {{
+			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
+			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
+			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
+			
+			//FORKM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
+			FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
+		}};
+		println(cp.toString());
+		
 	}
 	
 }

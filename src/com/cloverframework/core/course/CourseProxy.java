@@ -7,6 +7,7 @@ import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.Pattern;
 import com.cloverframework.core.util.lambda.Literal;
+import com.infrastructure.util.Matcher;
 /**
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程而不是course，
  * 该类大部分方法是线程不安全的。
@@ -27,7 +28,33 @@ public class CourseProxy implements CourseOperation{
 	
 	CourseRepository repository;
 	
-	Pattern pattern;
+	Pattern pattern = new Matcher();
+	
+	/**并集 */
+	public static final String U = "U";//
+	/**交集 */
+	public static final String I = "I";//
+	/**补集*/
+	public static final String C = "C";//
+	/**前置并集 */
+	public static final String UB = "UB";
+	/**后置并集 */
+	public static final String UA = "UA";
+	/**前置混合 */
+	public static final String MB = "MB";//
+	/**后置混合 */
+	public static final String MA = "MA";//
+	/**正交 */
+	public static final String M = "M";//
+	/**反交 */
+	public static final String RM = "RM";//
+	/**左补 */
+	public static final String CB = "CB";//
+	/**右补 */
+	public static final String CA = "CA";//
+	
+	
+	public static final String[] Model = {U,I,C,UB,UA,MB,MA,M,RM,CB,CA};
 	
 	@Override
 	public Course getCurrCourse() {
@@ -65,7 +92,7 @@ public class CourseProxy implements CourseOperation{
 	/**
 	 * 初始化一个course
 	 */
-	private Course initCourse(Course course,DomainService service,CourseProxy proxy,byte status) {
+	private Course initCourse(String id,Course course,DomainService service,CourseProxy proxy,byte status) {
 		course.domainService = service;
 		course.proxy = proxy;
 		course.setStatus(status);
@@ -154,7 +181,7 @@ public class CourseProxy implements CourseOperation{
 	protected Course addCourse(String id,boolean cover) {
 		Course old = removeCurrCourse();
 		Course newc = new Course(id);
-		initCourse(newc,service,this,Course.WAIT);
+		initCourse(id,newc,service,this,Course.WAIT);
 		if(cover)
 			addCourse(old.id, newc);
 		setCurrCourse(newc);
@@ -193,17 +220,34 @@ public class CourseProxy implements CourseOperation{
 		return begin();
 	}
 	
+	public Course FORKM(String id) {
+		Course course = getCourse(id);
+		if(course!=null) {
+			addCourse(id+"_FM_"+System.currentTimeMillis(),false);
+			getCurrCourse().isForkm = true;
+			cross(id,getCurrCourse());
+		}else {
+			addCourse(id+"_NFM_"+System.currentTimeMillis(),false);
+		}
+		return begin();
+	}
+	
+	
 	public Course FORK(String id) {
-		Course old = getCourse(id);
-		return old;
+		Course course = getCourse(id);
+		if(course!=null) {
+			addCourse(id+"_F_"+System.currentTimeMillis(),false);
+			getCurrCourse().isFork = true;
+			cross(id,getCurrCourse());
+		}else {
+			addCourse(id+"_NF_"+System.currentTimeMillis(),false);
+		}		
+		return begin();
 	}
 	
 	
 	public Course cross(String id,Course course) {
-		if(course==null)
-			
-		
-		return getCurrCourse();
+		course.origin = getCourse(id).next;
 		return course;
 	}
 

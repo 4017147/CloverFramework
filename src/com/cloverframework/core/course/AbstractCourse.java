@@ -80,43 +80,29 @@ public abstract class AbstractCourse<T> {
 	
 	/** 是否是一个fork*/
 	protected boolean isFork;
-	
-	/**并集 */
-	public static final String U = "U";
-	/**交集 */
-	public static final String I = "I";
-	/**补集*/
-	public static final String C = "C";
-	/**前置并集 */
-	public static final String UB = "UB";
-	/**后置并集 */
-	public static final String UA = "UA";
-	/**前置混合 */
-	public static final String MB = "MB";
-	/**后置混合 */
-	public static final String MA = "MA";
-	/**正交 */
-	public static final String M = "M";
-	/**反交 */
-	public static final String RM = "RM";
-	/**左补 */
-	public static final String CB = "CB";
-	/**右补 */
-	public static final String CA = "CA";
-	
-	
-	public static final String[] Model = {U,I,C,UB,UA,MB,MA,M,RM,CB,CA};
+	/** 是否是一个forkm*/
+	protected boolean isForkm;
 	
 	private String model;
 	
-	
+	String nodeType;
 	
 	/** 基线course*/
-	protected Course origin;
+	protected AbstractCourse<?> origin;
 
 
 	/*----------------------private method-------------------- */
 
+	private void init() {
+		literal = previous==null?literal:previous.literal;
+		literal_te = previous==null?literal_te:previous.literal_te;
+		domainService = previous==null?domainService:previous.domainService;
+		proxy = previous==null?proxy:previous.proxy;
+		isFork = previous==null?isFork:previous.isFork;
+		isForkm = previous==null?isForkm:previous.isForkm;
+		origin = previous==null?origin:previous.origin;
+	}
+	
 	/**
 	 * 设置节点的元素，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
@@ -131,17 +117,25 @@ public abstract class AbstractCourse<T> {
 			//TODO 该异常情况下如何处理
 			if(status>=WAIT) {
 				status = FILL;
-				literal = previous==null?literal:previous.literal;
-				literal_te = previous==null?literal_te:previous.literal_te;
-				domainService = previous==null?domainService:previous.domainService;
-				proxy = previous==null?proxy:previous.proxy;
-				isFork = previous==null?isFork:previous.isFork;
-				if(isFork) 
+				init();
+				if(isFork||isForkm) 
 					setModel(elements[0]);
 				this.elements = fill(elements,literal,literal_te,domainService);
-				//ELOperation.mergeElements((Object[]) origin.getElements(), this.elements,model);
+				if((isFork||isForkm) && origin!=null) 
+					if(model!=null) {
+						if(origin.getClass()==this.getClass()) {
+							this.elements = ELOperation.mergeElements((Object[])origin.getElements(), this.elements,model);	
+							origin = origin.next;
+						}else {
+							isFork = false;
+							isForkm = false;
+						}
+					}else {
+						origin = origin.next;
+					}
+				
 				previous.status = status = WAIT;
-				previous.next = this;
+				previous.next = this;//
 				if(entities==null) {
 					entities = new ArrayList<>();
 				}
@@ -155,10 +149,10 @@ public abstract class AbstractCourse<T> {
 		}
 	}
 
-	private void setModel(Object o) {
+	protected void setModel(Object o) {
 		if(o.getClass()==String.class) {
-			for(String s:Model) {
-				if(s.equals(elements[0])) {
+			for(String s:CourseProxy.Model) {
+				if(s.equals(o)) {
 					model = s;
 					break;
 				}
@@ -355,6 +349,7 @@ public abstract class AbstractCourse<T> {
 	
 	public AbstractCourse(AbstractCourse<?> previous,Object ...obj) {
 		this.previous = previous;
+		this.nodeType = this.getClass().getSimpleName();
 		setElements(obj);
 	}
 	
@@ -424,6 +419,7 @@ public abstract class AbstractCourse<T> {
 		sb.append("{").append(this.getClass().getSimpleName()).append(":\n");
 		sb.append("\t{field:[");
 		for(Object obj:this.elements) {
+			if(obj==null)continue;
 			if(obj.getClass()==String.class) {
 				String name = obj.toString();
 				sb.append(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length())).append(",");
