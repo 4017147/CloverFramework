@@ -161,6 +161,10 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 		return course;
 	}
 
+	/**
+	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
+	 * 则进行分支，否则不进行分支，分支的course将存入workspace
+	 */
 	public Course FORK(String id) {
 		//必需
 		return super.FORK(id);

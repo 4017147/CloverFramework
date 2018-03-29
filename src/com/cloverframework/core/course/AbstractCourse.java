@@ -5,10 +5,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
+import com.cloverframework.core.util.CourseData;
+import com.cloverframework.core.util.CourseOpt;
+import com.cloverframework.core.util.CourseType;
 import com.cloverframework.core.util.ELOperation;
+import com.cloverframework.core.util.Jutil;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
@@ -26,6 +31,18 @@ public abstract class AbstractCourse<T> {
 	/**节点元素*/
 	private Object[] elements;	
 	
+	/**方法字面值列表*/
+	List<String> literal;//上级传递
+	
+	/**三元方法字面值列表*/
+	List<String> literal_te;
+	
+	/**节点类型*/
+	protected String type;
+	
+	/**操作类型*/
+	protected String optype;
+	
 	/**前级*/
 	AbstractCourse<?> previous;
 	
@@ -38,20 +55,48 @@ public abstract class AbstractCourse<T> {
 	/**子级*/
 	AbstractCourse<?> son;
 	
-	/**字面列表*/
-	List<String> literal;//上级传递
+	/**是否是一个子级*/
+	protected boolean isSon;
 	
-	List<String> literal_te;
+	/**查询字段*/
+	List<String> fields;
 	
-	ArrayList<Object> entities;
+	/**查询类型*/
+	Set<String> types;
 	
+	/**查询对象*/
+	List<Object> entities;
+	
+	/**查询值*/
+	List<Object> values;
+	
+	/**json输出工具*/
+	Jutil jutil;
+	
+	/**json格式内容*/
 	String jsonString;
 	
-	Object[] values;
+	/**包装用于json格式化的数据*/
+	CourseData courseData;
 	
-	protected String optype;
+	/**节点类型接口*/
+	static CourseType courseType;
 	
+	/**操作类型接口*/
+	static CourseOpt opt;
 	
+	/** 是否是一个fork*/
+	protected boolean isFork;
+	
+	/** 是否是一个forkm*/
+	protected boolean isForkm;
+	
+	/**fork模式*/
+	private String model;
+	
+	/** 基线course*/
+	protected AbstractCourse<?> origin;
+
 	/**是否输出simpleName */
 	public volatile boolean condition1;//根传递
 	
@@ -89,19 +134,6 @@ public abstract class AbstractCourse<T> {
 	 */
 	private volatile byte status = WAIT;//上级传递
 	
-	/** 是否是一个fork*/
-	protected boolean isFork;
-	/** 是否是一个forkm*/
-	protected boolean isForkm;
-	
-	protected boolean isSon;
-	
-	private String model;
-	
-	String nodeType;
-	
-	/** 基线course*/
-	protected AbstractCourse<?> origin;
 
 
 	/*----------------------private method-------------------- */
@@ -136,7 +168,7 @@ public abstract class AbstractCourse<T> {
 				this.elements = fill(elements,literal,literal_te,domainService);
 				if((isFork||isForkm) && origin!=null) 
 					if(model!=null) {
-						if(origin.getClass()==this.getClass()) {
+						if(origin.type==this.type) {
 							this.elements = ELOperation.mergeElements((Object[])origin.getElements(), this.elements,model);	
 							origin = origin.next;
 						}else {
@@ -154,7 +186,8 @@ public abstract class AbstractCourse<T> {
 				if(entities==null) {
 					entities = new ArrayList<>();
 				}
-				buildNodeString();
+				buildData();
+				//buildNodeString();
 			}
 		}finally {
 			if(literal!=null) 
@@ -164,47 +197,10 @@ public abstract class AbstractCourse<T> {
 		}
 	}
 
-//	protected void setElements(boolean isSon,Object... elements) {
-//		try {
-//			status = parent==null?null:parent.status;
-//			//TODO 该异常情况下如何处理
-//			if(status>=WAIT) {
-//				status = FILL;
-//				init(parent);
-//				if(isFork||isForkm && elements.length>0) 
-//					setModel(elements[0]);
-//				this.elements = fill(elements,literal,literal_te,domainService);
-//				if((isFork||isForkm) && origin!=null) 
-//					if(model!=null) {
-//						if(origin.getClass()==this.getClass()) {
-//							this.elements = ELOperation.mergeElements((Object[])origin.getElements(), this.elements,model);	
-//							origin = origin.next;
-//						}else {
-//							isFork = false;
-//							isForkm = false;
-//						}
-//					}else {
-//						if(this.elements==null)
-//							this.elements = origin.elements;
-//						origin = origin.next;
-//					}
-//				
-//				parent.status = status = WAIT;
-//					parent.son = this;//
-//				if(entities==null) {
-//					entities = new ArrayList<>();
-//				}
-//				buildJsonString();
-//			}
-//		}finally {
-//			if(literal!=null) 
-//				literal.clear();
-//			if(literal_te!=null) 
-//				literal_te.clear();
-//		}
-//	}
-	
-	
+	/**
+	 * 设置fork模式值
+	 * @param o
+	 */
 	protected void setModel(Object o) {
 		if(o.getClass()==String.class) {
 			for(String s:CourseProxy.Model) {
@@ -216,7 +212,12 @@ public abstract class AbstractCourse<T> {
 		}
 	}
 	
-	
+	/**
+	 * 设置son，一个节点只有一个son，son的next不作为当前节点的son，
+	 * 并且会清除son原来的previous之间的关系，恢复当前节点跟previous的关系，
+	 * 因为子节点的创建要先于当前节点
+	 * @param object
+	 */
 	private void setSon(Object object) {
 		AbstractCourse<?> son =  (AbstractCourse<?>)object;
 		while(son.previous!=null) {
@@ -313,51 +314,48 @@ public abstract class AbstractCourse<T> {
 		}
 		return null;
 	}
-	
-	
 
-	private String buildNodeString() {
-		//if(this.elements==null&&this.son==null)return null;
-		StringBuilder sb = new StringBuilder();
-		HashSet<String> a = new HashSet<>();
-		sb.append(optype).append(":{");
+	/**
+	 * 创建一个包含该节点所在的树的CourseData
+	 * @return
+	 */
+	protected CourseData buildJsonNode() {
+		CourseData son = null;
+		CourseData next = null;
+		if(this.son!=null) {
+			son = this.son.buildJsonNode();
+		}
+		if(this.next!=null) {
+			next = this.next.buildJsonNode();
+		}
+		this.courseData = new CourseData(type, optype, fields, types, values, son, next);
+		return courseData;
+	}
+	
+	/**
+	 * 将元素分类设置到数据结构
+	 */
+	private void buildData() {
+		fields = new ArrayList<String>();
+		types = new HashSet<String>();
 		
-		//field节点
-		sb.append("\n\tfield:[");
-		for(Object obj:this.elements) {
+		for(Object obj:elements) {
 			if(obj==null)continue;
 			if(obj.getClass()==String.class) {
 				String name = obj.toString();
-				sb.append(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length())).append(",");
-				a.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
+				fields.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length()));
+				types.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
 			}else if(obj.getClass().isEnum()) {
-				a.add(obj.getClass().getFields()[0].getName());
-				sb.append(obj.getClass().getFields()[0].getName()+"."+obj.toString()).append(",");
+				
+				types.add(obj.getClass().getFields()[0].getName());
+				
+				fields.add(obj.getClass().getFields()[0].getName()+"."+obj.toString());
 			}else {
 				entities.add(obj);
 			}
 		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("],\n");
-		
-		//type节点
-		sb.append("\ttype:[");
-		for(String s:a) {	
-			sb.append(s).append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("],\n");
-		
-		//entity节点
-		sb.append("\tentity:[");
-		for(Object obj:entities) {
-			sb.append(obj.getClass().getSimpleName()).append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("]\n\t},\n");
-		jsonString = sb.toString();
-		return jsonString;
 	}
+	
 
 	/**
 	 * 打印节点元素，java.lang包类型会直接输出，如果是String类型则输出类型.方法名，其他实体类型则输出类型名
@@ -426,7 +424,7 @@ public abstract class AbstractCourse<T> {
 	 */
 	private String fieldString(AbstractCourse<T> course) {
 		StringBuilder builder = new StringBuilder();
-		if (this != null) {
+		
 			Field[] fields = course.getClass().getDeclaredFields();
 			for (int i = 0; i < fields.length; i++) {
 				try {
@@ -442,54 +440,53 @@ public abstract class AbstractCourse<T> {
 					e.printStackTrace();
 				}
 			}
-		}
+		
 		return builder.toString();
 	}
 	
 	protected void addLiteral(String methodName) {
 		if(literal.size()>49)
-			System.out.println(this.literal.size());
+			System.out.println(literal.size());
 		else
-			this.literal.add(methodName);			
+			literal.add(methodName);			
 	}
 
 	protected void addLiteral_te(String methodName) {
 		if(literal_te.size()>49)
-			System.out.println(this.literal_te.size());
+			System.out.println(literal_te.size());
 		else
-			this.literal_te.add(methodName);			
+			literal_te.add(methodName);			
+	}
+
+	/**
+	 * Warning!If the status is less than END,you can not change status
+	 * @param status
+	 */
+	protected void setStatus(byte status) {
+		if(this.status>END)
+			this.status = status;
 	}
 
 	/*----------------------public method-------------------- */
 	
 	public AbstractCourse() {}
 	
-	public AbstractCourse(AbstractCourse<?> previous,Object ...obj) {
+	public AbstractCourse(AbstractCourse<?> previous,String courseType,Object ...obj) {
+		this.type = courseType;
 		this.previous = previous;
-		this.nodeType = this.getClass().getSimpleName();
 		setElements(obj);
 	}
 	
-	public AbstractCourse(AbstractCourse<?> parent,boolean isSon,Object ...obj) {
+	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object ...obj) {
+		this.type = courseType;
 		if(isSon) {
 			this.isSon = true;
 			this.parent = previous;
 		}
 		this.previous = parent;
-		this.nodeType = this.getClass().getSimpleName();
 		setElements(obj);
 	}
 	
-	public Object getElements() {
-		return elements;
-	}
-
-	
-	
-	public String getModel() {
-		return model;
-	}
-
 	/**
 	 * 结束当前的一条course语句，则该course不可再添加语句，
 	 * 并且执行end方法在大多情况下都是必须的，如果没有正常的执行end，
@@ -526,6 +523,8 @@ public abstract class AbstractCourse<T> {
 		return cp.executeOne();
 	}
 	
+	
+	
 	/**
 	 * 提供一个该course的结构的字面描述，为调试提供方便，实际过程和所见描述的并不能画上等号。
 	 * 不能在内部类初始化方法中调用,因为this
@@ -536,51 +535,55 @@ public abstract class AbstractCourse<T> {
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
 	}
 
-	public String toNodeString() {
-		String json = "";
-		String sonString = "";
-		String nextString = "";
-		if(jsonString!=null) {
-			if(son!=null) 
-				sonString = new String(son.toNodeString());			
-			if(next!=null) 
-				nextString = new String(next.toNodeString());				
-			json = new String(jsonString+sonString+nextString);
-		}
-		return json;
+	/**
+	 * 将生成的CourseData发送给json格式化单元，并返回格式化后的json字符串
+	 * @return
+	 */
+	@SuppressWarnings("static-access")
+	public String getJsonString() {
+		buildJsonNode();
+		if(jutil==null) 
+			return Jutil.toJsonString(courseData);
+		else	
+			return jutil.toJsonString(courseData);
 	}
 	
-	public ArrayList<Object> getEntities() {
+	public List<Object> getEntities() {
 		return entities;
 	}
 
-	public void setEntities(ArrayList<Object> entities) {
-		this.entities = entities;
-	}
 	
 	public void addEntity(Object entity) {
 		entities.add(entity);
 	}
 
-	/**
-	 * Warning!If the status is less than END,you can not change status
-	 * @param status
-	 */
-	public void setStatus(byte status) {
-		if(this.status>END)
-			this.status = status;
+	public Object getElements() {
+		return elements;
+	}
+
+	public String getModel() {
+		return model;
 	}
 
 	public byte getStatus() {
 		return status;
 	}
 
-	public Object[] getValues() {
+	
+	
+
+	public List<Object> getValues() {
 		return values;
 	}
 
-	public void setValues(Object ...value) {
-		this.values = value;
+	public void setValues(Object[] values) {
+		this.values = Arrays.asList(values);
+	}
+
+	
+
+	public String getType() {
+		return type;
 	}
 
 
@@ -588,9 +591,40 @@ public abstract class AbstractCourse<T> {
 		return optype;
 	}
 
-
+	/**
+	 * 您可以通过继承CourseOpt接口扩充节点类型常量
+	 * @param optype
+	 */
 	public void setOptype(String optype) {
 		this.optype = optype;
-	}	
+	}
+
+	public Jutil getJutil() {
+		return jutil;
+	}
+
+	/**
+	 * 您可以通过继承Jutil并实现其方法来自定义json格式化操作和输出
+	 * @see Jutil#toJsonString(com.cloverframework.core.util.Jsonable)
+	 * @param jutil
+	 */
+	public void setJutil(Jutil jutil) {
+		this.jutil = jutil;
+	}
+
+	public static CourseOpt getOpt() {
+		return opt;
+	}
+
+	/**
+	 * 您可以通过继承CourseType接口扩充操作类型常量
+	 * @param opt
+	 */
+	public static void setOpt(CourseOpt opt) {
+		AbstractCourse.opt = opt;
+	}
+
+	
+
 	
 }
