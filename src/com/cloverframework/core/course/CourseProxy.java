@@ -6,6 +6,7 @@ import com.cloverframework.core.course.Course.Condition;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
+import com.cloverframework.core.util.CourseType;
 import com.cloverframework.core.util.Pattern;
 import com.cloverframework.core.util.lambda.Literal;
 import com.infrastructure.util.Matcher;
@@ -221,6 +222,12 @@ public class CourseProxy implements CourseOperation{
 		return begin();
 	}
 	
+	/**
+	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
+	 * 则进行分支，否则不进行分支，并且按照START(id)模式进行
+	 * @param id
+	 * @return
+	 */
 	public Course FORKM(String id) {
 		Course course = getCourse(id);
 		if(course!=null) {
@@ -233,7 +240,12 @@ public class CourseProxy implements CourseOperation{
 		return begin();
 	}
 	
-	
+	/**
+	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
+	 * 则进行分支，否则不进行分支，并且按照START()模式进行
+	 * @param id
+	 * @return
+	 */
 	public Course FORK(String id) {
 		Course course = getCourse(id);
 		if(course!=null) {
@@ -313,26 +325,6 @@ public class CourseProxy implements CourseOperation{
 		return null;
 	}
 	
-/*	*//**
-	 * 三元方法引用，可获取三元运算结果的lambda，建议作为在字面值参数列表的最后一项
-	 * @param li @see {@link CourseProxy#$(Literal...)}
-	 * @return
-	 * @
-	 *//*
-	public Object $te(Literal li) {
-		Course course = getCurrCourse();
-		int c = course.getStatus();
-		if(course.getStatus()==Course.WAIT)
-			course.literal.clear();
-		course.setStatus(Course.LAMBDA_TE);
-		li.literal();
-		course.setStatus(Course.METHOD);
-		course.literal_te.add(course.literal.get(course.literal.size()-1));
-		course.literal.remove(course.literal.size()-1);
-		course.literal.remove(course.literal.size()-1);
-		return Course.Te.te;
-	}*/
-	
 	/**
 	 * 可获取三元运算结果的字面值
 	 * @param obj @see {@link CourseProxy#$(Literal...)}
@@ -355,7 +347,7 @@ public class CourseProxy implements CourseOperation{
 	}
 	
 	/**
-	 * 节点引用
+	 * 节点引用，同于创建子节点，不能脱离当前节点使用
 	 * @param course
 	 * @return
 	 */
@@ -366,7 +358,7 @@ public class CourseProxy implements CourseOperation{
 			last = course;
 			course = course.next;
 		}
-		Condition con = new Condition(last,true,obj);
+		Condition con = new Condition(last,CourseType.con,true,obj);
 		return con;
 		
 	}

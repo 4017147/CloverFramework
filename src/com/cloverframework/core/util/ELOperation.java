@@ -118,7 +118,7 @@ public class ELOperation {
 				} 
 				if(model!=CourseProxy.I) {
 					int k = 0;
-					for(Object obj:l) {
+					for(@SuppressWarnings("unused") Object obj:l) {
 						if(!i.contains(l[k])) {
 							b.add(l[k]);
 						}

@@ -1,7 +1,6 @@
 package com.cloverframework.core.factory;
 
 import java.lang.reflect.Method;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloverframework.core.course.Course;
@@ -120,14 +119,13 @@ public final class EntityFactory {
 	}
 
 	public static void removeCourse(long threadId) {
-		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-			//System.out.println("remove:"+entry.getKey()+":"+entry.getValue());
-		}
-		
+//		for(Entry<Long, Object[]> entry:courses.entrySet()) {
+//			System.out.println("remove:"+entry.getKey()+":"+entry.getValue());
+//		}
 		courses.remove(threadId);
-		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-			System.out.println("还有"+entry.getKey()+":"+entry.getValue());
-		}
+//		for(Entry<Long, Object[]> entry:courses.entrySet()) {
+//			System.out.println("还有"+entry.getKey()+":"+entry.getValue());
+//		}
 	}
 	
 	/**

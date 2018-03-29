@@ -8,11 +8,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import com.cloverframework.core.course.Course.Condition;
 import com.cloverframework.core.course.Course.Get;
+import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
-import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.factory.EntityFactory;
 import com.dict.entity.Demo_D;
 import com.entity.Demo;
@@ -40,7 +39,7 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	//@Test
+	@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
@@ -69,7 +68,7 @@ public class CourseProxyTest implements DomainService{
 	 * 内部类
 	 * 实体方法+实体对象+字典
 	 */
-	//@Test
+	@Test
 	public void test2() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get($(),
@@ -94,7 +93,7 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * toJsonString测试
 	 */
-	//@Test
+	@Test
 	public void test3() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
@@ -110,7 +109,7 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.f2).END();
 		}};
 		println(cp.toString());
-		println(cp.START("b").toNodeString());
+		println(cp.START("b").getJsonString());
 	}
 	
 	/**
@@ -119,7 +118,7 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * 三元表达式
 	 */
-	//@Test
+	@Test
 	public void test4() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
@@ -142,7 +141,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * sharespace区测试
 	 */
-	//@Test
+	@Test
 	public void test5() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
@@ -157,7 +156,7 @@ public class CourseProxyTest implements DomainService{
 	 * FROK()不缓存分支
 	 * FORKM()存入sharespace
 	 */
-	//@Test
+	@Test
 	public void test6() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
@@ -171,7 +170,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 */
-	//@Test
+	@Test
 	public void test7() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
@@ -206,7 +205,7 @@ public class CourseProxyTest implements DomainService{
 	 * 节点不匹配关闭该节点和后续节点FORK模式
 	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
-	//@Test
+	@Test
 	public void test8() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
@@ -224,21 +223,6 @@ public class CourseProxyTest implements DomainService{
 	@Test
 	public void test9() {
 		CourseProxy cp = new CourseProxy(this) {{
-//			START("b")
-//			.get(
-//					//
-//					$(demo::getF5,demo::getF6),
-//					Demo_D.f1,
-//					Demo_D.f2,
-//					demo.getF3(),
-//					demo.getF4(),
-//					demo,demo)
-//			.by(Demo_D.f1).in(10,1000).and(
-//					$(Demo_d.f2).like("aa").or(Demo_D.f3).eq(66).or(
-//							$(Demo_D.f2).like("aa").or(Demo_D.f3).eq(66)))
-//			.and(Demo_D.f1).in(10,1000);
-			
-			//.or.before(Demo_D.f4).lt(50).or(Demo_D.f4).gt(60);
 			START("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
@@ -247,9 +231,10 @@ public class CourseProxyTest implements DomainService{
 			
 		}};
 		println(cp.toString());
-		println(cp.START("a").toNodeString());
+		println(cp.START("a").getJsonString());
+		//println(cp.START("a").getJsonString());
 	}
-	
+	 
 	
 	
 }
