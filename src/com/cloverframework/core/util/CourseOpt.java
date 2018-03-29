@@ -1,5 +1,10 @@
 package com.cloverframework.core.util;
 
+/**
+ * course的操作类型，继承该接口可扩展更多的操作类型
+ * @author yl
+ *
+ */
 public interface CourseOpt {
 	String eq = "eq";
 	String ne = "ne";
