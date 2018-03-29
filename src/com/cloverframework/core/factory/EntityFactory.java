@@ -20,7 +20,7 @@ public final class EntityFactory {
 	 * <p>该map的初始大小为1000，实际应根据web服务容器的并发线程数量（如线程池的数量）来设置，比它少稍大一点并且是2的倍数
 	 **/
 	//TODO 这里将要考虑分散为多个map的方案
-	private static ConcurrentHashMap<Long, Object[]> courses = new ConcurrentHashMap<Long, Object[]>(1000);
+	private static ConcurrentHashMap<Long, Object[]> courses = new ConcurrentHashMap<Long, Object[]>(100);
 	private static ConcurrentHashMap<String, Object> staple = new ConcurrentHashMap<String, Object>(100);
 	private static EntityFactory factory;
 	private static Enhancer enhancer;

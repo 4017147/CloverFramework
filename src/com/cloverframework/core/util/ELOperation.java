@@ -4,7 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.cloverframework.core.course.CourseProxy;
-
+/**
+ * course的fork模式算法
+ * @author yl
+ *
+ */
 public class ELOperation {
 	
 	public static Object[] shorter(Object[] a,Object[] b) {
