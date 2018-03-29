@@ -3,7 +3,6 @@ package com.cloverframework.core.course;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -33,6 +32,12 @@ public abstract class AbstractCourse<T> {
 	/**后级*/
 	AbstractCourse<?> next;
 	
+	/**父级*/
+	AbstractCourse<?> parent;
+	
+	/**子级*/
+	AbstractCourse<?> son;
+	
 	/**字面列表*/
 	List<String> literal;//上级传递
 	
@@ -42,9 +47,13 @@ public abstract class AbstractCourse<T> {
 	
 	String jsonString;
 	
+	Object[] values;
+	
+	protected String optype;
+	
 	
 	/**是否输出simpleName */
-	public volatile boolean condition1;//根传递，处于性能考虑没有使用引用类型，如果是引用类型则应该上级传递
+	public volatile boolean condition1;//根传递
 	
 	/**是否输出颜色 */
 	public volatile boolean condition2;//根传递
@@ -66,6 +75,8 @@ public abstract class AbstractCourse<T> {
 	/**添加字面值(三元)*/
 	public static final byte TE 		= 4;
 	
+	
+	/**三元引用的返回标识*/
 	enum Te{te}
 	
 	/**
@@ -83,6 +94,8 @@ public abstract class AbstractCourse<T> {
 	/** 是否是一个forkm*/
 	protected boolean isForkm;
 	
+	protected boolean isSon;
+	
 	private String model;
 	
 	String nodeType;
@@ -93,14 +106,14 @@ public abstract class AbstractCourse<T> {
 
 	/*----------------------private method-------------------- */
 
-	private void init() {
-		literal = previous==null?literal:previous.literal;
-		literal_te = previous==null?literal_te:previous.literal_te;
-		domainService = previous==null?domainService:previous.domainService;
-		proxy = previous==null?proxy:previous.proxy;
-		isFork = previous==null?isFork:previous.isFork;
-		isForkm = previous==null?isForkm:previous.isForkm;
-		origin = previous==null?origin:previous.origin;
+	private void init(AbstractCourse<?> course) {
+		literal = course==null?literal:course.literal;
+		literal_te = course==null?literal_te:course.literal_te;
+		domainService = course==null?domainService:course.domainService;
+		proxy = course==null?proxy:course.proxy;
+		isFork = course==null?isFork:course.isFork;
+		isForkm = course==null?isForkm:course.isForkm;
+		origin = course==null?origin:course.origin;
 	}
 	
 	/**
@@ -117,8 +130,8 @@ public abstract class AbstractCourse<T> {
 			//TODO 该异常情况下如何处理
 			if(status>=WAIT) {
 				status = FILL;
-				init();
-				if(isFork||isForkm) 
+				init(previous);
+				if(isFork||isForkm && elements.length>0) 
 					setModel(elements[0]);
 				this.elements = fill(elements,literal,literal_te,domainService);
 				if((isFork||isForkm) && origin!=null) 
@@ -131,15 +144,17 @@ public abstract class AbstractCourse<T> {
 							isForkm = false;
 						}
 					}else {
+						if(this.elements==null)
+							this.elements = origin.elements;
 						origin = origin.next;
 					}
 				
 				previous.status = status = WAIT;
-				previous.next = this;//
+					previous.next = this;//
 				if(entities==null) {
 					entities = new ArrayList<>();
 				}
-				toJSONString();
+				buildNodeString();
 			}
 		}finally {
 			if(literal!=null) 
@@ -149,6 +164,47 @@ public abstract class AbstractCourse<T> {
 		}
 	}
 
+//	protected void setElements(boolean isSon,Object... elements) {
+//		try {
+//			status = parent==null?null:parent.status;
+//			//TODO 该异常情况下如何处理
+//			if(status>=WAIT) {
+//				status = FILL;
+//				init(parent);
+//				if(isFork||isForkm && elements.length>0) 
+//					setModel(elements[0]);
+//				this.elements = fill(elements,literal,literal_te,domainService);
+//				if((isFork||isForkm) && origin!=null) 
+//					if(model!=null) {
+//						if(origin.getClass()==this.getClass()) {
+//							this.elements = ELOperation.mergeElements((Object[])origin.getElements(), this.elements,model);	
+//							origin = origin.next;
+//						}else {
+//							isFork = false;
+//							isForkm = false;
+//						}
+//					}else {
+//						if(this.elements==null)
+//							this.elements = origin.elements;
+//						origin = origin.next;
+//					}
+//				
+//				parent.status = status = WAIT;
+//					parent.son = this;//
+//				if(entities==null) {
+//					entities = new ArrayList<>();
+//				}
+//				buildJsonString();
+//			}
+//		}finally {
+//			if(literal!=null) 
+//				literal.clear();
+//			if(literal_te!=null) 
+//				literal_te.clear();
+//		}
+//	}
+	
+	
 	protected void setModel(Object o) {
 		if(o.getClass()==String.class) {
 			for(String s:CourseProxy.Model) {
@@ -161,6 +217,20 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	
+	private void setSon(Object object) {
+		AbstractCourse<?> son =  (AbstractCourse<?>)object;
+		while(son.previous!=null) {
+			if(son.isSon)
+				break;
+			son = son.previous;
+		}
+		this.son = son;
+		son.previous.next = this;
+		son.previous = null;
+		son.parent = this;
+		this.son = son;
+	}
+
 	@SuppressWarnings("rawtypes")
 	private void setCondition(AbstractCourse parent) {		
 		AbstractCourse p = parent;
@@ -201,14 +271,18 @@ public abstract class AbstractCourse<T> {
 			byte b = 0;//跟踪literal_te
 			byte e = 0;//跟踪elements
 			byte t = 0;//跟踪temp
-			for(;e<elements.length;e++) {
+			for(;e<elements.length;e++) {			
 				if(elements[e]==null) {
 					if(a<literal.size()) {
 						temps[t] = literal.get(a);
 						a++;
 						t++;
 					}
-				}else if(elements[e]!=null){
+				}else if(elements[e] instanceof AbstractCourse<?>) {
+					setSon(elements[e]);
+				}
+				
+				else if(elements[e]!=null){
 					if(elements[e]==Te.te) {
 						int size = literal_te.size();
 						if(size>0) {
@@ -241,6 +315,49 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	
+
+	private String buildNodeString() {
+		//if(this.elements==null&&this.son==null)return null;
+		StringBuilder sb = new StringBuilder();
+		HashSet<String> a = new HashSet<>();
+		sb.append(optype).append(":{");
+		
+		//field节点
+		sb.append("\n\tfield:[");
+		for(Object obj:this.elements) {
+			if(obj==null)continue;
+			if(obj.getClass()==String.class) {
+				String name = obj.toString();
+				sb.append(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length())).append(",");
+				a.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
+			}else if(obj.getClass().isEnum()) {
+				a.add(obj.getClass().getFields()[0].getName());
+				sb.append(obj.getClass().getFields()[0].getName()+"."+obj.toString()).append(",");
+			}else {
+				entities.add(obj);
+			}
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("],\n");
+		
+		//type节点
+		sb.append("\ttype:[");
+		for(String s:a) {	
+			sb.append(s).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("],\n");
+		
+		//entity节点
+		sb.append("\tentity:[");
+		for(Object obj:entities) {
+			sb.append(obj.getClass().getSimpleName()).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("]\n\t},\n");
+		jsonString = sb.toString();
+		return jsonString;
+	}
 
 	/**
 	 * 打印节点元素，java.lang包类型会直接输出，如果是String类型则输出类型.方法名，其他实体类型则输出类型名
@@ -353,6 +470,16 @@ public abstract class AbstractCourse<T> {
 		setElements(obj);
 	}
 	
+	public AbstractCourse(AbstractCourse<?> parent,boolean isSon,Object ...obj) {
+		if(isSon) {
+			this.isSon = true;
+			this.parent = previous;
+		}
+		this.previous = parent;
+		this.nodeType = this.getClass().getSimpleName();
+		setElements(obj);
+	}
+	
 	public Object getElements() {
 		return elements;
 	}
@@ -409,49 +536,19 @@ public abstract class AbstractCourse<T> {
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
 	}
 
-	public String toJSONString() {
-		if(this.elements==null)return null;
-		if(jsonString!=null)
-			return jsonString;
-		StringBuilder sb = new StringBuilder();
-		HashSet<String> a = new HashSet<>();
-		//HashSet<Object> b = new HashSet<>();
-		sb.append("{").append(this.getClass().getSimpleName()).append(":\n");
-		sb.append("\t{field:[");
-		for(Object obj:this.elements) {
-			if(obj==null)continue;
-			if(obj.getClass()==String.class) {
-				String name = obj.toString();
-				sb.append(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length())).append(",");
-				a.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
-			}else if(obj.getClass().isEnum()) {
-				a.add(obj.getClass().getFields()[0].getName());
-				sb.append(obj.getClass().getFields()[0].getName()+"."+obj.toString()).append(",");
-			}else {
-				entities.add(obj);
-			}
+	public String toNodeString() {
+		String json = "";
+		String sonString = "";
+		String nextString = "";
+		if(jsonString!=null) {
+			if(son!=null) 
+				sonString = new String(son.toNodeString());			
+			if(next!=null) 
+				nextString = new String(next.toNodeString());				
+			json = new String(jsonString+sonString+nextString);
 		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("]},\n");
-		sb.append("\t{type:[");
-		for(String s:a) {	
-			sb.append(s).append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("]},\n");
-		sb.append("\t{entity:[");
-		for(Object obj:entities) {
-			sb.append(obj.getClass().getSimpleName()).append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		sb.append("]}");
-		sb.append("}");
-		jsonString = sb.toString();
-		return jsonString;
-		
+		return json;
 	}
-	
-	
 	
 	public ArrayList<Object> getEntities() {
 		return entities;
@@ -478,5 +575,22 @@ public abstract class AbstractCourse<T> {
 		return status;
 	}
 
+	public Object[] getValues() {
+		return values;
+	}
+
+	public void setValues(Object ...value) {
+		this.values = value;
+	}
+
+
+	public String getOptype() {
+		return optype;
+	}
+
+
+	public void setOptype(String optype) {
+		this.optype = optype;
+	}	
 	
 }

@@ -2,6 +2,7 @@ package com.cloverframework.core.course;
 
 import java.util.HashMap;
 
+import com.cloverframework.core.course.Course.Condition;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
@@ -353,6 +354,21 @@ public class CourseProxy implements CourseOperation{
 		this.pattern = pattern;
 	}
 	
-	
+	/**
+	 * 节点引用
+	 * @param course
+	 * @return
+	 */
+	public Condition $(Object... obj){
+		AbstractCourse<?> course = getCurrCourse();
+		AbstractCourse<?> last = null;
+		while(course!=null) {
+			last = course;
+			course = course.next;
+		}
+		Condition con = new Condition(last,true,obj);
+		return con;
+		
+	}
 	
 }
