@@ -41,12 +41,8 @@ public final class Course extends AbstractCourse<Course>{
 		return id;
 	}
 
-	public enum CourseType {GET,ADD,PUT,REMOVE}	
-	private Enum<CourseType> type;
-	public Enum<CourseType> getType() {
-		return type;
-	}
-
+	
+	
 	//用于测试
 	@SuppressWarnings("unused")
 	private void eachlist() {
@@ -58,9 +54,9 @@ public final class Course extends AbstractCourse<Course>{
 	
 	
 	@Override
-	public String toJSONString() {
+	public String toNodeString() {
 		// TODO Auto-generated method stub
-		return next.toJSONString();
+		return next.toNodeString();
 	}
 
 	/**
@@ -84,7 +80,7 @@ public final class Course extends AbstractCourse<Course>{
 	 * @param obj
 	 * @return
 	 */
-	public Get get(Object ...obj){type = CourseType.GET;return get = (Get) create(get,Get::new,this,obj);
+	public Get get(Object ...obj){optype = CourseOpt.get;return get = (Get) create(get,Get::new,this,obj);
 		//return get!=null?get:(get = new GET(this,obj));
 	
 	}
@@ -94,21 +90,21 @@ public final class Course extends AbstractCourse<Course>{
 	 * @param obj
 	 * @return
 	 */
-	public Add add(Object ...obj){type = CourseType.ADD;return add = (Add) create(add, Add::new,this,obj);}
+	public Add add(Object ...obj){optype = CourseOpt.get;return add = (Add) create(add, Add::new,this,obj);}
 	
 	/**
 	 * 开启一个PUT描述的Course，代表在数据提供方更新/替换相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Put put(Object ...obj){type = CourseType.PUT;return put = (Put) create(put, Put::new,this,obj);}
+	public Put put(Object ...obj){optype = CourseOpt.put;return put = (Put) create(put, Put::new,this,obj);}
 	
 	/**
 	 * 开启一个REMOVE描述的Course，代表在数据提供方删除相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Remove remove(Object ...obj){type = CourseType.REMOVE;return remove = (Remove) create(remove, Remove::new,this,obj);}
+	public Remove remove(Object ...obj){optype = CourseOpt.remove;return remove = (Remove) create(remove, Remove::new,this,obj);}
 
 	/**
 	 * Get
@@ -122,11 +118,13 @@ public final class Course extends AbstractCourse<Course>{
 		}
 		//-------------------------------------------------------
 		private By 		by;
+		private AND 	and;
 		private GroupBy groupBy;
 		private OrderBy orderBy;
 		private Limit 	limit;
 			
 		public By 		by(Object... obj){return by = (By) create(by,By::new,this,obj);}
+		public AND 		and(Object... obj){return and = (AND) create(and,AND::new,this,obj);}
 		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
 		public GroupBy 	groupBy(Object... obj){return groupBy = (GroupBy) create(groupBy, GroupBy::new,this,obj);}
 		public Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
@@ -178,53 +176,96 @@ public final class Course extends AbstractCourse<Course>{
 		}
 		
 		
+	
+	public static class Condition extends AbstractCourse<Condition>{
+//		public enum CourseType {eq,ne,gt,lt,ge,le}	
+//		private Enum<CourseType> type;
+//		public Enum<CourseType> getType() {
+//			return type;
+//		}
+		protected Condition(AbstractCourse<?> previous,Object ...obj){
+			super(previous, obj);
+		}
+		
+		protected Condition(AbstractCourse<?> parent, boolean isSon, Object... obj) {
+			super(parent, isSon, obj);
+			// TODO Auto-generated constructor stub
+		}
+		
+		/**=*/
+		public Condition eq(Object ...value) {optype = CourseOpt.eq;setValues(value);return this;}
+		/**!=*/
+		public Condition ne(Object ...value) {optype = CourseOpt.ne;setValues(value);return this;}
+		/**>*/
+		public Condition gt(Object ...value) {optype = CourseOpt.gt;setValues(value);return this;}
+		/**<*/
+		public Condition lt(Object ...value) {optype = CourseOpt.lt;setValues(value);return this;}
+		/**>=*/
+		public Condition ge(Object ...value) {optype = CourseOpt.ge;setValues(value);return this;}
+		/**<=*/
+		public Condition le(Object ...value) {optype = CourseOpt.le;setValues(value);return this;}
+		
+		//-------------------------------------------------------
+		private Limit 	limit;
+		private By by;
+		private AND and;
+		private OR or;
+		private NOT not;
+		private OrderBy orderBy;
+		private GroupBy groupBy;
+		
+		public AND and(Object... obj) {return and = (AND) create(and, AND::new,this,obj);}
+		public By by(Object ...obj){return by = (By) create(by,By::new,this,obj);}
+		public OR or(Object ...obj){return or = (OR) create(or,OR::new,this,obj);}
+		public NOT not(Object ...obj){return not = (NOT) create(not,NOT::new,this,obj);}
+		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
+		public GroupBy 	GroupBy(Object ...obj){return groupBy = (GroupBy) create(groupBy, GroupBy::new,this,obj);}
+		public Limit 	LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
+	}
+	
+	
+	
 	/**
 	* By
 	* @author yl
 	*
 	*/
-	public static final class By extends AbstractCourse<By>{
-		private Object value;
-		public enum CourseType {eq,ne,gt,lt,ge,le}	
-		private Enum<CourseType> type;
-		public Enum<CourseType> getType() {
-			return type;
-		}
-		protected By(AbstractCourse<?> previous,Object ...obj){
+	public static final class By extends Condition{
+
+		protected By(AbstractCourse<?> previous, Object[] obj) {
 			super(previous, obj);
+			// TODO Auto-generated constructor stub
+			}	
 		}
 		
-		public Object getValue() {
-			return value;
-		}
+	public static final class AND extends Condition{
 
-		public void setValue(Object value) {
-			this.value = value;
+		protected AND(AbstractCourse<?> previous, Object[] obj) {
+			super(previous, obj);
+			// TODO Auto-generated constructor stub
 		}
+		
+	}
+	
+	public static final class OR extends Condition{
 
-		/**=*/
-		public By eq(Object value) {type = CourseType.eq;setValue(value);return this;}
-		/**!=*/
-		public By ne(Object value) {type = CourseType.ne;setValue(value);return this;}
-		/**>*/
-		public By gt(Object value) {type = CourseType.gt;setValue(value);return this;}
-		/**<*/
-		public By lt(Object value) {type = CourseType.lt;setValue(value);return this;}
-		/**>=*/
-		public By ge(Object value) {type = CourseType.ge;setValue(value);return this;}
-		/**<=*/
-		public By le(Object value) {type = CourseType.le;setValue(value);return this;}
-		
-		//-------------------------------------------------------
-		private OrderBy orderBy;
-		private GroupBy groupBy;
-		private Limit 	limit;
-			
-		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
-		public GroupBy 	GroupBy(Object ...obj){return groupBy = (GroupBy) create(groupBy, GroupBy::new,this,obj);}
-		public Limit 	LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
+		protected OR(AbstractCourse<?> previous, Object[] obj) {
+			super(previous, obj);
+			// TODO Auto-generated constructor stub
 		}
 		
+	}
+	
+	public static final class NOT extends Condition{
+
+		protected NOT(AbstractCourse<?> previous, Object[] obj) {
+			super(previous, obj);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	
 		/**
 		 * GroupBy
 		 * @author yl

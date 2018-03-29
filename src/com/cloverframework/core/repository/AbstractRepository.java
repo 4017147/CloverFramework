@@ -5,9 +5,9 @@ import java.util.Map;
 
 import com.cloverframework.core.course.Action;
 import com.cloverframework.core.course.Course;
-import com.cloverframework.core.course.Course.CourseType;
-import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.course.CourseOpt;
 import com.cloverframework.core.course.CourseProxy;
+import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
 /**
  * 这是一个抽象的仓储，其子类面向领域服务层，由子类负责仓储接口的实际调用。
@@ -19,22 +19,22 @@ public abstract class AbstractRepository{
 	private EntityFactory entityFactory = EntityFactory.getInstance();
 	
 	private final <T> T doGet(Course course,ICourseMode mode) {
-		Enum<CourseType> type = course.getType();
-		if (type == CourseType.GET) {
+		String type = course.getOptype();
+		if (type == CourseOpt.get) {
 			return mode.get(course);
 		}
 		return null;
 	}
 	
 	private final int doOther(Course course,ICourseMode mode) {
-		Enum<CourseType> type = course.getType();
-		if (type == CourseType.ADD) {
+		String type = course.getOptype();
+		if (type == CourseOpt.add) {
 			return(mode.add(course));
 		}
-		if (type == CourseType.PUT) {
+		if (type == CourseOpt.put) {
 			return(mode.put(course));
 		}
-		if (type == CourseType.REMOVE) {
+		if (type == CourseOpt.remove) {
 			return(mode.remove(course));
 		}
 		return 0;
@@ -47,7 +47,7 @@ public abstract class AbstractRepository{
 		Map<String,Course> map = proxy.getEden();
 		for(String key:map.keySet()) {
 			Course course = map.get(key);
-			if(course.getType()==CourseType.GET)
+			if(course.getOptype()==CourseOpt.get)
 				doGet(course,mode);
 			else
 				doOther(course,mode);
@@ -58,7 +58,7 @@ public abstract class AbstractRepository{
 	public final int fromAction(Action<?> action,ICourseMode mode) {
 		List<Course> list = Action.getWorkSpace();
 		for(Course course:list) {
-			if(course.getType()==CourseType.GET)
+			if(course.getOptype()==CourseOpt.get)
 				doGet(course,mode);
 			else
 				doOther(course,mode);

@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import com.cloverframework.core.course.Course.Condition;
 import com.cloverframework.core.course.Course.Get;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
@@ -109,7 +110,7 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.f2).END();
 		}};
 		println(cp.toString());
-		println(cp.START("b").toJSONString());
+		println(cp.START("b").toNodeString());
 	}
 	
 	/**
@@ -184,13 +185,13 @@ public class CourseProxyTest implements DomainService{
 			
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
-			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
+			FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
 			
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6).END();
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
-			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+			FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
 			
 			//FORKM("a").get(MA,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
 			//FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
@@ -203,19 +204,52 @@ public class CourseProxyTest implements DomainService{
 	 * FORK模式测试
 	 * 首个参数开启FORK模式，参数不匹配不开启
 	 * 节点不匹配关闭该节点和后续节点FORK模式
+	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
-	@Test
+	//@Test
 	public void test8() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
 			
-			//FORKM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
+			FORKM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
 			FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
+			//FORKM("a").get().by(Demo_D.f8,Demo_D.f9).END();
 		}};
 		println(cp.toString());
 		
 	}
+	
+	@Test
+	public void test9() {
+		CourseProxy cp = new CourseProxy(this) {{
+//			START("b")
+//			.get(
+//					//
+//					$(demo::getF5,demo::getF6),
+//					Demo_D.f1,
+//					Demo_D.f2,
+//					demo.getF3(),
+//					demo.getF4(),
+//					demo,demo)
+//			.by(Demo_D.f1).in(10,1000).and(
+//					$(Demo_d.f2).like("aa").or(Demo_D.f3).eq(66).or(
+//							$(Demo_D.f2).like("aa").or(Demo_D.f3).eq(66)))
+//			.and(Demo_D.f1).in(10,1000);
+			
+			//.or.before(Demo_D.f4).lt(50).or(Demo_D.f4).gt(60);
+			START("a")
+			.get(Demo_D.f1)
+			.by(Demo_D.f10).eq(20)
+			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).eq(11))
+			.or(Demo_D.f3,$(Demo_D.f5).eq(33).and(Demo_D.f6).eq(11)).END();
+			
+		}};
+		println(cp.toString());
+		println(cp.START("a").toNodeString());
+	}
+	
+	
 	
 }
