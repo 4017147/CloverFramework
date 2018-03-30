@@ -26,7 +26,7 @@ public abstract class AbstractCourse<T> {
 	DomainService domainService;//上级传递
 	
 	/**course代理*/
-	CourseProxy proxy;//上级传递
+	CourseProxy<?> proxy;//上级传递
 	
 	/**节点元素*/
 	private Object[] elements;	
@@ -518,9 +518,9 @@ public abstract class AbstractCourse<T> {
 	 * @return
 	 */
 	public Object execute() {
-		CourseProxy cp = proxy;
+		//CourseProxy cp = proxy;
 		END();
-		return cp.executeOne();
+		return proxy.executeOne();
 	}
 	
 	

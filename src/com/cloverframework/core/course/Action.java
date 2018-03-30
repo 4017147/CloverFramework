@@ -14,7 +14,7 @@ import com.cloverframework.core.domain.DomainService;
  *
  * @param <T>
  */
-public class Action<T> extends CourseProxy implements CourseOperation{
+public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	{
 		/** 用于计算产生字面值的方法栈长是否合法，
 		 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
@@ -134,7 +134,7 @@ public class Action<T> extends CourseProxy implements CourseOperation{
 	}
 
 	@Override
-	public Object executeOne() {
+	public T executeOne() {
 		return repository.query(newest.get());
 	}
 	
