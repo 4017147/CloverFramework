@@ -15,14 +15,14 @@ public final class Course extends AbstractCourse<Course>{
 	
 	/** course标识*/
 	protected String id;
-	/** 创建时间*/
-	protected long create = System.currentTimeMillis();
-	/** 平均执行时间*/
-	protected long avg;
-	/** 最大执行时间*/
-	protected long max;
-	/** 最短执行时间*/
-	protected long min;
+//	/** 创建时间*/
+//	protected long create = System.currentTimeMillis();
+//	/** 平均执行时间*/
+//	protected long avg;
+//	/** 最大执行时间*/
+//	protected long max;
+//	/** 最短执行时间*/
+//	protected long min;
 
 	/**
 	 * 

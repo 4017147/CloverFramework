@@ -9,7 +9,7 @@ import com.cloverframework.core.domain.DomainService;
  * @author yl
  *
  */
-public class GeneralRepository extends AbstractRepository{
+public class GeneralRepository<T> extends AbstractRepository<T>{
 	//建议使用IOC容器注入
 		private ICourseMode courseMode;
 		private IClassicalMode baseMode;

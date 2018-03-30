@@ -10,10 +10,10 @@ import com.cloverframework.core.course.CourseProxy;
 * 
 *    
 */
-public class CourseRepository extends AbstractRepository{
+public class CourseRepository<T> extends AbstractRepository<T>{
 	//建议使用IOC容器注入
-	private ICourseMode mode;
-	public void setMode(ICourseMode mode) {
+	private ICourseMode<T> mode;
+	public void setMode(ICourseMode<T> mode) {
 		this.mode = mode;
 	}
 
@@ -25,7 +25,7 @@ public class CourseRepository extends AbstractRepository{
 		return super.fromAction(action, mode);
 	}
 	
-	public <T> T query(Course course) {
+	public T query(Course course) {
 		return super.query(course, mode);
 	}
 

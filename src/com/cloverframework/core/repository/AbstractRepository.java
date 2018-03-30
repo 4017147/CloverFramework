@@ -13,18 +13,18 @@ import com.cloverframework.core.util.CourseType;
  * @author yl
  *
  */
-public abstract class AbstractRepository{
+public abstract class AbstractRepository<T>{
 	
-	private final <T> T doGet(Course course,ICourseMode mode) {
-		String type = course.getOptype();
+	private final T doGet(Course course,ICourseMode<T> mode) {
+		String type = course.getType();
 		if (type == CourseType.get) {
 			return mode.get(course);
 		}
 		return null;
 	}
 	
-	private final int doOther(Course course,ICourseMode mode) {
-		String type = course.getOptype();
+	private final int doOther(Course course,ICourseMode<T> mode) {
+		String type = course.getType();
 		if (type == CourseType.add) {
 			return(mode.add(course));
 		}
@@ -38,13 +38,13 @@ public abstract class AbstractRepository{
 	}
 	
 
-	public final int fromProxy(CourseProxy proxy,ICourseMode mode) {
-		if(proxy instanceof Action)
+	public final int fromProxy(CourseProxy proxy,ICourseMode<T> mode) {
+		if(!(proxy instanceof Action))
 			return 0;
-		Map<String,Course> map = proxy.getEden();
+		Map<String,Course> map = proxy.getShareSpace();
 		for(String key:map.keySet()) {
 			Course course = map.get(key);
-			if(course.getOptype()==CourseType.get)
+			if(course.getType()==CourseType.get)
 				doGet(course,mode);
 			else
 				doOther(course,mode);
@@ -52,10 +52,10 @@ public abstract class AbstractRepository{
 		return 1;
 	}
 	
-	public final int fromAction(Action<?> action,ICourseMode mode) {
+	public final int fromAction(Action<?> action,ICourseMode<T> mode) {
 		List<Course> list = Action.getWorkSpace();
 		for(Course course:list) {
-			if(course.getOptype()==CourseType.get)
+			if(course.getType()==CourseType.get)
 				doGet(course,mode);
 			else
 				doOther(course,mode);
@@ -63,10 +63,10 @@ public abstract class AbstractRepository{
 		return 1;
 	}
 	
-	public final <T> T query(Course course,ICourseMode mode) {
+	public final T query(Course course,ICourseMode<T> mode) {
 		return doGet(course,mode);
 	}
-	public final int commit(Course course,ICourseMode mode) {
+	public final int commit(Course course,ICourseMode<T> mode) {
 		return doOther(course,mode);
 	}
 	

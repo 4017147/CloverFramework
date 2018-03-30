@@ -16,7 +16,7 @@ import com.infrastructure.util.Matcher;
  * @author yl
  *
  */
-public class CourseProxy implements CourseOperation{
+public class CourseProxy<T> implements CourseOperation{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
@@ -28,7 +28,7 @@ public class CourseProxy implements CourseOperation{
 	
 	protected DomainService service;
 	
-	CourseRepository repository;
+	CourseRepository<T> repository;
 	
 	Pattern pattern = new Matcher();
 	
@@ -94,7 +94,7 @@ public class CourseProxy implements CourseOperation{
 	/**
 	 * 初始化一个course
 	 */
-	private Course initCourse(String id,Course course,DomainService service,CourseProxy proxy,byte status) {
+	private Course initCourse(String id,Course course,DomainService service,CourseProxy<T> proxy,byte status) {
 		course.domainService = service;
 		course.proxy = proxy;
 		course.setStatus(status);
@@ -123,14 +123,14 @@ public class CourseProxy implements CourseOperation{
 	 * 设置course内部的时间属性
 	 * @param course
 	 */
-	protected void setCourseTime(Course course) {
-		long exe = System.currentTimeMillis()-course.create;
-		course.max = (exe>course.max?exe:course.max);
-		course.min = (exe<course.min?exe:course.min);
-		if(course.min==0)
-			course.min = exe;
-		course.avg = (exe+course.avg)/(course.avg==0?1:2);
-	}
+//	protected void setCourseTime(Course course) {
+//		long exe = System.currentTimeMillis()-course.create;
+//		course.max = (exe>course.max?exe:course.max);
+//		course.min = (exe<course.min?exe:course.min);
+//		if(course.min==0)
+//			course.min = exe;
+//		course.avg = (exe+course.avg)/(course.avg==0?1:2);
+//	}
 
 	
 	/*----------------------public method-------------------- */
@@ -143,11 +143,11 @@ public class CourseProxy implements CourseOperation{
 		this.service = service;
 	}
 	
-	public HashMap<String, Course> getEden() {
+	public HashMap<String, Course> getShareSpace() {
 		return shareSpace;
 	}
 	
-	public void setRepository(CourseRepository repository) {
+	public void setRepository(CourseRepository<T> repository) {
 		this.repository = repository;
 	}
 
@@ -273,19 +273,20 @@ public class CourseProxy implements CourseOperation{
 	protected void END() {
 		Course course = getCurrCourse();
 		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
-			setCourseTime(course);
+			//setCourseTime(course);
 			addCourse(course.id, course);			
 		}else if(course.getStatus()==Course.END && course.id==null){
-			setCourseTime(course);
+			//setCourseTime(course);
 			course.id = String.valueOf(course.hashCode());
 		}
+		course.type = course.next.type;
 	}
 
 	/**
 	 * 直接执行当前的一条course语句
 	 * @return
 	 */
-	public Object executeOne() {
+	public T executeOne() {
 		return repository.query(newest);
 	}
 	

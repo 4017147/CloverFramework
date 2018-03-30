@@ -7,7 +7,7 @@ import com.cloverframework.core.domain.DomainService;
  * @author yl
  *
  */
-public class ClassicalRepository extends AbstractRepository{
+public class ClassicalRepository extends AbstractRepository<Object>{
 	private IClassicalMode mode;
 	
 	public void setMode(IClassicalMode mode) {
