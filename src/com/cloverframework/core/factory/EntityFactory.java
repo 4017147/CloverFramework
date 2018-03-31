@@ -17,7 +17,7 @@ public final class EntityFactory {
 	 * 保存线程id和course的map，这里使用的是ConcurrentHashMap，因此修改操作是线程安全的，但是get和某些操作可能会交迭，
 	 * 在确保线程和course是一对一的情况下(正常应用情况下)，不会存在线程安全问题，在多对一的情况下就必需进行同步。<p>
 	 * 另外在使用不同的web服务容器时，需要考虑容器的并发规则，通常一次业务过程的创建对应的某个（java）线程应该是确定的，否则不适用。
-	 * <p>该map的初始大小为1000，实际应根据web服务容器的并发线程数量（如线程池的数量）来设置，比它少稍大一点并且是2的倍数
+	 * <p>该map的初始大小应根据web服务容器的并发线程数量（如线程池的数量）来设置，比它少稍大一点并且是2的倍数
 	 **/
 	//TODO 这里将要考虑分散为多个map的方案
 	private static ConcurrentHashMap<Long, Object[]> courses = new ConcurrentHashMap<Long, Object[]>(100);
@@ -68,7 +68,6 @@ public final class EntityFactory {
 	private void setLiteral(String literalName,Thread t,int length) throws Exception {
 		Object[] courseInfo = null;
 		Course course = null;
-		//System.out.println(length);
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
 			byte le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
 			if((course = (Course) courseInfo[0])!=null) {
@@ -80,13 +79,7 @@ public final class EntityFactory {
 					if(course.getStatus()<Course.WAIT) 
 						//TODO 抛出异常存在什么影响
 						throw new Exception("Course status error:"+course.getStatus());
-//					if(course.getStatus()>=Course.LAMBDA_TE) {
-//						CourseMethod.addLiteral_te(literalName,course,interceptor);
-//						CourseMethod.addLiteral(literalName,course,interceptor);
-//						System.out.println(literalName);
-//					}else {
 					CourseMethod.addLiteral(literalName,course,interceptor);
-					//System.out.println(literalName);
 					
 				}
 			}		
@@ -119,13 +112,7 @@ public final class EntityFactory {
 	}
 
 	public static void removeCourse(long threadId) {
-//		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-//			System.out.println("remove:"+entry.getKey()+":"+entry.getValue());
-//		}
 		courses.remove(threadId);
-//		for(Entry<Long, Object[]> entry:courses.entrySet()) {
-//			System.out.println("还有"+entry.getKey()+":"+entry.getValue());
-//		}
 	}
 	
 	/**
@@ -135,7 +122,7 @@ public final class EntityFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> E getStaple(Class<E> E) {
-		//TODO 重写动态代理类的toString方法
+		//TODO 重写动态代理类的toString方法,创建的对象要进行归零处理
 		String className = E.getName();
 		if(staple.get(className)==null) {
 			enhancer.setSuperclass(E);

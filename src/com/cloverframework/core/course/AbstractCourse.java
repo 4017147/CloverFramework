@@ -98,10 +98,10 @@ public abstract class AbstractCourse<T> {
 	protected AbstractCourse<?> origin;
 
 	/**是否输出simpleName */
-	public volatile boolean condition1;//根传递
+	public volatile boolean condition1 = true;//根传递
 	
 	/**是否输出颜色 */
-	public volatile boolean condition2;//根传递
+	public volatile boolean condition2 = true;//根传递
 	
 	/**正在填充*/
 	public static final byte FILL 		=-1;
@@ -186,7 +186,7 @@ public abstract class AbstractCourse<T> {
 				if(entities==null) {
 					entities = new ArrayList<>();
 				}
-				buildData();
+				buildData(true);
 				//buildNodeString();
 			}
 		}finally {
@@ -250,7 +250,9 @@ public abstract class AbstractCourse<T> {
 	/**
 	 * 销毁该Course
 	 */
-	protected void destroy() {}
+	protected void destroy() {
+		//TODO
+	}
 
 
 	/**
@@ -335,16 +337,27 @@ public abstract class AbstractCourse<T> {
 	/**
 	 * 将元素分类设置到数据结构
 	 */
-	private void buildData() {
+	private void buildData(boolean lowerCase) {
 		fields = new ArrayList<String>();
 		types = new HashSet<String>();
 		
 		for(Object obj:elements) {
 			if(obj==null)continue;
 			if(obj.getClass()==String.class) {
-				String name = obj.toString();
-				fields.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length()));
-				types.add(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.lastIndexOf(".")));					
+				String fullName = obj.toString();
+				//String field = new String(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length()));
+				String field = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
+				if(lowerCase) {
+					char[] fc = field.toCharArray();
+					int index = field.lastIndexOf('.')+1;
+					char c = fc[index];
+					if(c<='Z'&&c>='A'&&lowerCase)
+						fc[index] = (char) (c+32);
+					fields.add(new String(fc));					
+				}else
+					fields.add(field);
+				String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf(".")).lastIndexOf(".")+1),fullName.lastIndexOf(".")));
+				types.add(type);					
 			}else if(obj.getClass().isEnum()) {
 				
 				types.add(obj.getClass().getFields()[0].getName());
@@ -399,6 +412,11 @@ public abstract class AbstractCourse<T> {
 							//防止substring内存占用
 							//产生类名.属性字符串
 							String simpleName = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
+//							char[] c = simpleName.toCharArray();
+//							if(c[0]<='Z'&&c[0]>='A') {
+//								c[0] = (char) (c[0]+32);
+//								simpleName = new String(c);
+//							}
 							builder.append(simpleName).append(blank);	
 						}else
 							builder.append(elements[i]).append(blank);												

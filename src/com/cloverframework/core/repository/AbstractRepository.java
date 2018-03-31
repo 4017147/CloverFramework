@@ -38,7 +38,7 @@ public abstract class AbstractRepository<T>{
 	}
 	
 
-	public final int fromProxy(CourseProxy proxy,ICourseMode<T> mode) {
+	public final int fromProxy(CourseProxy<T> proxy,ICourseMode<T> mode) {
 		if(!(proxy instanceof Action))
 			return 0;
 		Map<String,Course> map = proxy.getShareSpace();
@@ -53,7 +53,7 @@ public abstract class AbstractRepository<T>{
 	}
 	
 	public final int fromAction(Action<?> action,ICourseMode<T> mode) {
-		List<Course> list = Action.getWorkSpace();
+		List<Course> list = action.getWorkSpace();
 		for(Course course:list) {
 			if(course.getType()==CourseType.get)
 				doGet(course,mode);
