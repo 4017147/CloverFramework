@@ -22,13 +22,13 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	}
 	
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
-	private static ThreadLocal<Course> newest = new ThreadLocal<Course>();
+	private ThreadLocal<Course> newest = new ThreadLocal<Course>();
 	
 	/** share区，用于缓存每个线程产生的course*/
 	private ConcurrentHashMap<String,Course> shareSpace = new ConcurrentHashMap<String,Course>();
 	
 	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
-	private static ThreadLocal<List<Course>> workSpace = new ThreadLocal<List<Course>>();
+	private ThreadLocal<List<Course>> workSpace = new ThreadLocal<List<Course>>();
 	
 	/** 每个work集合初始大小*/
 	private static byte workSize = 10;
@@ -82,7 +82,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 * 获取当前线程的work区
 	 * @return
 	 */
-	public static List<Course> getWorkSpace() {
+	public List<Course> getWorkSpace() {
 		return workSpace.get();
 	}
 

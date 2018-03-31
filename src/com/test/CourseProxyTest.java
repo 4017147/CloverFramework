@@ -39,7 +39,7 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	@Test
+	//@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
@@ -68,7 +68,7 @@ public class CourseProxyTest implements DomainService{
 	 * 内部类
 	 * 实体方法+实体对象+字典
 	 */
-	@Test
+	//@Test
 	public void test2() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get($(),
@@ -118,7 +118,7 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * 三元表达式
 	 */
-	@Test
+	//@Test
 	public void test4() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
@@ -141,7 +141,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * sharespace区测试
 	 */
-	@Test
+	//@Test
 	public void test5() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
@@ -156,7 +156,7 @@ public class CourseProxyTest implements DomainService{
 	 * FROK()不缓存分支
 	 * FORKM()存入sharespace
 	 */
-	@Test
+	//@Test
 	public void test6() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
@@ -170,7 +170,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 */
-	@Test
+	//@Test
 	public void test7() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
@@ -205,7 +205,7 @@ public class CourseProxyTest implements DomainService{
 	 * 节点不匹配关闭该节点和后续节点FORK模式
 	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
-	@Test
+	//@Test
 	public void test8() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
@@ -220,7 +220,7 @@ public class CourseProxyTest implements DomainService{
 		
 	}
 	
-	@Test
+	//@Test
 	public void test9() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a")
