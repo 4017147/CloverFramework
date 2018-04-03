@@ -17,7 +17,7 @@ public class CourseRepository<T> extends AbstractRepository<T>{
 		this.mode = mode;
 	}
 
-	public final int fromProxy(CourseProxy proxy) {
+	public final int fromProxy(CourseProxy<T> proxy) {
 		return super.fromProxy(proxy, mode);
 	}
 	

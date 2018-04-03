@@ -3,6 +3,8 @@ package com.cloverframework.core.course;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
+import com.cloverframework.core.data.CourseResult;
+
 /**
  * Course是基于AbstractCourse实现的基础上，提供了面向用户业务过程语言定义的方法，
  * 通过方法和标识的使用能够组装一个业务过程。
@@ -15,15 +17,18 @@ public final class Course extends AbstractCourse<Course>{
 	
 	/** course标识*/
 	protected String id;
-//	/** 创建时间*/
-//	protected long create = System.currentTimeMillis();
-//	/** 平均执行时间*/
-//	protected long avg;
-//	/** 最大执行时间*/
-//	protected long max;
-//	/** 最短执行时间*/
-//	protected long min;
 
+	private CourseResult<?> result;
+	
+	public CourseResult<?> getResult(){
+		return this.result;
+	}
+	public void setResult(CourseResult<?> result) {
+		if(this.result==null)
+			this.result = result;
+	}
+	
+	
 	/**
 	 * 
 	 * @param id 这个course的标识，给定的字符串不能包含空格
@@ -55,7 +60,6 @@ public final class Course extends AbstractCourse<Course>{
 	
 	@Override
 	public String getJsonString() {
-		// TODO Auto-generated method stub
 		return next.getJsonString();
 	}
 	
@@ -124,7 +128,10 @@ public final class Course extends AbstractCourse<Course>{
 		private OrderBy orderBy;
 		@SuppressWarnings("unused")
 		private Limit 	limit;
-			
+		
+		
+		/**=*/
+		public Get count(Object ...value) {optype = opt.count;setValues(value);return this;}
 		public By 		by(Object... obj){return by = (By) create(by,By::new,this,obj);}
 		public AND 		and(Object... obj){return and = (AND) create(and,AND::new,this,obj);}
 		public OrderBy 	orderBy(Object... obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
@@ -190,7 +197,6 @@ public final class Course extends AbstractCourse<Course>{
 		
 		protected Condition(AbstractCourse<?> parent,String optype,boolean isSon, Object... obj) {
 			super(parent, optype,isSon, obj);
-			// TODO Auto-generated constructor stub
 		}
 		
 		/**=*/
@@ -236,7 +242,6 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("static-access")
 		protected By(AbstractCourse<?> previous, Object[] obj) {
 			super(previous,courseType.by, obj);
-			// TODO Auto-generated constructor stub
 			}	
 		}
 		
@@ -245,7 +250,6 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("static-access")
 		protected AND(AbstractCourse<?> previous, Object[] obj) {
 			super(previous,courseType.and, obj);
-			// TODO Auto-generated constructor stub
 		}
 		
 	}
@@ -255,7 +259,6 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("static-access")
 		protected OR(AbstractCourse<?> previous, Object[] obj) {
 			super(previous,courseType.or, obj);
-			// TODO Auto-generated constructor stub
 		}
 		
 	}
@@ -265,7 +268,6 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("static-access")
 		protected NOT(AbstractCourse<?> previous, Object[] obj) {
 			super(previous,courseType.not,obj);
-			// TODO Auto-generated constructor stub
 		}
 		
 	}

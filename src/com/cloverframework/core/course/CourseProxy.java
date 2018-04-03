@@ -11,7 +11,7 @@ import com.cloverframework.core.util.Pattern;
 import com.cloverframework.core.util.lambda.Literal;
 import com.infrastructure.util.Matcher;
 /**
- * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程而不是course，
+ * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
  * 该类大部分方法是线程不安全的。
  * @author yl
  *
@@ -217,7 +217,6 @@ public class CourseProxy<T> implements CourseOperation{
 			setCurrCourse(old);
 			return old;
 		}
-		//System.out.println("begin");
 		addCourse(id,false);
 		return begin();
 	}
@@ -290,6 +289,25 @@ public class CourseProxy<T> implements CourseOperation{
 		return repository.query(newest);
 	}
 	
+	
+	public T executeOne(Course course) {
+		return repository.query(course);
+	}
+	
+	public int commit() {
+		return repository.commit(newest);
+	}
+	
+	public int commit(Course course) {
+		return repository.commit(course);
+	}
+	
+	public Object execute(String type) {
+		if(type=="get") 
+			return executeOne(newest);
+		else
+			return commit(newest);
+	}
 	
 	/**
 	 * 一系列的字面值参数的开头，例如：如果在GET($(),user.getName(),user.getId())之前，
