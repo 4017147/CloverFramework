@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.cloverframework.core.data.CourseValues;
+import com.cloverframework.core.data.Values;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
-import com.cloverframework.core.util.CourseData;
+import com.cloverframework.core.util.CourseJson;
 import com.cloverframework.core.util.CourseOpt;
 import com.cloverframework.core.util.CourseType;
 import com.cloverframework.core.util.ELOperation;
@@ -68,7 +70,7 @@ public abstract class AbstractCourse<T> {
 	List<Object> entities;
 	
 	/**查询值*/
-	List<Object> values;
+	private CourseValues values;
 	
 	/**json输出工具*/
 	Jutil jutil;
@@ -77,7 +79,7 @@ public abstract class AbstractCourse<T> {
 	String jsonString;
 	
 	/**包装用于json格式化的数据*/
-	CourseData courseData;
+	CourseJson courseData;
 	
 	/**节点类型接口*/
 	static CourseType courseType;
@@ -321,16 +323,16 @@ public abstract class AbstractCourse<T> {
 	 * 创建一个包含该节点所在的树的CourseData
 	 * @return
 	 */
-	protected CourseData buildJsonNode() {
-		CourseData son = null;
-		CourseData next = null;
+	protected CourseJson buildJsonNode() {
+		CourseJson son = null;
+		CourseJson next = null;
 		if(this.son!=null) {
 			son = this.son.buildJsonNode();
 		}
 		if(this.next!=null) {
 			next = this.next.buildJsonNode();
 		}
-		this.courseData = new CourseData(type, optype, fields, types, values, son, next);
+		this.courseData = new CourseJson(type, optype, fields, types, values.getValues(), son, next);
 		return courseData;
 	}
 	
@@ -526,6 +528,7 @@ public abstract class AbstractCourse<T> {
 			if(status!=END) {
 				proxy = null;
 				literal = null;
+				literal_te = null;
 				EntityFactory.removeCourse(Thread.currentThread().getId());
 			}
 		}
@@ -537,8 +540,12 @@ public abstract class AbstractCourse<T> {
 	 */
 	public Object execute() {
 		//CourseProxy cp = proxy;
+		AbstractCourse<?> course = this;
+		while (previous!=null) 
+			course = course.previous;
+		String t = course.next.getType();
 		END();
-		return proxy.executeOne();
+		return proxy.execute(t);
 	}
 	
 	
@@ -591,11 +598,13 @@ public abstract class AbstractCourse<T> {
 	
 
 	public List<Object> getValues() {
-		return values;
+		return values.getValues();
 	}
 
-	public void setValues(Object[] values) {
-		this.values = Arrays.asList(values);
+	public AbstractCourse<T> setValues(Object ...values) {
+		if(this.values==null) 
+			this.values = new Values(values);
+		return this;
 	}
 
 	

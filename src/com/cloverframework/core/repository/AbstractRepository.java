@@ -14,7 +14,6 @@ import com.cloverframework.core.util.CourseType;
  *
  */
 public abstract class AbstractRepository<T>{
-	
 	private final T doGet(Course course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.get) {
