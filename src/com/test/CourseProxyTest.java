@@ -8,10 +8,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import com.cloverframework.core.course.Course.Get;
-import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
+import com.cloverframework.core.dsl.CourseProxy;
+import com.cloverframework.core.dsl.Course.Get;
 import com.cloverframework.core.factory.EntityFactory;
 import com.dict.entity.Demo_D;
 import com.entity.Demo;
@@ -39,7 +39,7 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	//@Test
+	@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
@@ -93,7 +93,7 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * toJsonString测试
 	 */
-	@Test
+	//@Test
 	public void test3() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("b").get(
@@ -220,19 +220,18 @@ public class CourseProxyTest implements DomainService{
 		
 	}
 	
-	//@Test
+	@Test
 	public void test9() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
-			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).eq(11))
-			.or(Demo_D.f3,$(Demo_D.f5).eq(33).and(Demo_D.f6).eq(11)).END();
+			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11))
+			.or(Demo_D.f3,$(Demo_D.f5).gt(33).and(Demo_D.f6).lt(11)).END();
 			
 		}};
 		println(cp.toString());
 		println(cp.START("a").getJsonString());
-		//println(cp.START("a").getJsonString());
 	}
 	 
 	

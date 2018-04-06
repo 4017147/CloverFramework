@@ -1,9 +1,9 @@
 package com.cloverframework.core.repository;
 
-import com.cloverframework.core.course.Action;
-import com.cloverframework.core.course.Course;
-import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.Action;
+import com.cloverframework.core.dsl.Course;
+import com.cloverframework.core.dsl.CourseProxy;
 /**
  * 一个通用的仓储，整合了Course和经典仓储
  * @author yl

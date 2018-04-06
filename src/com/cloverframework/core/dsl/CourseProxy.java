@@ -1,9 +1,9 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 import java.util.HashMap;
 
-import com.cloverframework.core.course.Course.Condition;
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.CourseType;
@@ -16,7 +16,7 @@ import com.infrastructure.util.Matcher;
  * @author yl
  *
  */
-public class CourseProxy<T> implements CourseOperation{
+public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
@@ -81,7 +81,7 @@ public class CourseProxy<T> implements CourseOperation{
 	}
 	
 	@Override
-	public void addCourse(String id,Course course) {
+	public void setCourse(String id,Course course) {
 		shareSpace.put(id, course);
 	}
 	
@@ -94,7 +94,8 @@ public class CourseProxy<T> implements CourseOperation{
 	/**
 	 * 初始化一个course
 	 */
-	private Course initCourse(String id,Course course,DomainService service,CourseProxy<T> proxy,byte status) {
+	@Override
+	public Course initCourse(String id,Course course,DomainService service,CourseProxy<T> proxy,byte status) {
 		course.domainService = service;
 		course.proxy = proxy;
 		course.setStatus(status);
@@ -147,6 +148,7 @@ public class CourseProxy<T> implements CourseOperation{
 		return shareSpace;
 	}
 	
+	@Override
 	public void setRepository(CourseRepository<T> repository) {
 		this.repository = repository;
 	}
@@ -185,7 +187,7 @@ public class CourseProxy<T> implements CourseOperation{
 		Course newc = new Course(id);
 		initCourse(id,newc,service,this,Course.WAIT);
 		if(cover)
-			addCourse(old.id, newc);
+			setCourse(old.id, newc);
 		setCurrCourse(newc);
 		return old;
 	}
@@ -272,10 +274,8 @@ public class CourseProxy<T> implements CourseOperation{
 	protected void END() {
 		Course course = getCurrCourse();
 		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
-			//setCourseTime(course);
-			addCourse(course.id, course);			
+			setCourse(course.id, course);			
 		}else if(course.getStatus()==Course.END && course.id==null){
-			//setCourseTime(course);
 			course.id = String.valueOf(course.hashCode());
 		}
 		course.type = course.next.type;
@@ -286,27 +286,28 @@ public class CourseProxy<T> implements CourseOperation{
 	 * @return
 	 */
 	public T executeOne() {
-		return repository.query(newest);
+		return repository.query(getCurrCourse());
 	}
 	
-	
+	@Override
 	public T executeOne(Course course) {
 		return repository.query(course);
 	}
 	
 	public int commit() {
-		return repository.commit(newest);
+		return repository.commit(getCurrCourse());
 	}
 	
+	@Override
 	public int commit(Course course) {
 		return repository.commit(course);
 	}
 	
-	public Object execute(String type) {
+	Object execute(String type) {
 		if(type=="get") 
-			return executeOne(newest);
+			return executeOne(getCurrCourse());
 		else
-			return commit(newest);
+			return commit(getCurrCourse());
 	}
 	
 	/**

@@ -1,4 +1,4 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 import com.cloverframework.core.factory.EntityFactory.EntityMethodInterceptor;
 

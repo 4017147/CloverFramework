@@ -1,4 +1,4 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	}
 	
 	@Override
-	public void addCourse(String id,Course course) {
+	public void setCourse(String id,Course course) {
 		shareSpace.put(id, course);
 	}
 	

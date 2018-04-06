@@ -1,4 +1,4 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 import java.util.ArrayList;
 import java.util.function.BiFunction;
@@ -56,14 +56,19 @@ public final class Course extends AbstractCourse<Course>{
 		}
 	}
 
-	
-	
+		
 	@Override
 	public String getJsonString() {
 		return next.getJsonString();
 	}
 	
-
+	
+	@Override
+	public void destroy() {
+		super.destroy();
+		id = null;
+		result = null;
+	}
 	/**
 	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
 	 */
@@ -319,7 +324,7 @@ public final class Course extends AbstractCourse<Course>{
 		}
 
 		@Override
-		protected void setElements(Object... element) {
+		public void setElements(Object... element) {
 			this.element = element;
 		}
 		

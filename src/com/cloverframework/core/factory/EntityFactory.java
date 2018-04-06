@@ -3,10 +3,10 @@ package com.cloverframework.core.factory;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.cloverframework.core.course.Course;
-import com.cloverframework.core.course.CourseMethod;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
+import com.cloverframework.core.dsl.Course;
+import com.cloverframework.core.dsl.CourseMethod;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
