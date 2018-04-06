@@ -1,6 +1,6 @@
 package com.cloverframework.core.repository;
 
-import com.cloverframework.core.course.Course;
+import com.cloverframework.core.dsl.Course;
 
 /**
 * @author yl  

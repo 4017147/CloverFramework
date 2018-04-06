@@ -3,10 +3,10 @@ package com.cloverframework.core.repository;
 import java.util.List;
 import java.util.Map;
 
-import com.cloverframework.core.course.Action;
-import com.cloverframework.core.course.Course;
-import com.cloverframework.core.course.CourseProxy;
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.Action;
+import com.cloverframework.core.dsl.Course;
+import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.util.CourseType;
 /**
  * 这是一个抽象的仓储，其子类面向领域服务层，由子类负责仓储接口的实际调用。

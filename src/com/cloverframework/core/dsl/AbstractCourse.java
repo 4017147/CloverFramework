@@ -1,4 +1,4 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import com.cloverframework.core.util.Jutil;
  * 
  * 
  */
-public abstract class AbstractCourse<T> {
+public abstract class AbstractCourse<T> implements ICourse<T>{
 	DomainService domainService;//上级传递
 	
 	/**course代理*/
@@ -73,10 +73,10 @@ public abstract class AbstractCourse<T> {
 	private CourseValues values;
 	
 	/**json输出工具*/
-	Jutil jutil;
+	static Jutil jutil;
 	
 	/**json格式内容*/
-	String jsonString;
+	//String jsonString;
 	
 	/**包装用于json格式化的数据*/
 	CourseJson courseData;
@@ -141,15 +141,40 @@ public abstract class AbstractCourse<T> {
 	/*----------------------private method-------------------- */
 
 	private void init(AbstractCourse<?> course) {
-		literal = course==null?literal:course.literal;
-		literal_te = course==null?literal_te:course.literal_te;
-		domainService = course==null?domainService:course.domainService;
-		proxy = course==null?proxy:course.proxy;
-		isFork = course==null?isFork:course.isFork;
-		isForkm = course==null?isForkm:course.isForkm;
-		origin = course==null?origin:course.origin;
+		if(course!=null) {
+			literal = course.literal;
+			literal_te = course.literal_te;
+			domainService = course.domainService;
+			proxy = course.proxy;
+			isFork = course.isFork;
+			isForkm = course.isForkm;
+			origin = course.origin;			
+		}
 	}
 	
+	/**
+	 * 销毁该Course
+	 */
+	public void destroy() {
+		//TODO
+		if(next!=null) {
+			next.destroy();
+		}
+		domainService = null;
+		proxy = null;
+		elements = null;
+		previous = null;
+		next = null;
+		parent = null;
+		son = null;
+		fields = null;
+		types = null;
+		entities = null;
+		values = null;
+		courseData = null;
+		origin = null;
+	}
+
 	/**
 	 * 设置节点的元素，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
@@ -158,7 +183,8 @@ public abstract class AbstractCourse<T> {
 	 * 在传入节点参数的时候，按照直接值->实体->方法字面值->三元
 	 * @param elements
 	 */
-	protected void setElements(Object... elements) {
+	@Override
+	public void setElements(Object... elements) {
 		try {
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
@@ -250,14 +276,6 @@ public abstract class AbstractCourse<T> {
 	}
 	
 	/**
-	 * 销毁该Course
-	 */
-	protected void destroy() {
-		//TODO
-	}
-
-
-	/**
 	 * 将领域实体的getter方法字面值填充到element数组中
 	 * 1、如果数组元素为null则填充（如果字面值列表元素的next存在）
 	 * 2、如果数组元素为领域实体，如果为合法的领域实体则添加，如果不合法则移除。
@@ -332,7 +350,7 @@ public abstract class AbstractCourse<T> {
 		if(this.next!=null) {
 			next = this.next.buildJsonNode();
 		}
-		this.courseData = new CourseJson(type, optype, fields, types, values.getValues(), son, next);
+		courseData = new CourseJson(type, optype, fields, types, values==null?null:values.getValues(), son, next);
 		return courseData;
 	}
 	
@@ -538,12 +556,13 @@ public abstract class AbstractCourse<T> {
 	 * 直接END()并执行当前对象course语句
 	 * @return
 	 */
+	@Override
 	public Object execute() {
 		//CourseProxy cp = proxy;
 		AbstractCourse<?> course = this;
-		while (previous!=null) 
+		while(course.previous!=null)
 			course = course.previous;
-		String t = course.next.getType();
+		String t = course.getType();
 		END();
 		return proxy.execute(t);
 	}
@@ -581,7 +600,7 @@ public abstract class AbstractCourse<T> {
 	public void addEntity(Object entity) {
 		entities.add(entity);
 	}
-
+	@Override
 	public Object getElements() {
 		return elements;
 	}
@@ -594,13 +613,11 @@ public abstract class AbstractCourse<T> {
 		return status;
 	}
 
-	
-	
-
+	@Override
 	public List<Object> getValues() {
 		return values.getValues();
 	}
-
+	@Override
 	public AbstractCourse<T> setValues(Object ...values) {
 		if(this.values==null) 
 			this.values = new Values(values);
@@ -626,7 +643,7 @@ public abstract class AbstractCourse<T> {
 		this.optype = optype;
 	}
 
-	public Jutil getJutil() {
+	public static Jutil getJutil() {
 		return jutil;
 	}
 
@@ -635,8 +652,8 @@ public abstract class AbstractCourse<T> {
 	 * @see Jutil#toJsonString(com.cloverframework.core.util.Jsonable)
 	 * @param jutil
 	 */
-	public void setJutil(Jutil jutil) {
-		this.jutil = jutil;
+	public static void setJutil(Jutil jutil) {
+		AbstractCourse.jutil = jutil;
 	}
 
 	public static CourseOpt getOpt() {

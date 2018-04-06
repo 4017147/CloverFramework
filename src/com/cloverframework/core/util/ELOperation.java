@@ -3,7 +3,7 @@ package com.cloverframework.core.util;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.cloverframework.core.course.CourseProxy;
+import com.cloverframework.core.dsl.CourseProxy;
 /**
  * course的fork模式算法
  * @author yl

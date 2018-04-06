@@ -1,4 +1,4 @@
-package com.cloverframework.core.course;
+package com.cloverframework.core.dsl;
 
 /**
  * 重写接口的方法用于针对courseProxy的sharespace和newest的操作实现，
@@ -15,7 +15,7 @@ public interface CourseOperation {
 	
 	public Course getCourse(String id);
 		
-	public void addCourse(String id,Course course);
+	public void setCourse(String id,Course course);
 	
 	public Course removeCourse(String id);
 }
