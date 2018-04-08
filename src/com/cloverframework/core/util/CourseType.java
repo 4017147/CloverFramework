@@ -11,10 +11,16 @@ public interface CourseType {
 	String put = "put";
 	String remove = "remove";
 	String con = "con";
-	String by = "by";
-	String and = "and";
-	String or = "or";
-	String not = "not";
+		String by = "by";
+		String and = "and";
+		String or = "or";
+		String not = "not";
 	String groupBy = "groupBy";
 	String orderBy = "orderBy";
+	String agg = "agg";
+		String count = "count";
+		String avg = "avg";
+		String sum = "sum";
+		String max = "max";
+		String min = "min";
 }

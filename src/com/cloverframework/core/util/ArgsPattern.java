@@ -5,7 +5,7 @@ package com.cloverframework.core.util;
  * @author yl
  *
  */
-public interface Pattern {
+public interface ArgsPattern {
 	boolean isMatch(Object obj);
 	default boolean isMatch() {
 		return false;	

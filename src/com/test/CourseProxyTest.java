@@ -11,6 +11,7 @@ import org.junit.rules.TestName;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
 import com.cloverframework.core.dsl.CourseProxy;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Course.Get;
 import com.cloverframework.core.factory.EntityFactory;
 import com.dict.entity.Demo_D;
@@ -39,7 +40,7 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	@Test
+	//@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
@@ -202,7 +203,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 * 首个参数开启FORK模式，参数不匹配不开启
-	 * 节点不匹配关闭该节点和后续节点FORK模式
+	 * 节点类型不匹配则关闭该节点和后续节点FORK模式
 	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
 	//@Test
@@ -220,20 +221,38 @@ public class CourseProxyTest implements DomainService{
 		
 	}
 	
-	@Test
+	/**
+	 * 条件子节点测试
+	 */
+	//@Test
 	public void test9() {
 		CourseProxy cp = new CourseProxy(this) {{
 			START("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
-			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11))
-			.or(Demo_D.f3,$(Demo_D.f5).gt(33).and(Demo_D.f6).lt(11)).END();
+			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
+			.or(Demo_D.f3,$(Demo_D.f5).gt(33).and(Demo_D.f6).lt(11))
+			.END();
 			
-		}};
+		}}; 
 		println(cp.toString());
 		println(cp.START("a").getJsonString());
 	}
 	 
-	
+	/**
+	 * 聚合子节点测试
+	 */
+	@Test
+	public void test10() {
+		CourseProxy cp = new CourseProxy(this) {{
+			START("a")
+			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.by(Demo_D.f10).eq(20)
+			.END();
+			
+		}}; 
+		println(cp.toString());
+		println(cp.START("a").getJsonString());
+	}
 	
 }

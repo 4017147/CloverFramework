@@ -10,12 +10,16 @@ import java.util.Set;
 import com.cloverframework.core.data.CourseValues;
 import com.cloverframework.core.data.Values;
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.factory.EntityFactory;
-import com.cloverframework.core.util.CourseJson;
+import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.CourseOpt;
 import com.cloverframework.core.util.CourseType;
 import com.cloverframework.core.util.ELOperation;
-import com.cloverframework.core.util.Jutil;
+import com.cloverframework.core.util.ArgsPattern;
+import com.cloverframework.core.util.json.JsonFields;
+import com.cloverframework.core.util.json.JsonUtil;
+import com.infrastructure.util.Matcher;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
@@ -25,7 +29,6 @@ import com.cloverframework.core.util.Jutil;
  * 
  */
 public abstract class AbstractCourse<T> implements ICourse<T>{
-	DomainService domainService;//上级传递
 	
 	/**course代理*/
 	CourseProxy<?> proxy;//上级传递
@@ -55,7 +58,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	AbstractCourse<?> parent;
 	
 	/**子级*/
-	AbstractCourse<?> son;
+	List<AbstractCourse<?>> son;
 	
 	/**是否是一个子级*/
 	protected boolean isSon;
@@ -73,13 +76,13 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	private CourseValues values;
 	
 	/**json输出工具*/
-	static Jutil jutil;
+	static JsonUtil jutil;
 	
 	/**json格式内容*/
 	//String jsonString;
 	
 	/**包装用于json格式化的数据*/
-	CourseJson courseData;
+	JsonFields courseData;
 	
 	/**节点类型接口*/
 	static CourseType courseType;
@@ -99,11 +102,13 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	/** 基线course*/
 	protected AbstractCourse<?> origin;
 
+	ArgsPattern pattern = new Matcher();
+	
 	/**是否输出simpleName */
-	public volatile boolean condition1 = true;//根传递
+	public static boolean condition1 = true;//根传递
 	
 	/**是否输出颜色 */
-	public volatile boolean condition2 = true;//根传递
+	public static boolean condition2 = true;//根传递
 	
 	/**正在填充*/
 	public static final byte FILL 		=-1;
@@ -144,37 +149,14 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 		if(course!=null) {
 			literal = course.literal;
 			literal_te = course.literal_te;
-			domainService = course.domainService;
 			proxy = course.proxy;
 			isFork = course.isFork;
 			isForkm = course.isForkm;
-			origin = course.origin;			
+			origin = course.origin;
+			pattern = course.pattern;	
 		}
 	}
 	
-	/**
-	 * 销毁该Course
-	 */
-	public void destroy() {
-		//TODO
-		if(next!=null) {
-			next.destroy();
-		}
-		domainService = null;
-		proxy = null;
-		elements = null;
-		previous = null;
-		next = null;
-		parent = null;
-		son = null;
-		fields = null;
-		types = null;
-		entities = null;
-		values = null;
-		courseData = null;
-		origin = null;
-	}
-
 	/**
 	 * 设置节点的元素，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
@@ -183,8 +165,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	 * 在传入节点参数的时候，按照直接值->实体->方法字面值->三元
 	 * @param elements
 	 */
-	@Override
-	public void setElements(Object... elements) {
+	protected void setElements(Object... elements) {
 		try {
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
@@ -193,7 +174,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 				init(previous);
 				if(isFork||isForkm && elements.length>0) 
 					setModel(elements[0]);
-				this.elements = fill(elements,literal,literal_te,domainService);
+				this.elements = fill(elements,literal,literal_te,proxy.domainService);
 				if((isFork||isForkm) && origin!=null) 
 					if(model!=null) {
 						if(origin.type==this.type) {
@@ -208,14 +189,12 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 							this.elements = origin.elements;
 						origin = origin.next;
 					}
-				
 				previous.status = status = WAIT;
-					previous.next = this;//
+					//previous.next = this;//
 				if(entities==null) {
 					entities = new ArrayList<>();
 				}
 				buildData(true);
-				//buildNodeString();
 			}
 		}finally {
 			if(literal!=null) 
@@ -246,34 +225,22 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	 * 因为子节点的创建要先于当前节点
 	 * @param object
 	 */
-	private void setSon(Object object) {
-		AbstractCourse<?> son =  (AbstractCourse<?>)object;
-		while(son.previous!=null) {
-			if(son.isSon)
+	protected void setSon(Object object) {
+		AbstractCourse<?> node =  (AbstractCourse<?>)object;
+		while(node.previous!=null) {
+			if(node.isSon)
 				break;
-			son = son.previous;
+			node = node.previous;
 		}
-		this.son = son;
-		son.previous.next = this;
-		son.previous = null;
-		son.parent = this;
-		this.son = son;
+//		son.previous.next = this;
+//		son.previous = null;
+		node.parent = this;
+		//if()
+		if(this.son==null)
+			this.son = new ArrayList<AbstractCourse<?>>();
+		this.son.add(node);
 	}
 
-	@SuppressWarnings("rawtypes")
-	private void setCondition(AbstractCourse parent) {		
-		AbstractCourse p = parent;
-		if(parent==null)
-			p = this;
-		for(;p!=null;) {
-			if(p.condition1==true&&p.condition2==true) {
-				condition1 = p.condition1;
-				condition2 = p.condition2;
-				break;
-			}
-			p = (AbstractCourse) p.previous;
-		}
-	}
 	
 	/**
 	 * 将领域实体的getter方法字面值填充到element数组中
@@ -294,18 +261,18 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 			byte b = 0;//跟踪literal_te
 			byte e = 0;//跟踪elements
 			byte t = 0;//跟踪temp
-			for(;e<elements.length;e++) {			
+			for(;e<elements.length;e++) {	
 				if(elements[e]==null) {
 					if(a<literal.size()) {
 						temps[t] = literal.get(a);
 						a++;
 						t++;
 					}
-				}else if(elements[e] instanceof AbstractCourse<?>) {
+				}else if(elements[e] instanceof AbstractCourse) {
 					setSon(elements[e]);
-				}
-				
-				else if(elements[e]!=null){
+					if(elements[e] instanceof Condition)//Condtion类型节点不允许子节点和其他参数共存
+						return new Object[0];
+				}else if(elements[e]!=null){
 					if(elements[e]==Te.te) {
 						int size = literal_te.size();
 						if(size>0) {
@@ -313,8 +280,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 							b++;
 							t++;
 						}
-					}else if(EntityFactory.isMatchDomain(elements[e].getClass(), domainService.getClass())||
-							elements[e].getClass().isEnum()||proxy.getPattern().isMatch(elements[e])){
+					}else if(ArgsFilter.filter(elements[e], proxy.domainService, pattern)){
 						temps[t] = elements[e];
 						t++;				
 					}else{
@@ -334,28 +300,35 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 			}
 			return Arrays.copyOf(temps, t);//去除为null的无效下标
 		}
-		return null;
+		return new Object[0];
 	}
-
+	
 	/**
 	 * 创建一个包含该节点所在的树的CourseData
 	 * @return
 	 */
-	protected CourseJson buildJsonNode() {
-		CourseJson son = null;
-		CourseJson next = null;
+	protected JsonFields buildJsonNode() {
+		List<JsonFields> son = null;
+		JsonFields next = null;
 		if(this.son!=null) {
-			son = this.son.buildJsonNode();
+			if(son==null)
+				son = new ArrayList<JsonFields>();
+			
+			for(AbstractCourse<?> abc:this.son) {
+				son.add(abc.buildJsonNode());
+			}
 		}
 		if(this.next!=null) {
 			next = this.next.buildJsonNode();
 		}
-		courseData = new CourseJson(type, optype, fields, types, values==null?null:values.getValues(), son, next);
+		courseData = new JsonFields(type, optype, fields, types, values==null?null:values.getValues(), son, next);
 		return courseData;
 	}
 	
+
 	/**
-	 * 将元素分类设置到数据结构
+	 * 将elements元素分类设置到数据结构
+	 * @param lowerCase 方法名首字母是否转小写
 	 */
 	private void buildData(boolean lowerCase) {
 		fields = new ArrayList<String>();
@@ -363,29 +336,26 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 		
 		for(Object obj:elements) {
 			if(obj==null)continue;
-			if(obj.getClass()==String.class) {
-				String fullName = obj.toString();
-				//String field = new String(name.substring((name.substring(0,name.lastIndexOf(".")).lastIndexOf(".")+1),name.length()));
-				String field = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
-				if(lowerCase) {
-					char[] fc = field.toCharArray();
-					int index = field.lastIndexOf('.')+1;
-					char c = fc[index];
-					if(c<='Z'&&c>='A'&&lowerCase)
-						fc[index] = (char) (c+32);
-					fields.add(new String(fc));					
-				}else
-					fields.add(field);
-				String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf(".")).lastIndexOf(".")+1),fullName.lastIndexOf(".")));
-				types.add(type);					
-			}else if(obj.getClass().isEnum()) {
-				
+			if(obj.getClass().isEnum()) {
 				types.add(obj.getClass().getFields()[0].getName());
-				
 				fields.add(obj.getClass().getFields()[0].getName()+"."+obj.toString());
-			}else {
-				entities.add(obj);
-			}
+			}else if(obj.getClass()==String.class && !obj.getClass().isEnum()) {
+					String fullName = obj.toString();
+					String type$field = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
+					if(lowerCase) {
+						char[] fc = type$field.toCharArray();
+						int index = type$field.lastIndexOf('.')+1;
+						char c = fc[index];
+						if(c<='Z'&&c>='A'&&lowerCase)
+							fc[index] = (char) (c+32);
+						fields.add(new String(fc));					
+					}else
+						fields.add(type$field);
+					String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf(".")).lastIndexOf(".")+1),fullName.lastIndexOf(".")));
+					types.add(type);					
+				}else {
+					entities.add(obj);
+				}
 		}
 	}
 	
@@ -511,20 +481,45 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	
 	public AbstractCourse(AbstractCourse<?> previous,String courseType,Object ...obj) {
 		this.type = courseType;
+		previous.next = this;
 		this.previous = previous;
 		setElements(obj);
 	}
 	
-	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object ...obj) {
+	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object...obj) {
 		this.type = courseType;
 		if(isSon) {
 			this.isSon = true;
-			this.parent = previous;
+			this.parent = parent;
 		}
 		this.previous = parent;
 		setElements(obj);
+		this.previous = null;
 	}
 	
+	/**
+	 * 销毁该Course
+	 */
+	public void destroy() {
+		//TODO
+		if(next!=null) {
+			next.destroy();
+		}
+		proxy = null;
+		elements = null;
+		previous = null;
+		next = null;
+		parent = null;
+		son = null;
+		fields = null;
+		types = null;
+		entities = null;
+		values = null;
+		courseData = null;
+		origin = null;
+		pattern = null;
+	}
+
 	/**
 	 * 结束当前的一条course语句，则该course不可再添加语句，
 	 * 并且执行end方法在大多情况下都是必须的，如果没有正常的执行end，
@@ -575,7 +570,6 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	 */
 	@Override
 	public String toString() {
-		setCondition(previous);
 		return DataString(this,elements,condition1,condition2) + fieldString(this);
 	}
 
@@ -587,7 +581,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	public String getJsonString() {
 		buildJsonNode();
 		if(jutil==null) 
-			return Jutil.toJsonString(courseData);
+			return JsonUtil.toJsonString(courseData);
 		else	
 			return jutil.toJsonString(courseData);
 	}
@@ -600,7 +594,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	public void addEntity(Object entity) {
 		entities.add(entity);
 	}
-	@Override
+
 	public Object getElements() {
 		return elements;
 	}
@@ -625,7 +619,7 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 	}
 
 	
-
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -643,16 +637,16 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 		this.optype = optype;
 	}
 
-	public static Jutil getJutil() {
+	public static JsonUtil getJutil() {
 		return jutil;
 	}
 
 	/**
 	 * 您可以通过继承Jutil并实现其方法来自定义json格式化操作和输出
-	 * @see Jutil#toJsonString(com.cloverframework.core.util.Jsonable)
+	 * @see JsonUtil#toJsonString(com.cloverframework.core.util.Jsonable)
 	 * @param jutil
 	 */
-	public static void setJutil(Jutil jutil) {
+	public static void setJutil(JsonUtil jutil) {
 		AbstractCourse.jutil = jutil;
 	}
 
@@ -668,7 +662,13 @@ public abstract class AbstractCourse<T> implements ICourse<T>{
 		AbstractCourse.opt = opt;
 	}
 
-	
+	public ArgsPattern getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(ArgsPattern pattern) {
+		this.pattern = pattern;
+	}
 
 	
 }

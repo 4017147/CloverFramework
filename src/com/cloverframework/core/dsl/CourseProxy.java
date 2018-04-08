@@ -1,15 +1,16 @@
 package com.cloverframework.core.dsl;
 
 import java.util.HashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
+import com.cloverframework.core.dsl.Course.Count;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.CourseType;
-import com.cloverframework.core.util.Pattern;
 import com.cloverframework.core.util.lambda.Literal;
-import com.infrastructure.util.Matcher;
 /**
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
  * 该类大部分方法是线程不安全的。
@@ -26,11 +27,9 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 	/**share区，用于缓存course对象*/
 	HashMap<String,Course> shareSpace = new HashMap<String,Course>();
 	
-	protected DomainService service;
+	protected DomainService domainService;
 	
 	CourseRepository<T> repository;
-	
-	Pattern pattern = new Matcher();
 	
 	/**并集 */
 	public static final String U = "U";
@@ -95,8 +94,8 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 	 * 初始化一个course
 	 */
 	@Override
-	public Course initCourse(String id,Course course,DomainService service,CourseProxy<T> proxy,byte status) {
-		course.domainService = service;
+	public Course initCourse(String id,Course course,CourseProxy<T> proxy,byte status) {
+		//course.domainService = service;
 		course.proxy = proxy;
 		course.setStatus(status);
 		return course;
@@ -140,8 +139,8 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 	
 	public CourseProxy() {}
 
-	public CourseProxy(DomainService service) {
-		this.service = service;
+	public CourseProxy(DomainService domainService) {
+		this.domainService = domainService;
 	}
 	
 	public HashMap<String, Course> getShareSpace() {
@@ -153,6 +152,8 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		this.repository = repository;
 	}
 
+	
+	
 	/**
 	 * 获取course list的友好信息
 	 * @see CourseProxy#getInfo()
@@ -162,8 +163,6 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		StringBuilder sb = new StringBuilder();	
 		for(String key:shareSpace.keySet()) {
 			Course course = shareSpace.get(key);
-			course.condition1 = true;
-			course.condition2 = true;
 			sb.append(course.toString()+"\n");
 		}
 		return sb.toString();			
@@ -185,7 +184,7 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 	protected Course addCourse(String id,boolean cover) {
 		Course old = removeCurrCourse();
 		Course newc = new Course(id);
-		initCourse(id,newc,service,this,Course.WAIT);
+		initCourse(id,newc,this,Course.WAIT);
 		if(cover)
 			setCourse(old.id, newc);
 		setCurrCourse(newc);
@@ -294,6 +293,10 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		return repository.query(course);
 	}
 	
+	/**
+	 * 直接提交当前的一条course语句
+	 * @return
+	 */
 	public int commit() {
 		return repository.commit(getCurrCourse());
 	}
@@ -309,6 +312,11 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		else
 			return commit(getCurrCourse());
 	}
+	
+	public int push() {
+		return repository.fromProxy(this);
+	}
+	
 	
 	/**
 	 * 一系列的字面值参数的开头，例如：如果在GET($(),user.getName(),user.getId())之前，
@@ -357,30 +365,24 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		course.literal.remove(course.literal.size()-1);
 		return Course.Te.te;
 	}
-
-	public Pattern getPattern() {
-		return pattern;
-	}
-
-	public void setPattern(Pattern pattern) {
-		this.pattern = pattern;
-	}
 	
-	/**
-	 * 节点引用，同于创建子节点，不能脱离当前节点使用
-	 * @param course
-	 * @return
-	 */
-	public Condition $(Object... obj){
+	protected <R> R createNode(Function<AbstractCourse<?>,R> function) {
 		AbstractCourse<?> course = getCurrCourse();
 		AbstractCourse<?> last = null;
 		while(course!=null) {
 			last = course;
 			course = course.next;
 		}
-		Condition con = new Condition(last,CourseType.con,true,obj);
-		return con;
-		
+		R r = function.apply(last);
+		return r;
+	}
+
+	public Condition $(Object...obj){
+		return createNode((last)->new Condition(last,CourseType.by,true,obj));
+	}
+	
+	public Count count(Object obj) {
+		return createNode((last)->new Count(last,CourseType.count,true,obj));
 	}
 	
 }

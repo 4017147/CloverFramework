@@ -1,4 +1,4 @@
-package com.cloverframework.core.util;
+package com.cloverframework.core.util.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author yl
  *
  */
-public class Jutil {
+public class JsonUtil {
 
 	public static String toJsonString(Jsonable ja) {
 		ObjectMapper om = new ObjectMapper();

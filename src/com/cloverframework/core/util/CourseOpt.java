@@ -6,7 +6,6 @@ package com.cloverframework.core.util;
  *
  */
 public interface CourseOpt {
-	String count = "count";
 	String eq = "eq";
 	String ne = "ne";
 	String gt = "gt";
