@@ -1,4 +1,4 @@
-package com.cloverframework.core.util;
+package com.cloverframework.core.util.json;
 
 import java.io.Serializable;
 import java.util.List;
@@ -19,11 +19,11 @@ public abstract class Jsonable implements Serializable{
 	private List<String> fields;
 	private Set<String> types;
 	private List<Object> values;
-	private Jsonable son;
+	private List<? extends Jsonable> son;
 	private Jsonable next;
 	
 	public Jsonable(String type, String optype, List<String> fields, Set<String> types, List<Object> values,
-			Jsonable son, Jsonable next) {
+			List<? extends Jsonable> son, Jsonable next) {
 		super();
 		this.type = type;
 		this.optype = optype;
@@ -74,11 +74,11 @@ public abstract class Jsonable implements Serializable{
 		this.values = values;
 	}
 
-	public Jsonable getSon() {
+	public List<? extends Jsonable> getSon() {
 		return son;
 	}
 
-	public void setSon(Jsonable son) {
+	public void setSon(List<Jsonable> son) {
 		this.son = son;
 	}
 

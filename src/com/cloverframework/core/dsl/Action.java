@@ -40,8 +40,8 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	
 	public Action() {}
 	
-	public Action(DomainService service) {
-		super(service);
+	public Action(DomainService domainService) {
+		super(domainService);
 	}
 	
 	
@@ -103,7 +103,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	}
 
 	/**
-	 * 在此方法之后定义或获取的course填入work区的操作是有效的
+	 * 开启工作区
 	 */
 	public void startWork() {
 		workSpace.remove();
@@ -113,31 +113,24 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	}
 	
 	/**
-	 * 此方法会立刻提交work区，填入work区是无效的
+	 * 关闭工作区同时销毁其中的course
 	 * @return
 	 */
 	public int endWork() {
-		//int result = repository.fromAction(this);
+		if(workSpace.get()!=null) {
+			for(Course course:workSpace.get()) {
+				course.destroy();
+			}
+			workSpace.get().clear();
+		}
 		workable.remove();
 		workable.set((byte)0);
 		return 0;
 	}
 	
-	/**
-	 * 此方法会立刻提交work区，并清空，work填入仍然是有效状态,但是并不能通过该方法开启允许状态
-	 * @return
-	 */
-	public int execute() {
-		int result =  repository.fromAction(this);
-		workSpace.get().clear();
-		return result;
+	public int push() {
+		return repository.fromAction(this);
 	}
-
-	@Override
-	public T executeOne() {
-		return repository.query(newest.get());
-	}
-	
 	
 	/**
 	 * {@inheritDoc}
@@ -156,8 +149,8 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public Course START(String id) {
 		//必需
 		Course course = super.START(id);
-		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-			workSpace.get().add(course);
+//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
+//			workSpace.get().add(course);
 		return course;
 	}
 
@@ -167,7 +160,10 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 */
 	public Course FORK(String id) {
 		//必需
-		return super.FORK(id);
+		Course course = super.FORK(id);
+//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
+//			workSpace.get().add(course);
+		return course;
 	}
 	
 	/**
@@ -178,7 +174,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 		//必需
 		super.END();
 		Course course = getCurrCourse();
-		if(workable.get()!=null && workable.get()==1)
+		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
 			workSpace.get().add(course);
 	}
 	
