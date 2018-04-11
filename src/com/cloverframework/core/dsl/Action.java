@@ -129,12 +129,9 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 		return 0;
 	}
 	
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/Action.java
-=======
 	/**
 	 * {@inheritDoc}
 	 */
->>>>>>> treenode:src/com/cloverframework/core/dsl/Action.java
 	public int push() {
 		return repository.fromAction(this);
 	}
@@ -156,11 +153,6 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public Course START(String id) {
 		//必需
 		Course course = super.START(id);
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/Action.java
-//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-//			workSpace.get().add(course);
-=======
->>>>>>> treenode:src/com/cloverframework/core/dsl/Action.java
 		return course;
 	}
 
@@ -171,11 +163,6 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public Course FORK(String id) {
 		//必需
 		Course course = super.FORK(id);
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/Action.java
-//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-//			workSpace.get().add(course);
-=======
->>>>>>> treenode:src/com/cloverframework/core/dsl/Action.java
 		return course;
 	}
 	

@@ -3,48 +3,25 @@ package com.cloverframework.core.data;
 import java.util.List;
 import java.util.Map;
 
-<<<<<<< HEAD
-=======
 import com.cloverframework.core.data.interfaces.CourseResult;
 
->>>>>>> treenode
 public class Result<T> implements CourseResult<T>{
 	private final List<T> list;
 	private final List<Object> objectList;
 	private final Map<String, Object> map;
 	private final int count;
-<<<<<<< HEAD
-	
-	public Result(List<T> list, List<Object> objectList, Map<String, Object> map, int count) {
-=======
 	private final Object value;
 	
 	public Result(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
->>>>>>> treenode
 		super();
 		this.list = list;
 		this.objectList = objectList;
 		this.map = map;
-<<<<<<< HEAD
-		this.count = count;
-	}
-	
-
-	public Result(int count) {
-		super();
-		this.list = null;
-		this.objectList = null;
-		this.map = null;
-		this.count = count;
-	}
-
-=======
 		this.count = 1;
 		this.value = value;
 	}
 	
 
->>>>>>> treenode
 
 	@Override
 	public List<T> getList() {
@@ -61,11 +38,6 @@ public class Result<T> implements CourseResult<T>{
 		return this.map;
 	}
 
-<<<<<<< HEAD
-	@Override
-	public int getCount() {
-		return this.count;
-=======
 
 
 
@@ -105,7 +77,6 @@ public class Result<T> implements CourseResult<T>{
 	public String getString() {
 		// TODO Auto-generated method stub
 		return null;
->>>>>>> treenode
 	}
 
 }

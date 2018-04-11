@@ -7,21 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-import com.cloverframework.core.data.CourseValues;
-import com.cloverframework.core.data.Values;
-import com.cloverframework.core.domain.DomainService;
-import com.cloverframework.core.dsl.Course.Condition;
-import com.cloverframework.core.factory.EntityFactory;
-import com.cloverframework.core.util.ArgsFilter;
-import com.cloverframework.core.util.CourseOpt;
-import com.cloverframework.core.util.CourseType;
-import com.cloverframework.core.util.ELOperation;
-import com.cloverframework.core.util.ArgsPattern;
-import com.cloverframework.core.util.json.JsonFields;
-import com.cloverframework.core.util.json.JsonUtil;
-import com.infrastructure.util.Matcher;
-=======
 import com.cloverframework.core.data.Values;
 import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.domain.DomainService;
@@ -37,7 +22,6 @@ import com.cloverframework.core.util.interfaces.IArgsMatcher;
 import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.json.JsonFields;
 import com.cloverframework.core.util.json.JsonUtil;
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
@@ -46,11 +30,7 @@ import com.cloverframework.core.util.json.JsonUtil;
  * 
  * 
  */
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-public abstract class AbstractCourse<T> implements ICourse<T>{
-=======
 public abstract class AbstractCourse<T> implements CourseInterface<T>{
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	
 	/**course代理*/
 	CourseProxy<?> proxy;//上级传递
@@ -94,11 +74,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	/**查询对象*/
 	List<Object> entities;
 	
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	/**查询值*/
-=======
 	/**查询参数值*/
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	private CourseValues values;
 	
 	/**json输出工具*/
@@ -128,11 +104,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	/** 基线course*/
 	protected AbstractCourse<?> origin;
 
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	ArgsPattern pattern = new Matcher();
-=======
 	IArgsMatcher argsMather = new ArgsMatcher();
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	
 	/**是否输出simpleName */
 	public static boolean condition1 = true;//根传递
@@ -183,11 +155,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 			isFork = course.isFork;
 			isForkm = course.isForkm;
 			origin = course.origin;
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-			pattern = course.pattern;	
-=======
 			argsMather = course.argsMather;	
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 		}
 	}
 	
@@ -266,11 +234,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 				break;
 			node = node.previous;
 		}
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-//		son.previous.next = this;
-//		son.previous = null;
-=======
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 		node.parent = this;
 		//if()
 		if(this.son==null)
@@ -317,11 +280,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 							b++;
 							t++;
 						}
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-					}else if(ArgsFilter.filter(elements[e], proxy.domainService, pattern)){
-=======
 					}else if(ArgsFilter.filter(elements[e], domainService, argsMather)){
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 						temps[t] = elements[e];
 						t++;				
 					}else{
@@ -345,11 +304,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	}
 	
 	/**
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	 * 创建一个包含该节点所在的树的CourseData
-=======
 	 * 创建一个包含该节点所在的树的courseData
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	 * @return
 	 */
 	protected JsonFields buildJsonNode() {
@@ -366,11 +321,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 		if(this.next!=null) {
 			next = this.next.buildJsonNode();
 		}
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-		courseData = new JsonFields(type, optype, fields, types, values==null?null:values.getValues(), son, next);
-=======
 		courseData = new JsonFields(type, optype, fields, types, values==null?null:values.objectList(), son, next);
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 		return courseData;
 	}
 	
@@ -381,11 +332,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 */
 	private void buildData(boolean lowerCase) {
 		fields = new ArrayList<String>();
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-		types = new HashSet<String>();
-=======
 		types = new HashSet<String>();//需要全限定定名
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 		
 		for(Object obj:elements) {
 			if(obj==null)continue;
@@ -532,15 +479,12 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	
 	public AbstractCourse() {}
 	
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-=======
 	/**
 	 * 创建主干节点
 	 * @param previous
 	 * @param courseType
 	 * @param obj
 	 */
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	public AbstractCourse(AbstractCourse<?> previous,String courseType,Object ...obj) {
 		this.type = courseType;
 		previous.next = this;
@@ -548,8 +492,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 		setElements(obj);
 	}
 	
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-=======
 	/**
 	 * 创建子节点
 	 * @param parent
@@ -557,7 +499,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param isSon
 	 * @param obj
 	 */
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object...obj) {
 		this.type = courseType;
 		if(isSon) {
@@ -589,11 +530,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 		values = null;
 		courseData = null;
 		origin = null;
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-		pattern = null;
-=======
 		argsMather = null;
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	}
 
 	/**
@@ -684,18 +621,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	}
 
 	@Override
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	public List<Object> getValues() {
-		return values.getValues();
-	}
-	@Override
-	public AbstractCourse<T> setValues(Object ...values) {
-		if(this.values==null) 
-			this.values = new Values(values);
-		return this;
-	}
-
-=======
 	public CourseValues getValues() {
 		return values;
 	}
@@ -716,7 +641,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 			}
 		return this;
 	}
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	
 	@Override
 	public String getType() {
@@ -729,11 +653,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	}
 
 	/**
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	 * 您可以通过继承CourseOpt接口扩充节点类型常量
-=======
 	 * 可以通过设置一个继承CourseOpt的接口扩充节点类型常量
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	 * @param optype
 	 */
 	public void setOptype(String optype) {
@@ -745,11 +665,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	}
 
 	/**
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	 * 您可以通过继承Jutil并实现其方法来自定义json格式化操作和输出
-=======
 	 * 可以通过设置一个继承Jutil的工具类来自定义json格式化操作和输出
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	 * @see JsonUtil#toJsonString(com.cloverframework.core.util.Jsonable)
 	 * @param jutil
 	 */
@@ -762,25 +678,13 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	}
 
 	/**
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	 * 您可以通过继承CourseType接口扩充操作类型常量
-=======
 	 * 可以通过设置一个继承CourseType的接口扩充操作类型常量
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	 * @param opt
 	 */
 	public static void setOpt(CourseOpt opt) {
 		AbstractCourse.opt = opt;
 	}
 
-<<<<<<< HEAD:src/com/cloverframework/core/dsl/AbstractCourse.java
-	public ArgsPattern getPattern() {
-		return pattern;
-	}
-
-	public void setPattern(ArgsPattern pattern) {
-		this.pattern = pattern;
-=======
 	public IArgsMatcher getPattern() {
 		return argsMather;
 	}
@@ -791,7 +695,6 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 */
 	public void setPattern(IArgsMatcher pattern) {
 		this.argsMather = pattern;
->>>>>>> treenode:src/com/cloverframework/core/dsl/AbstractCourse.java
 	}
 
 	

@@ -1,20 +1,5 @@
 package com.cloverframework.core.data;
 
-<<<<<<< HEAD
-import java.util.Arrays;
-import java.util.List;
-
-public class Values implements CourseValues{
-	private final List<Object> data;
-	
-	public Values(Object ...val) {
-		data = Arrays.asList(val);
-	}
-
-	@Override
-	public List<Object> getValues() {
-		return data;
-=======
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +46,6 @@ public final class Values implements CourseValues{
 	@Override
 	public List<Object> entityList() {
 		return entities;
->>>>>>> treenode
 	}
 	
 	
