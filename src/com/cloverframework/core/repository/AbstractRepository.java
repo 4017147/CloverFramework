@@ -7,7 +7,13 @@ import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
+<<<<<<< HEAD
 import com.cloverframework.core.util.CourseType;
+=======
+import com.cloverframework.core.repository.interfaces.IClassicalMode;
+import com.cloverframework.core.repository.interfaces.ICourseMode;
+import com.cloverframework.core.util.interfaces.CourseType;
+>>>>>>> treenode
 /**
  * 这是一个抽象的仓储，其子类面向领域服务层，由子类负责仓储接口的实际调用。
  * @author yl
@@ -17,7 +23,11 @@ public abstract class AbstractRepository<T>{
 	private final T doGet(Course course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.get) {
+<<<<<<< HEAD
 			return mode.get(course);
+=======
+			return mode.get(new DataSwaper<T>(course));
+>>>>>>> treenode
 		}
 		return null;
 	}
@@ -25,6 +35,7 @@ public abstract class AbstractRepository<T>{
 	private final int doOther(Course course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.add) {
+<<<<<<< HEAD
 			return(mode.add(course));
 		}
 		if (type == CourseType.put) {
@@ -32,6 +43,15 @@ public abstract class AbstractRepository<T>{
 		}
 		if (type == CourseType.remove) {
 			return(mode.remove(course));
+=======
+			return(mode.add(new DataSwaper<T>(course)));
+		}
+		if (type == CourseType.put) {
+			return(mode.put(new DataSwaper<T>(course)));
+		}
+		if (type == CourseType.remove) {
+			return(mode.remove(new DataSwaper<T>(course)));
+>>>>>>> treenode
 		}
 		return 0;
 	}

@@ -1,6 +1,7 @@
 package com.cloverframework.core.repository;
 
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.repository.interfaces.IClassicalMode;
 
 /**
  * 一个的经典dao层仓储，不适用Course工具提交，但它仍然是通用的，直接由领域服务直接调用接口方法获得dao层数据。
