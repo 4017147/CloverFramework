@@ -4,6 +4,8 @@ import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
+import com.cloverframework.core.repository.interfaces.IClassicalMode;
+import com.cloverframework.core.repository.interfaces.ICourseMode;
 /**
  * 一个通用的仓储，整合了Course和经典仓储
  * @author yl

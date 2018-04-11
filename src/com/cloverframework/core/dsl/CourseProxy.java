@@ -7,9 +7,11 @@ import java.util.function.Supplier;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.Course.Count;
+import com.cloverframework.core.dsl.interfaces.CourseOperation;
+import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
-import com.cloverframework.core.util.CourseType;
+import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.lambda.Literal;
 /**
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
@@ -17,7 +19,7 @@ import com.cloverframework.core.util.lambda.Literal;
  * @author yl
  *
  */
-public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
+public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
@@ -118,20 +120,6 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		//如果集合返回的不是刚刚创建的对象
 		return null;
 	}
-
-	/**
-	 * 设置course内部的时间属性
-	 * @param course
-	 */
-//	protected void setCourseTime(Course course) {
-//		long exe = System.currentTimeMillis()-course.create;
-//		course.max = (exe>course.max?exe:course.max);
-//		course.min = (exe<course.min?exe:course.min);
-//		if(course.min==0)
-//			course.min = exe;
-//		course.avg = (exe+course.avg)/(course.avg==0?1:2);
-//	}
-
 	
 	/*----------------------public method-------------------- */
 	
@@ -258,7 +246,12 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		return begin();
 	}
 	
-	
+	/**
+	 * 将fork和master关联
+	 * @param id
+	 * @param course
+	 * @return
+	 */
 	public Course cross(String id,Course course) {
 		course.origin = getCourse(id).next;
 		return course;
@@ -306,6 +299,7 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		return repository.commit(course);
 	}
 	
+	
 	Object execute(String type) {
 		if(type=="get") 
 			return executeOne(getCurrCourse());
@@ -313,6 +307,10 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 			return commit(getCurrCourse());
 	}
 	
+	/**
+	 * 将当前proxy对象移交仓储，仓储根据不用的proxy实例和泛化执行对应的操作
+	 * @return
+	 */
 	public int push() {
 		return repository.fromProxy(this);
 	}
@@ -366,9 +364,15 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		return Course.Te.te;
 	}
 	
+	/**
+	 * 创建子节点通用函数
+	 * @param function
+	 * @return
+	 */
 	protected <R> R createNode(Function<AbstractCourse<?>,R> function) {
 		AbstractCourse<?> course = getCurrCourse();
 		AbstractCourse<?> last = null;
+		//搜索最后主干节点
 		while(course!=null) {
 			last = course;
 			course = course.next;
@@ -377,10 +381,20 @@ public class CourseProxy<T> implements CourseOperation,ICourseProxy<T>{
 		return r;
 	}
 
+	/**
+	 * 创建condition类型子节点
+	 * @param obj
+	 * @return
+	 */
 	public Condition $(Object...obj){
 		return createNode((last)->new Condition(last,CourseType.by,true,obj));
 	}
 	
+	/**
+	 * 创建count聚合函数
+	 * @param obj
+	 * @return
+	 */
 	public Count count(Object obj) {
 		return createNode((last)->new Count(last,CourseType.count,true,obj));
 	}

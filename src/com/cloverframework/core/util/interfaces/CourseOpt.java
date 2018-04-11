@@ -1,4 +1,4 @@
-package com.cloverframework.core.util;
+package com.cloverframework.core.util.interfaces;
 
 /**
  * course的操作类型，继承该接口可扩展更多的操作类型

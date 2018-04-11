@@ -2,6 +2,7 @@ package com.cloverframework.core.util;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.factory.EntityFactory;
+import com.cloverframework.core.util.interfaces.IArgsMatcher;
 
 public class ArgsFilter {
 	/**
@@ -10,7 +11,7 @@ public class ArgsFilter {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public static boolean filter(Object e,DomainService domainService,ArgsPattern pattern) {
+	public static boolean filter(Object e,DomainService domainService,IArgsMatcher pattern) {
 		boolean classMatch = false;
 		Class entityClass = null;
 		Class domainClass = domainService.getClass();
@@ -24,8 +25,7 @@ public class ArgsFilter {
 				entityClass.isEnum()||pattern.isMatch(e)) {
 			classMatch = true;
 			}
-		}
-			
+		}	
 		return classMatch;
 	}
 }

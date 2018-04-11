@@ -1,4 +1,4 @@
-package com.cloverframework.core.repository;
+package com.cloverframework.core.repository.interfaces;
 /**
  * 
  * @author yl

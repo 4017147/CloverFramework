@@ -1,4 +1,6 @@
-package com.cloverframework.core.dsl;
+package com.cloverframework.core.dsl.interfaces;
+
+import com.cloverframework.core.dsl.Course;
 
 /**
  * 重写接口的方法用于针对courseProxy的sharespace和newest的操作实现，

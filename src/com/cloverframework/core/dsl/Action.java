@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.interfaces.CourseOperation;
 
 /**
  * Action是一个支持多线程的course代理，在服务程序中建议使用该类来创建业务过程而非使用CourseProxy，
@@ -128,6 +129,9 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 		return 0;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	public int push() {
 		return repository.fromAction(this);
 	}
@@ -149,8 +153,6 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public Course START(String id) {
 		//必需
 		Course course = super.START(id);
-//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-//			workSpace.get().add(course);
 		return course;
 	}
 
@@ -161,8 +163,6 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public Course FORK(String id) {
 		//必需
 		Course course = super.FORK(id);
-//		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-//			workSpace.get().add(course);
 		return course;
 	}
 	
@@ -176,21 +176,15 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 		Course course = getCurrCourse();
 		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
 			workSpace.get().add(course);
-	}
-	
+	}	
 	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();	
 		for(String key:shareSpace.keySet()) {
 			Course course = shareSpace.get(key);
-			course.condition1 = true;
-			course.condition2 = true;
 			sb.append(course.toString()+"\n");
 		}
 		return sb.toString();			
 	}
-	
-	
-	
 }

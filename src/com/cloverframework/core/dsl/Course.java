@@ -1,11 +1,11 @@
 package com.cloverframework.core.dsl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiFunction;
 
-import com.cloverframework.core.data.CourseResult;
-import com.cloverframework.core.util.CourseType;
+import com.cloverframework.core.data.interfaces.CourseResult;
+import com.cloverframework.core.exception.CourseIsClosed;
+import com.cloverframework.core.util.interfaces.CourseType;
 
 /**
  * Course是基于AbstractCourse实现的基础上，提供了面向用户业务过程语言定义的方法，
@@ -25,6 +25,11 @@ public final class Course extends AbstractCourse<Course>{
 	public CourseResult<?> getResult(){
 		return this.result;
 	}
+	
+	/**
+	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
+	 * @param result
+	 */
 	public void setResult(CourseResult<?> result) {
 		if(this.result==null)
 			this.result = result;
@@ -47,17 +52,6 @@ public final class Course extends AbstractCourse<Course>{
 	public String getId() {
 		return id;
 	}
-
-	
-	
-	//用于测试
-	@SuppressWarnings("unused")
-	private void eachlist() {
-		for(String s:literal) {
-			System.out.println(s);
-		}
-	}
-
 		
 	@Override
 	public String getJsonString() {
@@ -78,7 +72,13 @@ public final class Course extends AbstractCourse<Course>{
 	 */
 	@SuppressWarnings("rawtypes")
 	private static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object b[]) {
-		if(a.getStatus()<WAIT)return old;
+		if(a.getStatus()<WAIT)
+			try {
+				throw new CourseIsClosed(a.getType());
+			} catch (CourseIsClosed e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		old = constructor.apply(a, b);
 		return old;
 	}
@@ -142,9 +142,6 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("unused")
 		private Limit 	limit;
 		
-		
-		/**=*/
-		//public Get count(Object...value) {optype = opt.count;setValues(value);return this;}
 		public By 		by(Object...obj){return by = (By) create(by,By::new,this,obj);}
 		public AND 		and(Object...obj){return and = (AND) create(and,AND::new,this,obj);}
 		public OrderBy 	orderBy(Object...obj){return orderBy = (OrderBy) create(orderBy, OrderBy::new,this,obj);}
@@ -198,8 +195,16 @@ public final class Course extends AbstractCourse<Course>{
 		protected Add(AbstractCourse<?> previous,Object...obj){
 			super(previous,courseType.add, obj);
 		}
+		
+		
+		@Override
+		public Add setValues(Object... values) {
+			// TODO Auto-generated method stub
+			return (Add)super.setValues(values);
+		}
+
+
 		//-------------------------------------------------------
-		//预留By
 		private By by;
 		public By By(Object...obj){return by = (By) create(by,By::new,this,obj);}
 		}
@@ -264,6 +269,7 @@ public final class Course extends AbstractCourse<Course>{
 		public Condition ge(Object...value) {optype = opt.ge;setValues(value);return this;}
 		/**<=*/
 		public Condition le(Object...value) {optype = opt.le;setValues(value);return this;}
+	
 		
 		//-------------------------------------------------------
 		private Limit 	limit;

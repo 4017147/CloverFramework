@@ -3,6 +3,7 @@ package com.cloverframework.core.repository;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
+import com.cloverframework.core.repository.interfaces.ICourseMode;
 
 /**
  * 一个针对Course工具提交的仓储，大部分业务已course定义的操作都可以使用该仓储
