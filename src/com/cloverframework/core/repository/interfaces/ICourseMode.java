@@ -1,6 +1,6 @@
 package com.cloverframework.core.repository.interfaces;
 
-import com.cloverframework.core.repository.DataSwaper;
+import com.cloverframework.core.data.interfaces.DataSwap;
 
 /**
 * @author yl  
@@ -8,8 +8,8 @@ import com.cloverframework.core.repository.DataSwaper;
 *    
 */
 public interface ICourseMode<T> {
-	T get(DataSwaper<T> swaper);
-	int add(DataSwaper<T> swaper);
-	int put(DataSwaper<T> swaper);
-	int remove(DataSwaper<T> swaper);
+	T get(DataSwap<T> swaper);
+	int add(DataSwap<T> swaper);
+	int put(DataSwap<T> swaper);
+	int remove(DataSwap<T> swaper);
 }

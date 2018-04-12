@@ -1,3 +1,7 @@
+1.7
+1、CourseProxy的泛型重构
+2、AbstractCourse的泛型去除
+
 1.6
 1、修复创建子节点的bug
 2、新增聚合函数的DSL语法支持

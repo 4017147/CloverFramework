@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.cloverframework.core.data.Values;
+import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
@@ -15,11 +16,11 @@ import com.cloverframework.core.dsl.interfaces.CourseInterface;
 import com.cloverframework.core.exception.ArgsCountNotMatch;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.util.ArgsFilter;
+import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.ELOperation;
 import com.cloverframework.core.util.interfaces.CourseOpt;
 import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.IArgsMatcher;
-import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.json.JsonFields;
 import com.cloverframework.core.util.json.JsonUtil;
 
@@ -30,10 +31,15 @@ import com.cloverframework.core.util.json.JsonUtil;
  * 
  * 
  */
-public abstract class AbstractCourse<T> implements CourseInterface<T>{
+public abstract class AbstractCourse implements CourseInterface{
 	
 	/**course代理*/
-	CourseProxy<?> proxy;//上级传递
+	@SuppressWarnings("rawtypes")
+	CourseProxy proxy;//上级传递
+	
+	/** course标识*/
+	protected String id;
+
 	
 	/**节点元素*/
 	private Object[] elements;	
@@ -51,16 +57,16 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	protected String optype;
 	
 	/**前级*/
-	AbstractCourse<?> previous;
+	AbstractCourse previous;
 	
 	/**后级*/
-	AbstractCourse<?> next;
+	AbstractCourse next;
 	
 	/**父级*/
-	AbstractCourse<?> parent;
+	AbstractCourse parent;
 	
 	/**子级*/
-	List<AbstractCourse<?>> son;
+	List<AbstractCourse> son;
 	
 	/**是否是一个子级*/
 	protected boolean isSon;
@@ -77,6 +83,8 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	/**查询参数值*/
 	private CourseValues values;
 	
+	private CourseResult<?> result;
+
 	/**json输出工具*/
 	static JsonUtil jutil;
 	
@@ -102,7 +110,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	private String model;
 	
 	/** 基线course*/
-	protected AbstractCourse<?> origin;
+	protected AbstractCourse origin;
 
 	IArgsMatcher argsMather = new ArgsMatcher();
 	
@@ -131,7 +139,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	
 	
 	/**三元引用的返回标识*/
-	enum Te{te}
+	public enum Te{te}
 	
 	/**
 	 * 表示该course当前状态
@@ -144,13 +152,16 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	private volatile byte status = WAIT;//上级传递
 	
 
-
 	/*----------------------private method-------------------- */
 
-	private void init(AbstractCourse<?> course) {
+	protected void init(AbstractCourse course) {
 		if(course!=null) {
 			literal = course.literal;
 			literal_te = course.literal_te;
+			if(literal==null)
+				literal = new ArrayList<String>(50);
+			if(literal_te==null)
+				literal_te = new ArrayList<String>(50);
 			proxy = course.proxy;
 			isFork = course.isFork;
 			isForkm = course.isForkm;
@@ -228,7 +239,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param object
 	 */
 	protected void setSon(Object object) {
-		AbstractCourse<?> node =  (AbstractCourse<?>)object;
+		AbstractCourse node =  (AbstractCourse)object;
 		while(node.previous!=null) {
 			if(node.isSon)
 				break;
@@ -237,7 +248,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 		node.parent = this;
 		//if()
 		if(this.son==null)
-			this.son = new ArrayList<AbstractCourse<?>>();
+			this.son = new ArrayList<AbstractCourse>();
 		this.son.add(node);
 	}
 
@@ -314,7 +325,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 			if(son==null)
 				son = new ArrayList<JsonFields>();
 			
-			for(AbstractCourse<?> abc:this.son) {
+			for(AbstractCourse abc:this.son) {
 				son.add(abc.buildJsonNode());
 			}
 		}
@@ -368,12 +379,14 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param condition2 是否输出颜色,改颜色通过ANSI转义序列定义
 	 * @return
 	 */
-	private String DataString(AbstractCourse<T> course,Object[] elements,boolean condition1,boolean condition2) {
+	private String DataString(AbstractCourse course,Object[] elements,boolean condition1,boolean condition2) {
 		StringBuilder builder = new StringBuilder(56);
 		if(condition2)
 			builder.append("\n\u001b[94m").append(course.getClass().getSimpleName()).append("\u001b[0m ");
 		else
 			builder.append("\n").append(course.getClass().getSimpleName());
+		if(id!=null)
+			builder.append("id:"+id+" ");
 		if (elements!=null ) {
 			String comma = ", ";
 			String blank = " ";
@@ -430,7 +443,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param course
 	 * @return
 	 */
-	private String fieldString(AbstractCourse<T> course) {
+	private String fieldString(AbstractCourse course) {
 		StringBuilder builder = new StringBuilder();
 		
 			Field[] fields = course.getClass().getDeclaredFields();
@@ -475,6 +488,19 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 			this.status = status;
 	}
 
+	/**
+	 * 
+	 * @param id 这个course的标识，给定的字符串不能包含空格
+	 */
+	protected AbstractCourse(String id){
+		literal = new ArrayList<String>(50);
+		literal_te = new ArrayList<String>(50);
+		//String reg = "^\\s*$";
+		String reg = "^[\\S]*$";
+		if(id!=null && id.matches(reg))
+			this.id = id;
+	}
+
 	/*----------------------public method-------------------- */
 	
 	public AbstractCourse() {}
@@ -485,7 +511,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param courseType
 	 * @param obj
 	 */
-	public AbstractCourse(AbstractCourse<?> previous,String courseType,Object ...obj) {
+	public AbstractCourse(AbstractCourse previous,String courseType,Object ...obj) {
 		this.type = courseType;
 		previous.next = this;
 		this.previous = previous;
@@ -499,7 +525,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @param isSon
 	 * @param obj
 	 */
-	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object...obj) {
+	public AbstractCourse(AbstractCourse parent,String courseType,boolean isSon,Object...obj) {
 		this.type = courseType;
 		if(isSon) {
 			this.isSon = true;
@@ -567,7 +593,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	@Override
 	public Object execute() {
 		//CourseProxy cp = proxy;
-		AbstractCourse<?> course = this;
+		AbstractCourse course = this;
 		while(course.previous!=null)
 			course = course.previous;
 		String t = course.getType();
@@ -630,7 +656,7 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 * @throws ArgsCountNotMatch 
 	 */
 	@Override
-	public AbstractCourse<T> setValues(Object...values){
+	public AbstractCourse setValues(Object...values){
 		if(this.values==null)
 			try {
 				this.values = new Values(types,fields,values);
@@ -642,6 +668,19 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 		return this;
 	}
 	
+	public CourseResult<?> getResult(){
+		return this.result;
+	}
+
+	/**
+	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
+	 * @param result
+	 */
+	public void setResult(CourseResult<?> result) {
+		if(this.result==null)
+			this.result = result;
+	}
+
 	@Override
 	public String getType() {
 		return type;
@@ -695,6 +734,18 @@ public abstract class AbstractCourse<T> implements CourseInterface<T>{
 	 */
 	public void setPattern(IArgsMatcher pattern) {
 		this.argsMather = pattern;
+	}
+
+	
+	public void setId(String id) {
+		//String reg = "^\\s*$";
+		String reg = "^[\\S]*$";
+		if(id!=null && id.matches(reg))
+		this.id = id;
+	}
+
+	public String getId() {
+		return id;
 	}
 
 	

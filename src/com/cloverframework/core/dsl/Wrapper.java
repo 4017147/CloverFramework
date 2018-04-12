@@ -9,7 +9,7 @@ import com.cloverframework.core.data.interfaces.CourseWrapper;
 
 public class Wrapper implements CourseWrapper{
 	
-	private AbstractCourse<?> course;
+	private AbstractCourse course;
 	private Course head;
 
 	public Wrapper(Course course) {
@@ -18,7 +18,7 @@ public class Wrapper implements CourseWrapper{
 		this.head = course;
 	}
 	
-	public Wrapper(AbstractCourse<?> course) {
+	public Wrapper(AbstractCourse course) {
 		super();
 		this.course = course;
 	}
@@ -56,7 +56,7 @@ public class Wrapper implements CourseWrapper{
 	@Override
 	public List<CourseWrapper> sons() {
 		List<CourseWrapper> list = new ArrayList<CourseWrapper>();
-		for(AbstractCourse<?> c:course.son) {
+		for(AbstractCourse c:course.son) {
 			list.add(new Wrapper(c));
 		}
 		return list;

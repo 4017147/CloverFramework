@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
-import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.repository.interfaces.IClassicalMode;
 import com.cloverframework.core.repository.interfaces.ICourseMode;
@@ -15,36 +15,36 @@ import com.cloverframework.core.util.interfaces.CourseType;
  * @author yl
  *
  */
-public abstract class AbstractRepository<T>{
-	private final T doGet(Course course,ICourseMode<T> mode) {
+public abstract class AbstractRepository<T,C extends AbstractCourse>{
+	private final T doGet(C course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.get) {
-			return mode.get(new DataSwaper<T>(course));
+			return mode.get(new DataSwaper<T,C>(course));
 		}
 		return null;
 	}
 	
-	private final int doOther(Course course,ICourseMode<T> mode) {
+	private final int doOther(C course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.add) {
-			return(mode.add(new DataSwaper<T>(course)));
+			return(mode.add(new DataSwaper<T,C>(course)));
 		}
 		if (type == CourseType.put) {
-			return(mode.put(new DataSwaper<T>(course)));
+			return(mode.put(new DataSwaper<T,C>(course)));
 		}
 		if (type == CourseType.remove) {
-			return(mode.remove(new DataSwaper<T>(course)));
+			return(mode.remove(new DataSwaper<T,C>(course)));
 		}
 		return 0;
 	}
 	
 
-	public final int fromProxy(CourseProxy<T> proxy,ICourseMode<T> mode) {
+	public final int fromProxy(CourseProxy<T,C> proxy,ICourseMode<T> mode) {
 		if(!(proxy instanceof Action))
 			return 0;
-		Map<String,Course> map = proxy.getShareSpace();
+		Map<String,C> map = proxy.getShareSpace();
 		for(String key:map.keySet()) {
-			Course course = map.get(key);
+			C course = map.get(key);
 			if(course.getType()==CourseType.get)
 				doGet(course,mode);
 			else
@@ -53,9 +53,9 @@ public abstract class AbstractRepository<T>{
 		return 1;
 	}
 	
-	public final int fromAction(Action<?> action,ICourseMode<T> mode) {
-		List<Course> list = action.getWorkSpace();
-		for(Course course:list) {
+	public final int fromAction(Action<T,C> action,ICourseMode<T> mode) {
+		List<C> list = action.getWorkSpace();
+		for(C course:list) {
 			if(course.getType()==CourseType.get)
 				doGet(course,mode);
 			else
@@ -64,10 +64,10 @@ public abstract class AbstractRepository<T>{
 		return 1;
 	}
 	
-	public final T query(Course course,ICourseMode<T> mode) {
+	public final T query(C course,ICourseMode<T> mode) {
 		return doGet(course,mode);
 	}
-	public final int commit(Course course,ICourseMode<T> mode) {
+	public final int commit(C course,ICourseMode<T> mode) {
 		return doOther(course,mode);
 	}
 	

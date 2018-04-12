@@ -9,22 +9,23 @@ import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseWrapper;
 import com.cloverframework.core.data.interfaces.DataSet;
 import com.cloverframework.core.data.interfaces.DataSwap;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.Wrapper;
 
-public class DataSwaper<T> implements DataSwap<T>{
-	private Course course;
+public class DataSwaper<T,C extends AbstractCourse> implements DataSwap<T>{
+	private C course;
 	
 
-	protected Course getCourse() {
+	protected C getCourse() {
 		return course;
 	}
 
-	protected void setCourse(Course course) {
+	protected void setCourse(C course) {
 		this.course = course;
 	}
 	
-	public DataSwaper(Course course) {
+	public DataSwaper(C course) {
 		super();
 		this.course = course;
 	}

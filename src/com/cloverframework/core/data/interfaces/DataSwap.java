@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.cloverframework.core.dsl.AbstractCourse;
+
 /**
  * 领域层通过该接口与数据接口层实现交互
  * @author yl

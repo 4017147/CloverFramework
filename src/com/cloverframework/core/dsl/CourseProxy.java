@@ -1,37 +1,41 @@
 package com.cloverframework.core.dsl;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.Course.Count;
 import com.cloverframework.core.dsl.interfaces.CourseOperation;
 import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
+import com.cloverframework.core.factory.CourseFactory;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.lambda.Literal;
 /**
+ * 泛型C extends AbstractCourse，下面统称course
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
  * 该类大部分方法是线程不安全的。
  * @author yl
  *
  */
-public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
+public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
 	
 	/**最后产生的course对象*/
-	Course newest;
+	C newest;
 	/**share区，用于缓存course对象*/
-	HashMap<String,Course> shareSpace = new HashMap<String,Course>();
+	HashMap<String,C> shareSpace = new HashMap<String,C>();
 	
 	protected DomainService domainService;
 	
-	CourseRepository<T> repository;
+	CourseRepository<T,C> repository;
+	
 	
 	/**并集 */
 	public static final String U = "U";
@@ -60,34 +64,34 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	public static final String[] Model = {U,I,C,UB,UA,MB,MA,M,RM,CB,CA};
 	
 	@Override
-	public Course getCurrCourse() {
+	public C getCurrCourse() {
 		return newest;
 	}
 	
 	@Override
-	public Course removeCurrCourse() {
-		Course old = getCurrCourse();
+	public C removeCurrCourse() {
+		C old = getCurrCourse();
 		newest = null;
 		return old;
 	}
 	
 	@Override
-	public void setCurrCourse(Course course) {
+	public void setCurrCourse(C course) {
 		newest = course;
 	}
 	
 	@Override
-	public Course getCourse(String id) {
+	public C getCourse(String id) {
 		return shareSpace.get(id);
 	}
 	
 	@Override
-	public void setCourse(String id,Course course) {
+	public void setCourse(String id,C course) {
 		shareSpace.put(id, course);
 	}
 	
 	@Override
-	public Course removeCourse(String id) {
+	public C removeCourse(String id) {
 		return shareSpace.remove(id);
 	}
 	
@@ -96,10 +100,12 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * 初始化一个course
 	 */
 	@Override
-	public Course initCourse(String id,Course course,CourseProxy<T> proxy,byte status) {
+	public C initCourse(String id,C course,CourseProxy<T,C> proxy,byte status) {
 		//course.domainService = service;
+		course.setId(id);
 		course.proxy = proxy;
 		course.setStatus(status);
+		course.init(course);
 		return course;
 	}
 	
@@ -109,11 +115,12 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * 如果不相同则抛出异常，为防止获取到快照或者被jvm优化。
 	 * @return 返回一个根节点
 	 */
-	private Course begin() {
+	private C begin() {
 		Thread t = Thread.currentThread();
 		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
 		//System.out.println(t.getStackTrace().length-level);
-		Course course = EntityFactory.putCourse(getCurrCourse(), t, t.getStackTrace().length-level);
+		@SuppressWarnings("unchecked")
+		C course = (C) EntityFactory.putCourse(getCurrCourse(), t, t.getStackTrace().length-level);
 		if(course.getStatus()==Course.WAIT) {
 			return course;
 		}
@@ -131,12 +138,12 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 		this.domainService = domainService;
 	}
 	
-	public HashMap<String, Course> getShareSpace() {
+	public HashMap<String, C> getShareSpace() {
 		return shareSpace;
 	}
 	
 	@Override
-	public void setRepository(CourseRepository<T> repository) {
+	public void setRepository(CourseRepository<T,C> repository) {
 		this.repository = repository;
 	}
 
@@ -150,7 +157,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	public String toString() {
 		StringBuilder sb = new StringBuilder();	
 		for(String key:shareSpace.keySet()) {
-			Course course = shareSpace.get(key);
+			C course = shareSpace.get(key);
 			sb.append(course.toString()+"\n");
 		}
 		return sb.toString();			
@@ -169,9 +176,28 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param cover false：不覆盖集合中的上一个course，true：覆盖集合中的上一个course
 	 * @return
 	 */
-	protected Course addCourse(String id,boolean cover) {
-		Course old = removeCurrCourse();
-		Course newc = new Course(id);
+	@SuppressWarnings("unchecked")
+	protected C addCourse(String id,boolean cover) {
+		C old = removeCurrCourse();
+		C newc = null;
+		try {
+			Type type = this.getClass().getGenericSuperclass();
+			if(type==Object.class) {
+				newc = (C) CourseFactory.create(Course.class);
+			}else {
+				Type[] types = ((ParameterizedType)type).getActualTypeArguments();
+				if(types.length<2)
+					newc = (C) CourseFactory.create(Course.class);
+				else
+					newc = (C) CourseFactory.create((Class<C>) types[1]);				
+			}
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		initCourse(id,newc,this,Course.WAIT);
 		if(cover)
 			setCourse(old.id, newc);
@@ -187,8 +213,8 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * 开始一个course的方法，通过该方法可以链式执行GET ADD PUT REMVE等方法
 	 * @return 返回一个根节点
 	 */
-	public Course START() {
-		addCourse(null,false);
+	public C START() {
+		addCourse(String.valueOf(System.currentTimeMillis()),false);
 		return begin();
 	}
 	
@@ -199,8 +225,8 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param id 这个course的标识，不能包含空格
 	 * @return
 	 */
-	public Course START(String id) {
-		Course old = null;
+	public C START(String id) {
+		C old = null;
 		old = getCourse(id);
 		if(old!=null) {
 			setCurrCourse(old);
@@ -216,8 +242,8 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param id
 	 * @return
 	 */
-	public Course FORKM(String id) {
-		Course course = getCourse(id);
+	public C FORKM(String id) {
+		C course = getCourse(id);
 		if(course!=null) {
 			addCourse(id+"_FM_"+System.currentTimeMillis(),false);
 			getCurrCourse().isForkm = true;
@@ -234,8 +260,8 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param id
 	 * @return
 	 */
-	public Course FORK(String id) {
-		Course course = getCourse(id);
+	public C FORK(String id) {
+		C course = getCourse(id);
 		if(course!=null) {
 			addCourse(id+"_F_"+System.currentTimeMillis(),false);
 			getCurrCourse().isFork = true;
@@ -252,7 +278,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param course
 	 * @return
 	 */
-	public Course cross(String id,Course course) {
+	public C cross(String id,C course) {
 		course.origin = getCourse(id).next;
 		return course;
 	}
@@ -264,7 +290,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * 3、分支course不会放入sharespace
 	 */
 	protected void END() {
-		Course course = getCurrCourse();
+		C course = getCurrCourse();
 		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
 			setCourse(course.id, course);			
 		}else if(course.getStatus()==Course.END && course.id==null){
@@ -282,7 +308,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	}
 	
 	@Override
-	public T executeOne(Course course) {
+	public T executeOne(C course) {
 		return repository.query(course);
 	}
 	
@@ -295,7 +321,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	}
 	
 	@Override
-	public int commit(Course course) {
+	public int commit(C course) {
 		return repository.commit(course);
 	}
 	
@@ -323,7 +349,8 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @return null
 	 */
 	public Object $() {
-		getCurrCourse().literal.clear();
+		if(getCurrCourse().literal!=null && getCurrCourse().literal.size()>0)
+			getCurrCourse().literal.clear();
 		return null;
 	}
 	
@@ -340,9 +367,10 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @return null
 	 */
 	public Object $(Literal ...lt) {
-		Course course = getCurrCourse();
+		C course = getCurrCourse();
 		if(course.getStatus()==Course.WAIT)
-			course.literal.clear();
+			if(course.literal!=null && course.literal.size()>0)
+				course.literal.clear();
 		course.setStatus(Course.LAMBDA);
 		for(Literal li:lt) {
 			li.literal();
@@ -357,7 +385,7 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @return
 	 */
 	public Object te(Object obj) {
-		Course course = getCurrCourse();
+		C course = getCurrCourse();
 		course.literal_te.add(course.literal.get(course.literal.size()-1));
 		course.literal.remove(course.literal.size()-1);
 		course.literal.remove(course.literal.size()-1);
@@ -369,9 +397,9 @@ public class CourseProxy<T> implements CourseOperation,CourseProxyInterface<T>{
 	 * @param function
 	 * @return
 	 */
-	protected <R> R createNode(Function<AbstractCourse<?>,R> function) {
-		AbstractCourse<?> course = getCurrCourse();
-		AbstractCourse<?> last = null;
+	protected <R> R createNode(Function<AbstractCourse,R> function) {
+		AbstractCourse course = getCurrCourse();
+		AbstractCourse last = null;
 		//搜索最后主干节点
 		while(course!=null) {
 			last = course;

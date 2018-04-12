@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseMethod;
 
@@ -102,7 +103,7 @@ public final class EntityFactory {
 	 * @param length 该线程方法的栈长
 	 * @throws Exception 
 	 */
-	public static Course putCourse(Course course,Thread t,int length) {
+	public static Course putCourse(AbstractCourse course,Thread t,int length) {
 		Object[] CourseInfo = new Object[3];
 		CourseInfo[0] = course;
 		CourseInfo[1] = t;

@@ -1,8 +1,8 @@
 package com.cloverframework.core.repository;
 
 import com.cloverframework.core.domain.DomainService;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
-import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.repository.interfaces.IClassicalMode;
 import com.cloverframework.core.repository.interfaces.ICourseMode;
@@ -11,9 +11,9 @@ import com.cloverframework.core.repository.interfaces.ICourseMode;
  * @author yl
  *
  */
-public class GeneralRepository<T> extends AbstractRepository<T>{
+public class GeneralRepository<T,C extends AbstractCourse> extends AbstractRepository<T,C>{
 	//建议使用IOC容器注入
-		private ICourseMode courseMode;
+		private ICourseMode<T> courseMode;
 		private IClassicalMode baseMode;
 		
 		
@@ -29,15 +29,15 @@ public class GeneralRepository<T> extends AbstractRepository<T>{
 			return super.fromProxy(proxy, courseMode);
 		}
 		
-		public final int fromAction(Action<?> action) {
+		public final int fromAction(Action<T,C> action) {
 			return super.fromAction(action, courseMode);
 		}
 		
-		public Object query(Course course) {
+		public Object query(C course) {
 			return super.query(course, courseMode);
 		}
 		
-		public Integer commit(Course course) {
+		public Integer commit(C course) {
 			return super.commit(course, courseMode);
 		}
 		

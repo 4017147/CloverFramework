@@ -12,10 +12,12 @@ import com.cloverframework.core.dsl.interfaces.CourseOperation;
  * 该类还提供了批量提交并执行业务过程的特性。原则上，不建议方法中创建action对象，因为那样会消耗大量内存，
  * 而是让业务组件继承action。例如：UserService extends Action
  * @author yl
+ * @param <T>
  *
  * @param <T>
+ * @param <C>
  */
-public class Action<T> extends CourseProxy<T> implements CourseOperation{
+public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> implements CourseOperation<C>{
 	{
 		/** 用于计算产生字面值的方法栈长是否合法，
 		 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
@@ -23,13 +25,13 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	}
 	
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
-	private ThreadLocal<Course> newest = new ThreadLocal<Course>();
+	private ThreadLocal<C> newest = new ThreadLocal<C>();
 	
 	/** share区，用于缓存每个线程产生的course*/
-	private ConcurrentHashMap<String,Course> shareSpace = new ConcurrentHashMap<String,Course>();
+	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
 	
 	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
-	private ThreadLocal<List<Course>> workSpace = new ThreadLocal<List<Course>>();
+	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
 	
 	/** 每个work集合初始大小*/
 	private static byte workSize = 10;
@@ -47,34 +49,34 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	
 	
 	@Override
-	public Course getCurrCourse() {
+	public C getCurrCourse() {
 		return newest.get();
 	}
 	
 	@Override
-	public Course removeCurrCourse() {
-		Course old = getCurrCourse();
+	public C removeCurrCourse() {
+		C old = getCurrCourse();
 		newest.remove();
 		return old;
 	}
 	
 	@Override
-	public void setCurrCourse(Course course) {
+	public void setCurrCourse(C course) {
 		newest.set(course);
 	}
 	
 	@Override
-	public Course getCourse(String id) {
+	public C getCourse(String id) {
 		return shareSpace.get(id);
 	}
 	
 	@Override
-	public void setCourse(String id,Course course) {
+	public void setCourse(String id,C course) {
 		shareSpace.put(id, course);
 	}
 	
 	@Override
-	public Course removeCourse(String id) {
+	public C removeCourse(String id) {
 		return shareSpace.remove(id);
 	}
 	
@@ -83,7 +85,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 * 获取当前线程的work区
 	 * @return
 	 */
-	public List<Course> getWorkSpace() {
+	public List<C> getWorkSpace() {
 		return workSpace.get();
 	}
 
@@ -108,7 +110,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 */
 	public void startWork() {
 		workSpace.remove();
-		workSpace.set(new ArrayList<Course>(workSize));
+		workSpace.set(new ArrayList<C>(workSize));
 		workable.remove();
 		workable.set((byte)1);
 	}
@@ -119,7 +121,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 */
 	public int endWork() {
 		if(workSpace.get()!=null) {
-			for(Course course:workSpace.get()) {
+			for(C course:workSpace.get()) {
 				course.destroy();
 			}
 			workSpace.get().clear();
@@ -140,7 +142,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Course START() {
+	public C START() {
 		//必需
 		return super.START();
 	}
@@ -150,9 +152,9 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 * 当 {@link Action#startWork()}开启，匹配到的course会填入workspace
 	 */
 	@Override
-	public Course START(String id) {
+	public C START(String id) {
 		//必需
-		Course course = super.START(id);
+		C course = super.START(id);
 		return course;
 	}
 
@@ -160,9 +162,9 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
 	 * 则进行分支，否则不进行分支，分支的course将存入workspace
 	 */
-	public Course FORK(String id) {
+	public C FORK(String id) {
 		//必需
-		Course course = super.FORK(id);
+		C course = super.FORK(id);
 		return course;
 	}
 	
@@ -173,7 +175,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	protected void END() {
 		//必需
 		super.END();
-		Course course = getCurrCourse();
+		C course = getCurrCourse();
 		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
 			workSpace.get().add(course);
 	}	
@@ -182,7 +184,7 @@ public class Action<T> extends CourseProxy<T> implements CourseOperation{
 	public String toString() {
 		StringBuilder sb = new StringBuilder();	
 		for(String key:shareSpace.keySet()) {
-			Course course = shareSpace.get(key);
+			C course = shareSpace.get(key);
 			sb.append(course.toString()+"\n");
 		}
 		return sb.toString();			
