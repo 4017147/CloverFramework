@@ -6,14 +6,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 
+import com.cloverframework.core.data.VSet;
 import com.cloverframework.core.data.Values;
 import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
+import com.cloverframework.core.data.interfaces.ValueSet;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.interfaces.CourseInterface;
 import com.cloverframework.core.exception.ArgsCountNotMatch;
+import com.cloverframework.core.exception.CourseIsClosed;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.ArgsMatcher;
@@ -26,15 +30,15 @@ import com.cloverframework.core.util.json.JsonUtil;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
- * 当status属性级别低于或等于END，对Elements和status的任何操作都是无效的。
+ * 当status属性级别低于或等于END，对Elements和status的任何操作都必需是无效的。
  * @author yl
  * 
  * 
  */
-public abstract class AbstractCourse implements CourseInterface{
+@SuppressWarnings("rawtypes")
+public abstract class AbstractCourse<A> implements CourseInterface{
 	
 	/**course代理*/
-	@SuppressWarnings("rawtypes")
 	CourseProxy proxy;//上级传递
 	
 	/** course标识*/
@@ -83,6 +87,14 @@ public abstract class AbstractCourse implements CourseInterface{
 	/**查询参数值*/
 	private CourseValues values;
 	
+	/**
+	 * 基础数据类型value设置接口
+	 */
+	public final ValueSet<A> value = new VSet<A>(this);
+	
+	/**
+	 * 返回数据接口
+	 */
 	private CourseResult<?> result;
 
 	/**json输出工具*/
@@ -217,6 +229,10 @@ public abstract class AbstractCourse implements CourseInterface{
 		}
 	}
 
+	void setValueElement(Object... elements){
+		setElements(elements);
+	}
+	
 	/**
 	 * 设置fork模式值
 	 * @param o
@@ -254,12 +270,12 @@ public abstract class AbstractCourse implements CourseInterface{
 
 	
 	/**
-	 * 将领域实体的getter方法字面值填充到element数组中
-	 * 1、如果数组元素为null则填充（如果字面值列表元素的next存在）
-	 * 2、如果数组元素为领域实体，如果为合法的领域实体则添加，如果不合法则移除。
-	 * 3、如果该元素不是实体，则进行字面值填充。
+	 * 将领域实体字典或方法字面值填充到element数组中
+	 * 1、如果数组元素遇到为null则填充
+	 * 2、如果数组元素为领域实体或实体类型，合法则添加类型
+	 * 3、剩余的字面值会填充
 	 * <p>
-	 * 通常情况下，值要先于方法字面值填充，按照值->实体->方法字面值->三元
+	 * 通常情况下，值要先于方法字面值填充，按字典->实体类型->方法字面值->三元
 	 * 
 	 * @param elements
 	 * @param literal
@@ -284,6 +300,7 @@ public abstract class AbstractCourse implements CourseInterface{
 					if(elements[e] instanceof Condition)//Condtion类型节点不允许子节点和其他参数共存
 						return new Object[0];
 				}else if(elements[e]!=null){
+					Object o = null;
 					if(elements[e]==Te.te) {
 						int size = literal_te.size();
 						if(size>0) {
@@ -291,8 +308,8 @@ public abstract class AbstractCourse implements CourseInterface{
 							b++;
 							t++;
 						}
-					}else if(ArgsFilter.filter(elements[e], domainService, argsMather)){
-						temps[t] = elements[e];
+					}else if((o = ArgsFilter.filter(elements[e], domainService, argsMather))!=null){
+						temps[t] = o;
 						t++;				
 					}else{
 						if(a<literal.size()) {
@@ -489,6 +506,21 @@ public abstract class AbstractCourse implements CourseInterface{
 	}
 
 	/**
+	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
+	 */
+	protected static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object b[]) {
+		if(a.getStatus()<WAIT)
+			try {
+				throw new CourseIsClosed(a.getType());
+			} catch (CourseIsClosed e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		old = constructor.apply(a, b);
+		return old;
+	}
+	
+	/**
 	 * 
 	 * @param id 这个course的标识，给定的字符串不能包含空格
 	 */
@@ -652,14 +684,16 @@ public abstract class AbstractCourse implements CourseInterface{
 	}
 	
 	/**
-	 * 设置该节点的参数计算值，如age = ?中的参数，确保创建不可变类为值对象
+	 * 设置该节点的参数计算值，如age = ?中的参数，如果参数不能保证是基本类型，
+	 * 建议使用value属性的基本类型方法，以减少装箱和类型转换的开销
+	 * @param <V>
 	 * @throws ArgsCountNotMatch 
 	 */
 	@Override
-	public AbstractCourse setValues(Object...values){
+	public  AbstractCourse setValues(Object...values){
 		if(this.values==null)
 			try {
-				this.values = new Values(types,fields,values);
+				this.values = new Values(types, fields, values);
 			} catch (ArgsCountNotMatch e) {
 				// TODO Auto-generated catch block
 				//如果value异常则为null，后续操作应当抛出空指针异常
@@ -667,6 +701,17 @@ public abstract class AbstractCourse implements CourseInterface{
 			}
 		return this;
 	}
+	
+	/**
+	 * 通过一个构造完成的值对象设置为当前节点的values
+	 * @param values
+	 * @return
+	 */
+	public AbstractCourse setValues(CourseValues values) {
+		this.values = values;
+		return this;
+	}
+	
 	
 	public CourseResult<?> getResult(){
 		return this.result;

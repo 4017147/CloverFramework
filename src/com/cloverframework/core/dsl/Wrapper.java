@@ -56,7 +56,7 @@ public class Wrapper implements CourseWrapper{
 	@Override
 	public List<CourseWrapper> sons() {
 		List<CourseWrapper> list = new ArrayList<CourseWrapper>();
-		for(AbstractCourse c:course.son) {
+		for(AbstractCourse c:(List<AbstractCourse>)course.son) {
 			list.add(new Wrapper(c));
 		}
 		return list;

@@ -10,7 +10,7 @@ import com.cloverframework.core.repository.interfaces.IClassicalMode;
  * @param <C>
  *
  */
-public class ClassicalRepository<Object,C extends AbstractCourse> extends AbstractRepository<Object,C>{
+public class ClassicalRepository<C extends AbstractCourse> extends AbstractRepository<Object,C>{
 	private IClassicalMode mode;
 	
 	public void setMode(IClassicalMode mode) {

@@ -10,10 +10,9 @@ import org.junit.rules.TestName;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
-import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Course;
-import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.dsl.Course.Get;
+import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.factory.EntityFactory;
 import com.dict.entity.Demo_D;
 import com.entity.Demo;
@@ -23,6 +22,7 @@ import com.entity.User;
 public class CourseProxyTest implements DomainService{
 	private static Demo demo;
 
+	@SuppressWarnings("static-access")
 	@BeforeClass
 	public static void setup() {
 		 demo= EntityFactory.getInstance().getStaple(Demo.class);
@@ -71,7 +71,7 @@ public class CourseProxyTest implements DomainService{
 	 * 内部类
 	 * 实体方法+实体对象+字典
 	 */
-	@Test
+	//@Test
 	public void test2() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a").get($(),
@@ -96,9 +96,9 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * toJsonString测试
 	 */
-	@Test
+	//@Test
 	public void test3() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("b").get(
 					//
 					$(demo::getF5,demo::getF6),
@@ -121,9 +121,10 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * 三元表达式
 	 */
-	@Test
+	//@Test
+	//TODO
 	public void test4() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("b").get(
 					$(demo::getF5,demo::getF6,demo::getF9),
 					Demo_D.f1,
@@ -144,9 +145,9 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * sharespace区测试
 	 */
-	@Test
+	//@Test
 	public void test5() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
 			START("b").get(Demo_D.f3,Demo_D.f4).END();
 			START("c").get(Demo_D.f5,Demo_D.f6).END();
@@ -159,9 +160,9 @@ public class CourseProxyTest implements DomainService{
 	 * FROK()不缓存分支
 	 * FORKM()存入sharespace
 	 */
-	@Test
+	//@Test
 	public void test6() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2).END();
 			FORK("a").get(Demo_D.f3,Demo_D.f4).END();
 			FORKM("a").get(Demo_D.f5,Demo_D.f6).by(Demo_D.f7,Demo_D.f8).END();
@@ -173,9 +174,9 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 */
-	@Test
+	//@Test
 	public void test7() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
 			//FORKM("a").get(U,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
 			
@@ -208,9 +209,9 @@ public class CourseProxyTest implements DomainService{
 	 * 节点类型不匹配则关闭该节点和后续节点FORK模式
 	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
-	@Test
+	//@Test
 	public void test8() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
@@ -226,9 +227,9 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * 条件子节点测试
 	 */
-	@Test
+	//@Test
 	public void test9() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
@@ -244,9 +245,9 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * 聚合子节点测试
 	 */
-	@Test
+	//@Test
 	public void test10() {
-		CourseProxy cp = new CourseProxy<User,Course>(this) {{
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10).eq(20)

@@ -1,8 +1,5 @@
 package com.cloverframework.core.dsl;
 
-import java.util.function.BiFunction;
-
-import com.cloverframework.core.exception.CourseIsClosed;
 import com.cloverframework.core.util.interfaces.CourseType;
 
 /**
@@ -10,7 +7,7 @@ import com.cloverframework.core.util.interfaces.CourseType;
  * 通过方法和标识的使用能够组装一个业务过程。
  * @author yl  
  */
-public final class Course extends AbstractCourse{
+public final class Course extends AbstractCourse<Course>{
 	 /*
 	  * 为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
 	  */
@@ -28,23 +25,6 @@ public final class Course extends AbstractCourse{
 //		id = null;
 //		//result = null;
 //	}
-	
-	
-	/**
-	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
-	 */
-	private static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object b[]) {
-		if(a.getStatus()<WAIT)
-			try {
-				throw new CourseIsClosed(a.getType());
-			} catch (CourseIsClosed e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		old = constructor.apply(a, b);
-		return old;
-	}
-	
 	
 	private Get 	get;
 	private Add 	add;
@@ -89,7 +69,7 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Get extends AbstractCourse{
+	public static final class Get extends AbstractCourse<Get>{
 		
 		@SuppressWarnings("static-access")
 		public Get(AbstractCourse previous, Object...obj) {
@@ -117,7 +97,7 @@ public final class Course extends AbstractCourse{
 		 * @author yl
 		 *
 		 */
-	public static class Aggregate extends AbstractCourse{
+	public static class Aggregate extends AbstractCourse<Aggregate>{
 	
 		public Aggregate(AbstractCourse previous, String courseType, Object obj) {
 			super(previous, CourseType.agg, obj);
@@ -152,7 +132,7 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Add extends AbstractCourse{
+	public static final class Add extends AbstractCourse<Add>{
 		@SuppressWarnings("static-access")
 		protected Add(AbstractCourse previous,Object...obj){
 			super(previous,courseType.add, obj);
@@ -176,7 +156,7 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Put extends AbstractCourse{
+	public static final class Put extends AbstractCourse<Put>{
 		@SuppressWarnings("static-access")
 		protected Put(AbstractCourse previous,Object...obj){
 			super(previous,courseType.put, obj);
@@ -192,7 +172,7 @@ public final class Course extends AbstractCourse{
 	* @author yl
 	*
 	*/
-	public static final class Remove extends AbstractCourse{
+	public static final class Remove extends AbstractCourse<Remove>{
 		@SuppressWarnings("static-access")
 		protected Remove(AbstractCourse previous,Object...obj){
 			super(previous,courseType.remove, obj);
@@ -209,7 +189,7 @@ public final class Course extends AbstractCourse{
 	 *
 	 */
 	@SuppressWarnings("static-access")
-	public static class Condition extends AbstractCourse{
+	public static class Condition extends AbstractCourse<Condition>{
 		
 		protected Condition(AbstractCourse previous,String optype, Object...obj){
 			super(previous,optype, obj);
@@ -297,7 +277,7 @@ public final class Course extends AbstractCourse{
 		 * @author yl
 		 *
 		 */
-	public static final class GroupBy extends AbstractCourse{
+	public static final class GroupBy extends AbstractCourse<GroupBy>{
 		@SuppressWarnings("static-access")
 		protected GroupBy(AbstractCourse previous,Object...obj){
 			super(previous,courseType.groupBy, obj);
@@ -312,7 +292,7 @@ public final class Course extends AbstractCourse{
 		* @author yl
 		*
 		*/
-		public static final class OrderBy extends AbstractCourse{
+		public static final class OrderBy extends AbstractCourse<OrderBy>{
 			@SuppressWarnings("static-access")
 			public OrderBy(AbstractCourse previous,Object...obj){
 				super(previous,courseType.orderBy, obj);
@@ -328,7 +308,7 @@ public final class Course extends AbstractCourse{
 	* @author yl
 	*
 	*/
-	public static final class Limit extends AbstractCourse{
+	public static final class Limit extends AbstractCourse<Limit>{
 		@SuppressWarnings("unused")
 		private Object[] element;
 		protected Limit(AbstractCourse previous,int start,int end){

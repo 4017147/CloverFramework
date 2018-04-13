@@ -1,7 +1,6 @@
 package com.cloverframework.core.dsl.interfaces;
 
 import com.cloverframework.core.dsl.AbstractCourse;
-import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.repository.CourseRepository;
 

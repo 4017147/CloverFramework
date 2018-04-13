@@ -17,7 +17,7 @@ public class GeneralRepository<T,C extends AbstractCourse> extends AbstractRepos
 		private IClassicalMode baseMode;
 		
 		
-		public void setCourseMode(ICourseMode courseMode) {
+		public void setCourseMode(ICourseMode<T> courseMode) {
 			this.courseMode = courseMode;
 		}
 
@@ -25,7 +25,7 @@ public class GeneralRepository<T,C extends AbstractCourse> extends AbstractRepos
 			this.baseMode = baseMode;
 		}
 
-		public final int fromProxy(CourseProxy proxy) {
+		public final int fromProxy(CourseProxy<T,C> proxy) {
 			return super.fromProxy(proxy, courseMode);
 		}
 		

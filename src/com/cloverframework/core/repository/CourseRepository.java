@@ -2,7 +2,6 @@ package com.cloverframework.core.repository;
 
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
-import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.repository.interfaces.ICourseMode;
 

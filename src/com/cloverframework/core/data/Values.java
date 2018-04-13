@@ -9,13 +9,28 @@ import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.exception.ArgsCountNotMatch;
 
 public final class Values implements CourseValues{
-	private final List<Object> objects;
-	private final List<Object> entities;
+	private  boolean[] v_boolean;
+	private  byte[] v_byte;
+	private  short[] v_short;
+	private  int[] v_int;
+	private  long[] v_long;
+	private  float[] v_float;
+	private  double[] v_double;
+	private  String[] v_String;
+	/**参数集合*/
+	private  List<Object> objects;
+	/**领域实体集合*/
+	private  List<Object> entities;
 	
-	
+	/**
+	 * 如果参数值全部和字段对应关系，则不会有领域实体集合，
+	 * 否则只要有一个实体跟字段所属实体对应，则放弃前者取后者
+	 * @param types
+	 * @param fields
+	 * @param val
+	 * @throws ArgsCountNotMatch
+	 */
 	public Values(Set<String> types,List<String> fields,Object...val) throws ArgsCountNotMatch {
-		//两个集合互斥，如果参数值全部和字段对应关系，则不会有实体集合，
-		//否则只要有一个实体跟字段所属实体对应，则放弃前者取后者
 		objects = new ArrayList<>();
 		entities = new ArrayList<>();
 		List<Object> list = Arrays.asList(val);
@@ -37,6 +52,57 @@ public final class Values implements CourseValues{
 	}
 
 
+	
+	
+	public  Values(boolean...val) {
+		super();	
+		v_boolean = new boolean[val.length];
+		System.arraycopy(val, 0, v_boolean, 0, val.length);
+	}
+	
+	public  Values(byte...val) {
+		super();	
+		v_byte = new byte[val.length];
+		System.arraycopy(val, 0, v_byte, 0, val.length);
+	}
+	
+	public  Values(short...val) {
+		super();	
+		v_short = new short[val.length];
+		System.arraycopy(val, 0, v_short, 0, val.length);
+	}
+	
+
+	public  Values(int...val) {
+		super();	
+		v_int = new int[val.length];
+		System.arraycopy(val, 0, v_int, 0, val.length);
+	}
+	
+	public  Values(long...val) {
+		super();	
+		v_long = new long[val.length];
+		System.arraycopy(val, 0, v_long, 0, val.length);
+	}
+	
+	public  Values(float...val) {
+		super();	
+		v_float = new float[val.length];
+		System.arraycopy(val, 0, v_float, 0, val.length);
+	}
+	
+	public  Values(double...val) {
+		super();	
+		v_double = new double[val.length];
+		System.arraycopy(val, 0, v_double, 0, val.length);
+	}
+	
+	public  Values(String...val) {
+		super();	
+		v_String = new String[val.length];
+		System.arraycopy(val, 0, v_String, 0, val.length);
+	}
+	
 	@Override
 	public List<Object> objectList() {
 		return objects;
