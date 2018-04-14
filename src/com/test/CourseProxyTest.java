@@ -122,7 +122,6 @@ public class CourseProxyTest implements DomainService{
 	 * 三元表达式
 	 */
 	//@Test
-	//TODO
 	public void test4() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("b").get(
@@ -137,8 +136,9 @@ public class CourseProxyTest implements DomainService{
 					Demo_D.f2,
 					demo,demo
 					).END();
+			println(START("b").toString());
 		}};
-		println(cp.toString());
+		//println(cp.toString());
 	}
 	
 	
@@ -245,7 +245,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * 聚合子节点测试
 	 */
-	//@Test
+	@Test
 	public void test10() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")

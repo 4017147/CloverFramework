@@ -49,7 +49,7 @@ public final class EntityFactory {
 		@Override
 		public Object intercept(Object arg0, Method arg1, Object[] arg2, MethodProxy arg3) throws Throwable {
 			Thread t = Thread.currentThread();
-			//产生全限定名
+			//产生全限定名,不应发生原生返回值修改
 			String literalName = arg0.getClass().getSuperclass().getName()+"."+arg1.getName();
 			//调整该方法的位置需要修改length的值，每多一个上级方法，length-1
 			factory.setLiteral(literalName,t,t.getStackTrace().length);

@@ -3,6 +3,7 @@ package com.cloverframework.core.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.cloverframework.core.data.interfaces.CourseValues;
@@ -113,7 +114,19 @@ public final class Values implements CourseValues{
 	public List<Object> entityList() {
 		return entities;
 	}
-	
-	
+
+
+
+
+	@Override
+	public String toString() {
+		
+		Object[] obj = {v_boolean,v_byte,v_int,v_long,v_float,v_double,v_String,objects ,entities};
+		for(Object o:obj) {
+			if(o!=null)
+			return o.toString();	
+		}
+		return null;
+	}
 	
 }

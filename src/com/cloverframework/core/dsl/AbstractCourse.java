@@ -1,10 +1,10 @@
 package com.cloverframework.core.dsl;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -70,7 +70,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	AbstractCourse parent;
 	
 	/**子级*/
-	List<AbstractCourse> son;
+	List<AbstractCourse> sons;
 	
 	/**是否是一个子级*/
 	protected boolean isSon;
@@ -263,9 +263,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		}
 		node.parent = this;
 		//if()
-		if(this.son==null)
-			this.son = new ArrayList<AbstractCourse>();
-		this.son.add(node);
+		if(this.sons==null)
+			this.sons = new ArrayList<AbstractCourse>();
+		this.sons.add(node);
 	}
 
 	
@@ -338,11 +338,11 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	protected JsonFields buildJsonNode() {
 		List<JsonFields> son = null;
 		JsonFields next = null;
-		if(this.son!=null) {
+		if(this.sons!=null) {
 			if(son==null)
 				son = new ArrayList<JsonFields>();
 			
-			for(AbstractCourse abc:this.son) {
+			for(AbstractCourse abc:this.sons) {
 				son.add(abc.buildJsonNode());
 			}
 		}
@@ -396,89 +396,36 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @param condition2 是否输出颜色,改颜色通过ANSI转义序列定义
 	 * @return
 	 */
-	private String DataString(AbstractCourse course,Object[] elements,boolean condition1,boolean condition2) {
+	private String DataString(Object[] elements,boolean condition1,boolean condition2) {
+		Optional<List<String>> fields = Optional.ofNullable(this.fields);
+		Optional<List<AbstractCourse>> sons = Optional.ofNullable(this.sons);
+		Optional<List<Object>> entities = Optional.ofNullable(this.entities);
+		Optional<String> optype = Optional.ofNullable(this.optype);
+		Optional<CourseValues> values = Optional.ofNullable(this.values);
+		Optional<AbstractCourse> next = Optional.ofNullable(this.next);
 		StringBuilder builder = new StringBuilder(56);
 		if(condition2)
-			builder.append("\n\u001b[94m").append(course.getClass().getSimpleName()).append("\u001b[0m ");
+			builder.append("\n\u001b[94m").append(type).append("\u001b[0m ");
 		else
-			builder.append("\n").append(course.getClass().getSimpleName());
-		if(id!=null)
-			builder.append("id:"+id+" ");
-		if (elements!=null ) {
-			String comma = ", ";
-			String blank = " ";
-			if(elements.length>8)
-				comma = ",\n";
-			for (int i = 0; i < elements.length; i++) {
-				if(elements[i]==null) {
-					builder.append(comma);
-					continue;					
-				}
-				if(i==0)
-					builder.append(blank);//首个元素缩进
-				else
-					builder.append(comma);	
-				
-				//处理枚举,字典的第一个元素必需是对应的实体类名
-				if(elements[i].getClass().isEnum()) {
-					builder.append(elements[i].getClass().getFields()[0].getName()).append(".").append(elements[i].toString()).append(blank);
-				}else
-				//处理方法字面值
-				if (elements[i].getClass().getPackage() == Package.getPackage("java.lang")) {
-					if(elements[i].getClass()==String.class){
-						if(condition1) {
-							String fullName = elements[i].toString();
-							//获取包括类型和属性名的simpleName
-							//防止substring内存占用
-							//产生类名.属性字符串
-							String simpleName = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
-//							char[] c = simpleName.toCharArray();
-//							if(c[0]<='Z'&&c[0]>='A') {
-//								c[0] = (char) (c[0]+32);
-//								simpleName = new String(c);
-//							}
-							builder.append(simpleName).append(blank);	
-						}else
-							builder.append(elements[i]).append(blank);												
-					}else
-						builder.append(elements[i]).append(blank);	
-				}else
-				//处理类型
-				{
-					String simpleName = elements[i].getClass().getSimpleName();
-					int index = simpleName.indexOf("$$");//代理类类名截取
-					builder.append(new String(simpleName.substring(0, index==-1?simpleName.length():index))).append(blank);					
-				}
-			}
-		}
-		return builder.toString();
-	}
-
-
-	/**
-	 * 打印子节点
-	 * @param course
-	 * @return
-	 */
-	private String fieldString(AbstractCourse course) {
-		StringBuilder builder = new StringBuilder();
-		
-			Field[] fields = course.getClass().getDeclaredFields();
-			for (int i = 0; i < fields.length; i++) {
-				try {
-					fields[i].setAccessible(true);
-					Object value = fields[i].get(course);
-					if (value != null) 
-						builder.append(fields[i].getName()).append(':').append(value.toString()).append(' ');
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		
+			builder.append("\n").append(type);
+		if(id!=null)builder.append("id:"+id);
+			fields.ifPresent((field)->{
+				field.forEach((f)->builder.append(f).append(","));
+				if(!sons.isPresent()&&!entities.isPresent())
+					builder.deleteCharAt(builder.length()-1);
+			});
+			sons.ifPresent((son)->{
+				son.forEach((s)->builder.append(s).append(","));
+				if(!entities.isPresent())
+					builder.deleteCharAt(builder.length()-1);
+			});
+			entities.ifPresent((entity)->{
+				entity.forEach((s)->builder.append(s).append(","));
+				builder.deleteCharAt(builder.length()-1);
+			});
+			optype.ifPresent((s)->builder.append(" ").append(s).append(" "));
+			values.ifPresent((s)->builder.append(s));
+			next.ifPresent((s)->builder.append(s));
 		return builder.toString();
 	}
 	
@@ -581,7 +528,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		previous = null;
 		next = null;
 		parent = null;
-		son = null;
+		sons = null;
 		fields = null;
 		types = null;
 		entities = null;
@@ -641,7 +588,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 */
 	@Override
 	public String toString() {
-		return DataString(this,elements,condition1,condition2) + fieldString(this);
+		return DataString(elements,condition1,condition2);
 	}
 
 	/**

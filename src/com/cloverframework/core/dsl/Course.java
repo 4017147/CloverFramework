@@ -37,7 +37,7 @@ public final class Course extends AbstractCourse<Course>{
 	 * @return
 	 */
 	public Get get(Object...obj){
-		this.type = CourseType.get;
+		this.type = CourseType.root;
 		return get = (Get) create(get,Get::new,this,obj);
 		//return get!=null?get:(get = new GET(this,obj));
 	
@@ -48,21 +48,21 @@ public final class Course extends AbstractCourse<Course>{
 	 * @param obj
 	 * @return
 	 */
-	public Add add(Object...obj){this.type = CourseType.add;return add = (Add) create(add, Add::new,this,obj);}
+	public Add add(Object...obj){this.type = CourseType.root;return add = (Add) create(add, Add::new,this,obj);}
 	
 	/**
 	 * 开启一个PUT描述的Course，代表在数据提供方更新/替换相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Put put(Object...obj){this.type = CourseType.put;return put = (Put) create(put, Put::new,this,obj);}
+	public Put put(Object...obj){this.type = CourseType.root;return put = (Put) create(put, Put::new,this,obj);}
 	
 	/**
 	 * 开启一个REMOVE描述的Course，代表在数据提供方删除相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Remove remove(Object...obj){this.type = CourseType.remove;return remove = (Remove) create(remove, Remove::new,this,obj);}
+	public Remove remove(Object...obj){this.type = CourseType.root;return remove = (Remove) create(remove, Remove::new,this,obj);}
 
 	/**
 	 * Get
