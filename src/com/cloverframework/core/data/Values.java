@@ -23,6 +23,32 @@ public final class Values implements CourseValues{
 	private  List<Object> entities;
 	
 	/**
+	 * 该方法用于tojson或者其他组件toString，输出优先级规则必需跟实际setValue取值一致
+	 */
+	@Override
+	public String toString() {
+		String vbo = Arrays.toString(v_boolean);
+		String vby = Arrays.toString(v_byte);
+		String vin = Arrays.toString(v_int);
+		String vlo = Arrays.toString(v_long);
+		String vfl = Arrays.toString(v_float);
+		String vdo = Arrays.toString(v_double);
+		String vst = Arrays.toString(v_String);
+		String obj = objects==null?"null":objects.toString();
+		String ent = entities==null?"null":entities.toString();
+		
+		String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
+		for(String value:values) {
+			if(!value.equals("null"))
+				return value;	
+		}
+		return null;
+	}
+
+
+
+
+	/**
 	 * 如果参数值全部和字段对应关系，则不会有领域实体集合，
 	 * 否则只要有一个实体跟字段所属实体对应，则放弃前者取后者.
 	 * @param types
@@ -114,29 +140,65 @@ public final class Values implements CourseValues{
 		return entities;
 	}
 
-	
-	
-	
+	@Override
+	public boolean[] getBoolean() {
+		return this.v_boolean;
+	}
+
+
 
 
 	@Override
-	public String toString() {
-		String vbo = Arrays.toString(v_boolean);
-		String vby = Arrays.toString(v_byte);
-		String vin = Arrays.toString(v_int);
-		String vlo = Arrays.toString(v_long);
-		String vfl = Arrays.toString(v_float);
-		String vdo = Arrays.toString(v_double);
-		String vst = Arrays.toString(v_String);
-		String obj = objects==null?"null":objects.toString();
-		String ent = entities==null?"null":entities.toString();
-		
-		String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
-		for(String value:values) {
-			if(!value.equals("null"))
-				return value;	
-		}
-		return null;
+	public byte[] getByte() {
+		return this.v_byte;
+	}
+
+
+
+
+	@Override
+	public short[] getShort() {
+		return this.v_short;
+	}
+
+
+
+
+	@Override
+	public int[] getInt() {
+		return this.v_int;
+	}
+
+
+
+
+	@Override
+	public long[] getLong() {
+		return this.v_long;
+	}
+
+
+
+
+	@Override
+	public float[] getFloat() {
+		return this.v_float;
+	}
+
+
+
+
+	@Override
+	public double[] getDouble() {
+		return this.v_double;
+	}
+
+
+
+
+	@Override
+	public String[] getString() {
+		return this.v_String;
 	}
 	
 }

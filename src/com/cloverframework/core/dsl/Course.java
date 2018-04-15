@@ -12,20 +12,6 @@ public final class Course extends AbstractCourse<Course>{
 	  * 为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
 	  */
 	
-
-//	@Override
-//	public String getJsonString() {
-//		return next.getJsonString();
-//	}
-//	
-//	
-//	@Override
-//	public void destroy() {
-//		super.destroy();
-//		id = null;
-//		//result = null;
-//	}
-	
 	private Get 	get;
 	private Add 	add;
 	private Put 	put;

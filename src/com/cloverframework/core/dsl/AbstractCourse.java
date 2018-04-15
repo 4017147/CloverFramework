@@ -521,6 +521,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**
 	 * 销毁该Course
 	 */
+	@Override
 	public void destroy() {
 		//TODO
 		if(next!=null) {
@@ -635,7 +636,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	
 	/**
 	 * 设置该节点的参数计算值，如name = ?中的参数，如果参数是基本类型，
-	 * 建议使用value属性的基本类型方法，以减少装箱和类型转换的开销。
+	 * 建议使用value属性的基本类型方法，以减少装箱和类型转换的开销。<p>
+	 * 如果参数是领域字段，则结合$输入参数:{@link CourseProxy#$(Object...)}
 	 * 如果参数为统一领域多个字段，则建议传入领域实体，可减少对字段一些检查。
 	 * 如果是自定义的值对象，那么你也许需要通过工具实现跟领域实体字段之间的匹配和复制，如beancopier，
 	 * 但是一般情况下你无须使用自定义值对象，而是利用dsl构造关系即可。
@@ -657,7 +659,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 通过一个构造完成的值对象设置为当前节点的values
+	 * 传入一个构造完成的值对象设置为当前节点的values
 	 * @param values
 	 * @return
 	 */

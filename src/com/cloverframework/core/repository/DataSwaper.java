@@ -12,6 +12,7 @@ import com.cloverframework.core.data.interfaces.DataSwap;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Wrapper;
 
+@SuppressWarnings("unchecked")
 public class DataSwaper<T,C extends AbstractCourse> implements DataSwap<T>{
 	private C course;
 	

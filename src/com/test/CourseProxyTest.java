@@ -281,7 +281,7 @@ public class CourseProxyTest implements DomainService{
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10).eq($(demo.getF5(),demo.getF5())).and(1)
+			.by(Demo_D.f10).eq($(Demo_D.f7)).and(1)
 			.END();
 		}}; 
 		println(cp.toString());

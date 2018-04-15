@@ -10,9 +10,11 @@ public final class CourseMethod{
 	 * @param emi
 	 */
 	public static void addLiteral(String methodName,Course course,EntityMethodInterceptor emi) {
-		course.addLiteral(methodName);
+		if(emi!=null)
+			course.addLiteral(methodName);
 	}
 	public static void addLiteral_te(String methodName,Course course,EntityMethodInterceptor emi) {
-		course.addLiteral_te(methodName);
+		if(emi!=null)
+			course.addLiteral_te(methodName);
 	}
 }
