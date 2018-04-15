@@ -18,11 +18,11 @@ public abstract class Jsonable implements Serializable{
 	private Set<String> types;
 	private List<String> fields;
 	private String optype;
-	private List<Object> values;
+	private String values;
 	private List<? extends Jsonable> son;
 	private Jsonable next;
 	
-	public Jsonable(String type, String optype, List<String> fields, Set<String> types, List<Object> values,
+	public Jsonable(String type, String optype, List<String> fields, Set<String> types, String values,
 			List<? extends Jsonable> son, Jsonable next) {
 		super();
 		this.type = type;
@@ -66,11 +66,11 @@ public abstract class Jsonable implements Serializable{
 		this.types = types;
 	}
 
-	public List<Object> getValues() {
+	public String getValues() {
 		return values;
 	}
 
-	public void setValues(List<Object> values) {
+	public void setValues(String values) {
 		this.values = values;
 	}
 

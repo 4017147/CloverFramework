@@ -10,7 +10,7 @@ public class JsonFields extends Jsonable{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public JsonFields(String type, String optype, List<String> fields, Set<String> types, List<Object> values,
+	public JsonFields(String type, String optype, List<String> fields, Set<String> types, String values,
 			List<? extends Jsonable> son, Jsonable next) {
 		super(type, optype, fields, types, values, son, next);
 	}

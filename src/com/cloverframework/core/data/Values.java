@@ -24,7 +24,7 @@ public final class Values implements CourseValues{
 	
 	/**
 	 * 如果参数值全部和字段对应关系，则不会有领域实体集合，
-	 * 否则只要有一个实体跟字段所属实体对应，则放弃前者取后者
+	 * 否则只要有一个实体跟字段所属实体对应，则放弃前者取后者.
 	 * @param types
 	 * @param fields
 	 * @param val
@@ -114,12 +114,14 @@ public final class Values implements CourseValues{
 		return entities;
 	}
 
-
+	
+	
+	
 
 
 	@Override
 	public String toString() {
-		List<boolean[]> vbo = Arrays.asList(v_boolean);
+		String vbo = Arrays.toString(v_boolean);
 		String vby = Arrays.toString(v_byte);
 		String vin = Arrays.toString(v_int);
 		String vlo = Arrays.toString(v_long);
@@ -129,15 +131,10 @@ public final class Values implements CourseValues{
 		String obj = objects==null?"null":objects.toString();
 		String ent = entities==null?"null":entities.toString();
 		
-		
-		//String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
-		Object[] values = {v_boolean,v_byte,v_int,v_long,v_float,v_double,v_String};
-		for(Object value:values) {
-			if(value!=null) {
-				objects = new ArrayList<>();
-				objects.addAll(Arrays.asList(value));
-				return objects.toString();	
-			}
+		String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
+		for(String value:values) {
+			if(!value.equals("null"))
+				return value;	
 		}
 		return null;
 	}

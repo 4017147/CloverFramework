@@ -225,7 +225,7 @@ public class CourseProxyTest implements DomainService{
 	}
 	
 	/**
-	 * 条件子节点测试
+	 * 子节点测试
 	 */
 	//@Test
 	public void test9() {
@@ -245,7 +245,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * 聚合子节点测试
 	 */
-	@Test
+	//@Test
 	public void test10() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
@@ -259,21 +259,33 @@ public class CourseProxyTest implements DomainService{
 	}
 	
 	/**
-	 * 判断操作取值测试
+	 * 参数值设置测试
 	 */
-	@Test
+	//@Test
 	public void test11() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10).eq(20).value.setInt(30).value.setString("hello")
 			.END();
-			
 		}}; 
 		println(cp.toString());
 		println(cp.START("a").getJsonString());
 	}
 	
-	
+	/**
+	 * 
+	 */
+	@Test
+	public void test12() {
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
+			START("a")
+			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.by(Demo_D.f10).eq($(demo.getF5(),demo.getF5())).and(1)
+			.END();
+		}}; 
+		println(cp.toString());
+		println(cp.START("a").getJsonString());
+	}
 	
 }
