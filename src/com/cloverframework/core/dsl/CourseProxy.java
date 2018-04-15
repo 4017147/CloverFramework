@@ -22,6 +22,7 @@ import com.cloverframework.core.util.lambda.Literal;
  * @author yl
  *
  */
+@SuppressWarnings("rawtypes")
 public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
@@ -110,9 +111,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 该方法会初始化一个course并发送到filter的course集合中，
-	 * 并且会判断存入的course与刚刚创建的course是否引用相同，
-	 * 如果不相同则抛出异常，为防止获取到快照或者被jvm优化。
+	 * 初始化一个course并发送到factory的course集合中，
+	 * 并且判断存入的course与刚刚创建的course是否引用相同，
+	 * 如果不相同则抛出异常
 	 * @return 返回一个根节点
 	 */
 	private C begin() {

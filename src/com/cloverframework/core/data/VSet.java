@@ -16,58 +16,58 @@ public final class VSet<A> implements ValueSet<A>{
 
 
 	@Override
-	public A setBoolean(boolean... val) {
+	public AbstractCourse<A> setBoolean(boolean... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A setByte(byte... val) {
+	public AbstractCourse<A> setByte(byte... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_short(short... val) {
+	public AbstractCourse<A> setShort(short... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_int(int... val) {
+	public AbstractCourse<A> setInt(int... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_long(long... val) {
+	public AbstractCourse<A> setLong(long... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_float(float... val) {
+	public AbstractCourse<A> setFloat(float... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_double(double... val) {
+	public AbstractCourse<A> setDouble(double... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 
 	@Override
-	public A v_String(String... val) {
+	public AbstractCourse<A> setString(String... val) {
 		course.setValues(new Values(val));
-		return null;
+		return course;
 	}
 
 }

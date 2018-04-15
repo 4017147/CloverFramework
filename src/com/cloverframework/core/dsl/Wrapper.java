@@ -6,7 +6,7 @@ import java.util.Set;
 
 import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.data.interfaces.CourseWrapper;
-
+@SuppressWarnings("rawtypes")
 public class Wrapper implements CourseWrapper{
 	
 	private AbstractCourse course;
@@ -56,7 +56,7 @@ public class Wrapper implements CourseWrapper{
 	@Override
 	public List<CourseWrapper> sons() {
 		List<CourseWrapper> list = new ArrayList<CourseWrapper>();
-		for(AbstractCourse c:(List<AbstractCourse>)course.son) {
+		for(AbstractCourse c:(List<AbstractCourse>)course.sons) {
 			list.add(new Wrapper(c));
 		}
 		return list;

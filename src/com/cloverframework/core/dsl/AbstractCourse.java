@@ -424,7 +424,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				builder.deleteCharAt(builder.length()-1);
 			});
 			optype.ifPresent((s)->builder.append(" ").append(s).append(" "));
-			values.ifPresent((s)->builder.append(s));
+			values.ifPresent((s)->builder.append(s.toString()));
 			next.ifPresent((s)->builder.append(s));
 		return builder.toString();
 	}
@@ -637,7 +637,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @throws ArgsCountNotMatch 
 	 */
 	@Override
-	public  AbstractCourse setValues(Object...values){
+	public  AbstractCourse setValues(Object... values){
 		if(this.values==null)
 			try {
 				this.values = new Values(types, fields, values);

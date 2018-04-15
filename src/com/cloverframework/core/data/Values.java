@@ -3,7 +3,6 @@ package com.cloverframework.core.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.cloverframework.core.data.interfaces.CourseValues;
@@ -31,7 +30,7 @@ public final class Values implements CourseValues{
 	 * @param val
 	 * @throws ArgsCountNotMatch
 	 */
-	public Values(Set<String> types,List<String> fields,Object...val) throws ArgsCountNotMatch {
+	public Values(Set<String> types,List<String> fields,Object... val) throws ArgsCountNotMatch {
 		objects = new ArrayList<>();
 		entities = new ArrayList<>();
 		List<Object> list = Arrays.asList(val);
@@ -55,50 +54,50 @@ public final class Values implements CourseValues{
 
 	
 	
-	public  Values(boolean...val) {
+	public  Values(boolean... val) {
 		super();	
 		v_boolean = new boolean[val.length];
 		System.arraycopy(val, 0, v_boolean, 0, val.length);
 	}
 	
-	public  Values(byte...val) {
+	public  Values(byte... val) {
 		super();	
 		v_byte = new byte[val.length];
 		System.arraycopy(val, 0, v_byte, 0, val.length);
 	}
 	
-	public  Values(short...val) {
+	public  Values(short... val) {
 		super();	
 		v_short = new short[val.length];
 		System.arraycopy(val, 0, v_short, 0, val.length);
 	}
 	
 
-	public  Values(int...val) {
+	public  Values(int... val) {
 		super();	
 		v_int = new int[val.length];
 		System.arraycopy(val, 0, v_int, 0, val.length);
 	}
 	
-	public  Values(long...val) {
+	public  Values(long... val) {
 		super();	
 		v_long = new long[val.length];
 		System.arraycopy(val, 0, v_long, 0, val.length);
 	}
 	
-	public  Values(float...val) {
+	public  Values(float... val) {
 		super();	
 		v_float = new float[val.length];
 		System.arraycopy(val, 0, v_float, 0, val.length);
 	}
 	
-	public  Values(double...val) {
+	public  Values(double... val) {
 		super();	
 		v_double = new double[val.length];
 		System.arraycopy(val, 0, v_double, 0, val.length);
 	}
 	
-	public  Values(String...val) {
+	public  Values(String... val) {
 		super();	
 		v_String = new String[val.length];
 		System.arraycopy(val, 0, v_String, 0, val.length);
@@ -120,11 +119,25 @@ public final class Values implements CourseValues{
 
 	@Override
 	public String toString() {
+		List<boolean[]> vbo = Arrays.asList(v_boolean);
+		String vby = Arrays.toString(v_byte);
+		String vin = Arrays.toString(v_int);
+		String vlo = Arrays.toString(v_long);
+		String vfl = Arrays.toString(v_float);
+		String vdo = Arrays.toString(v_double);
+		String vst = Arrays.toString(v_String);
+		String obj = objects==null?"null":objects.toString();
+		String ent = entities==null?"null":entities.toString();
 		
-		Object[] obj = {v_boolean,v_byte,v_int,v_long,v_float,v_double,v_String,objects ,entities};
-		for(Object o:obj) {
-			if(o!=null)
-			return o.toString();	
+		
+		//String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
+		Object[] values = {v_boolean,v_byte,v_int,v_long,v_float,v_double,v_String};
+		for(Object value:values) {
+			if(value!=null) {
+				objects = new ArrayList<>();
+				objects.addAll(Arrays.asList(value));
+				return objects.toString();	
+			}
 		}
 		return null;
 	}
