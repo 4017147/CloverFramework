@@ -28,7 +28,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
 	
-	/**最后产生的course对象*/
+	/**最后产生的course对象，无论什么方法，要求每次产生新的course都必须移除旧的course*/
 	C newest;
 	/**share区，用于缓存course对象*/
 	HashMap<String,C> shareSpace = new HashMap<String,C>();
@@ -182,6 +182,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		C old = removeCurrCourse();
 		C newc = null;
 		try {
+			//获取父类泛型参数，默认第二个泛型参数为泛型course，没有参数或者没提供，使用默认的course
 			Type type = this.getClass().getGenericSuperclass();
 			if(type==Object.class) {
 				newc = (C) CourseFactory.create(Course.class);
@@ -416,6 +417,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @return
 	 */
 	public Condition $(Object...obj){
+		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
 		return createNode((last)->new Condition(last,CourseType.by,true,obj));
 	}
 	

@@ -3,8 +3,7 @@ package com.cloverframework.core.data.interfaces;
 import java.util.List;
 
 /**
- * course的查询参数为值对象，实际是实现接口的对象的封装
- * 该接口的两个List<Object>方法的返回集合是互斥的，即一个长度大于0，则另一个长度必定为零
+ * 要求对值参数分装实现值的获取方法
  * @author yl
  *
  */
@@ -17,7 +16,6 @@ public interface CourseValues {
 	float[] getFloat();
 	double[] getDouble();
 	String[] getString();
-	List<Object> entityList();
 	List<Object> objectList();
 	
 }

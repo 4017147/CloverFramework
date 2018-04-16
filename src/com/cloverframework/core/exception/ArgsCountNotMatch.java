@@ -13,7 +13,7 @@ public class ArgsCountNotMatch extends Exception{
 
 
 	public ArgsCountNotMatch(int f,int a) {
-		super("expect "+f+" args but "+a+" args");
+		super("expect "+f+" args but found "+a+" args");
 		// TODO Auto-generated constructor stub
 	}
 	

@@ -75,16 +75,16 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**是否是一个子级*/
 	protected boolean isSon;
 	
-	/**查询字段*/
+	/**字段值*/
 	List<String> fields;
 	
 	/**查询类型*/
 	Set<String> types;
 	
-	/**查询对象*/
+	/**对象值*/
 	List<Object> entities;
 	
-	/**查询参数值*/
+	/**参数值*/
 	private CourseValues values;
 	
 	/**
@@ -183,7 +183,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 设置节点的元素，该方法是父类委托子类的构造方法调用的。
+	 * 设置节点的字段值，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
 	 * 执行后都会将字面列表清空
 	 * 通常情况下，值传入要先于方法返回值传入，
@@ -389,7 +389,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	
 
 	/**
-	 * 打印节点元素，java.lang包类型会直接输出，如果是String类型则输出类型.方法名，其他实体类型则输出类型名
+	 * 打印节点元素
 	 * @param course
 	 * @param elements
 	 * @param condition1 是否输出simpleName
@@ -617,7 +617,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		entities.add(entity);
 	}
 
-	public Object getElements() {
+	public Object[] getElements() {
 		return elements;
 	}
 
@@ -635,13 +635,15 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 设置该节点的参数计算值，如name = ?中的参数，如果参数是基本类型，
+	 * 设置该节点的参数值，如name = ?中的参数，如果参数是基本类型，
 	 * 建议使用value属性的基本类型方法，以减少装箱和类型转换的开销。<p>
-	 * 如果参数是领域字段，则结合$输入参数:{@link CourseProxy#$(Object...)}
-	 * 如果参数为统一领域多个字段，则建议传入领域实体，可减少对字段一些检查。
-	 * 如果是自定义的值对象，那么你也许需要通过工具实现跟领域实体字段之间的匹配和复制，如beancopier，
+	 * 参数是领域字段（字典，lambda，方法字面值），需要通过$输入参数:
+	 * {@link CourseProxy#$(Object...)}来获取，否则一律作为值来对待。
+	 * 多个参数，可传入这些参数的领域实体一次性完成，但是你的程序应当知道如何处理它们的关系，又如
+	 * 参数是自定义值对象，你也许需要通过工具实现跟领域实体字段之间的匹配和复制，如beancopier，
 	 * 但是一般情况下你无须使用自定义值对象，而是利用dsl构造关系即可。
-	 * 不管何种类型，在dsl中都不会负责字段检查和操作（除了获取字面值和判断参数个数）
+	 * 无论输入是什么类型，在dsl中都不会负责字段检查和操作（除了获取字面值和判断参数个数），
+	 * 如何检查和获取参数的规则由你的程序决定。
 	 * @param <V>
 	 * @throws ArgsCountNotMatch 
 	 */
@@ -649,7 +651,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public  AbstractCourse setValues(Object... values){
 		if(this.values==null)
 			try {
-				this.values = new Values(types, fields, values);
+				this.values = new Values(fields.size(), values);
 			} catch (ArgsCountNotMatch e) {
 				// TODO Auto-generated catch block
 				//如果value异常则为null，后续操作应当抛出空指针异常
@@ -749,5 +751,11 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		return id;
 	}
 
+	public List<String> getFields() {
+		return fields;
+	}
+
+	
+	
 	
 }

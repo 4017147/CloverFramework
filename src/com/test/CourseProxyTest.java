@@ -205,7 +205,7 @@ public class CourseProxyTest implements DomainService{
 	
 	/**
 	 * FORK模式测试
-	 * 首个参数开启FORK模式，参数不匹配不开启
+	 * 首个参数用来开启FORK模式，参数不匹配不开启
 	 * 节点类型不匹配则关闭该节点和后续节点FORK模式
 	 * FORK节点如果没有参数，则该节点使用master节点的元素
 	 */
@@ -226,6 +226,7 @@ public class CourseProxyTest implements DomainService{
 	
 	/**
 	 * 子节点测试
+	 * 子节点应当包含在父节点内
 	 */
 	//@Test
 	public void test9() {
@@ -244,6 +245,7 @@ public class CourseProxyTest implements DomainService{
 	 
 	/**
 	 * 聚合子节点测试
+	 * 子节点应当包含在父节点内
 	 */
 	//@Test
 	public void test10() {
@@ -260,6 +262,7 @@ public class CourseProxyTest implements DomainService{
 	
 	/**
 	 * 参数值设置测试
+	 * 参数值应当正常输出，重复的设置应当覆盖之前的值
 	 */
 	//@Test
 	public void test11() {
@@ -274,6 +277,9 @@ public class CourseProxyTest implements DomainService{
 	}
 	
 	/**
+	 * 使用$传入字段和方法参数
+	 * 值对象能够判断参数个数是否符合要求
+	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
 	 * 
 	 */
 	@Test
@@ -281,7 +287,7 @@ public class CourseProxyTest implements DomainService{
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10).eq($(Demo_D.f7)).and(1)
+			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),15,16).and(1)
 			.END();
 		}}; 
 		println(cp.toString());

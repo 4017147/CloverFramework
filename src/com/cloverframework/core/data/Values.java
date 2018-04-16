@@ -3,9 +3,9 @@ package com.cloverframework.core.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import com.cloverframework.core.data.interfaces.CourseValues;
+import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.exception.ArgsCountNotMatch;
 
 public final class Values implements CourseValues{
@@ -19,8 +19,6 @@ public final class Values implements CourseValues{
 	private  String[] v_String;
 	/**参数集合*/
 	private  List<Object> objects;
-	/**领域实体集合*/
-	private  List<Object> entities;
 	
 	/**
 	 * 该方法用于tojson或者其他组件toString，输出优先级规则必需跟实际setValue取值一致
@@ -35,9 +33,8 @@ public final class Values implements CourseValues{
 		String vdo = Arrays.toString(v_double);
 		String vst = Arrays.toString(v_String);
 		String obj = objects==null?"null":objects.toString();
-		String ent = entities==null?"null":entities.toString();
 		
-		String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj,ent};
+		String[] values = {vbo,vby,vin,vlo,vfl,vdo,vst,obj};
 		for(String value:values) {
 			if(!value.equals("null"))
 				return value;	
@@ -49,32 +46,31 @@ public final class Values implements CourseValues{
 
 
 	/**
-	 * 如果参数值全部和字段对应关系，则不会有领域实体集合，
-	 * 否则只要有一个实体跟字段所属实体对应，则放弃前者取后者.
+	 * 
+	 * 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
 	 * @param types
 	 * @param fields
 	 * @param val
 	 * @throws ArgsCountNotMatch
 	 */
-	public Values(Set<String> types,List<String> fields,Object... val) throws ArgsCountNotMatch {
-		objects = new ArrayList<>();
-		entities = new ArrayList<>();
+	public Values(int fieldsSize,Object... val) throws ArgsCountNotMatch {
+		if(val.length!=1 && val.length!= fieldsSize)
+			throw new ArgsCountNotMatch(fieldsSize, val.length);
 		List<Object> list = Arrays.asList(val);
-		//优先匹配entity类型参数值
+		byte n = 0;
 		for(Object o:list) {
-			for(String s:types) {
-				if(o!=null && o.getClass().getSimpleName().equals(s)) {
-					//TODO 类型校验
-					entities.add(o);
+			if(o instanceof AbstractCourse) {
+				n++;
+				int size = ((AbstractCourse)o).getElements().length;
+				System.out.println(size);
+				if(size!=1 && size+val.length-n!=fieldsSize) {
+					//参数值个数只能为1个或者和字段个数相同
+					throw new ArgsCountNotMatch(fieldsSize, size+val.length-n);
 				}
 			}
 		}
-		if(entities.size()<=0) {
-			if(val.length!=fields.size()&& val.length!=1)
-				//参数值个数只能为1个或者和字段个数相同
-				throw new ArgsCountNotMatch(fields.size(), val.length);
-			objects.addAll(list);
-		}
+		objects = new ArrayList<>();
+		objects.addAll(list);			
 	}
 
 
@@ -132,12 +128,6 @@ public final class Values implements CourseValues{
 	@Override
 	public List<Object> objectList() {
 		return objects;
-	}
-
-
-	@Override
-	public List<Object> entityList() {
-		return entities;
 	}
 
 	@Override
