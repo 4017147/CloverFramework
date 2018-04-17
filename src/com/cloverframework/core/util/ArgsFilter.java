@@ -22,7 +22,7 @@ public class ArgsFilter {
 		if(entityClass.isEnum())
 			return e;
 		if(EntityFactory.isMatchDomain(entityClass, domainClass)||pattern.isMatch(e)) 
-			return entityClass;	
+			return e;	
 		return null;
 	}
 }

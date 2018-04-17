@@ -427,7 +427,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				builder.deleteCharAt(builder.length()-1);
 			});
 			optype.ifPresent((s)->builder.append(" ").append(s).append(" "));
-			values.ifPresent((s)->builder.append(s.toString()));
+			values.ifPresent((s)->builder.append(" values:").append(s.toString()));
 			next.ifPresent((s)->builder.append(s));
 		return builder.toString();
 	}
@@ -689,6 +689,11 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		return type;
 	}
 
+	public String getSubType() {
+		if(next!=null)
+			return next.type;
+		return "";
+	}
 
 	public String getOptype() {
 		return optype;
@@ -701,6 +706,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public void setOptype(String optype) {
 		this.optype = optype;
 	}
+	
 
 	public static JsonUtil getJutil() {
 		return jutil;

@@ -10,17 +10,18 @@ import com.cloverframework.core.data.interfaces.CourseWrapper;
 public class Wrapper implements CourseWrapper{
 	
 	private AbstractCourse course;
-	private Course head;
+	private AbstractCourse head;
 
-	public Wrapper(Course course) {
-		super();
-		this.course = course;
-		this.head = course;
-	}
+//	public Wrapper(Course course) {
+//		super();
+//		this.course = course;
+//		this.head = course;
+//	}
 	
 	public Wrapper(AbstractCourse course) {
 		super();
 		this.course = course;
+		this.head = course;
 	}
 
 	@Override

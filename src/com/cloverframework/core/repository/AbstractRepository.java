@@ -17,7 +17,7 @@ import com.cloverframework.core.util.interfaces.CourseType;
  */
 public abstract class AbstractRepository<T,C extends AbstractCourse>{
 	private final T doGet(C course,ICourseMode<T> mode) {
-		String type = course.getType();
+		String type = course.getSubType();
 		if (type == CourseType.get) {
 			return mode.get(new DataSwaper<T,C>(course));
 		}
