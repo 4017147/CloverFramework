@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.cloverframework.core.data.interfaces.CourseValues;
-import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.exception.ArgsCountNotMatch;
 
 public final class Values implements CourseValues{
@@ -21,7 +20,7 @@ public final class Values implements CourseValues{
 	private  List<Object> objects;
 	
 	/**
-	 * 该方法用于tojson或者其他组件toString，输出优先级规则必需跟实际setValue取值一致
+	 * 该方法用于tojson或者其他组件toString，输出优先级规必需跟实际setValue取值一致
 	 */
 	@Override
 	public String toString() {
@@ -47,30 +46,12 @@ public final class Values implements CourseValues{
 
 	/**
 	 * 
-	 * 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
-	 * @param types
-	 * @param fields
 	 * @param val
 	 * @throws ArgsCountNotMatch
 	 */
-	public Values(int fieldsSize,Object... val) throws ArgsCountNotMatch {
-		if(val.length!=1 && val.length!= fieldsSize)
-			throw new ArgsCountNotMatch(fieldsSize, val.length);
-		List<Object> list = Arrays.asList(val);
-		byte n = 0;
-		for(Object o:list) {
-			if(o instanceof AbstractCourse) {
-				n++;
-				int size = ((AbstractCourse)o).getElements().length;
-				System.out.println(size);
-				if(size!=1 && size+val.length-n!=fieldsSize) {
-					//参数值个数只能为1个或者和字段个数相同
-					throw new ArgsCountNotMatch(fieldsSize, size+val.length-n);
-				}
-			}
-		}
+	public Values(Object... val) throws ArgsCountNotMatch {
 		objects = new ArrayList<>();
-		objects.addAll(list);			
+		objects.addAll(Arrays.asList(val));			
 	}
 
 

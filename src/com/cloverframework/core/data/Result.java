@@ -9,7 +9,6 @@ public class Result<T> implements CourseResult<T>{
 	private final List<T> list;
 	private final List<Object> objectList;
 	private final Map<String, Object> map;
-	private final int count;
 	private final Object value;
 	
 	public Result(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
@@ -17,11 +16,8 @@ public class Result<T> implements CourseResult<T>{
 		this.list = list;
 		this.objectList = objectList;
 		this.map = map;
-		this.count = 1;
 		this.value = value;
 	}
-	
-
 
 	@Override
 	public List<T> getList() {
@@ -43,16 +39,14 @@ public class Result<T> implements CourseResult<T>{
 
 	@Override
 	public int getInt() {
-		// TODO Auto-generated method stub
-		return 0;
+		return (int)value;
 	}
 
 
 
 	@Override
 	public long getLong() {
-		// TODO Auto-generated method stub
-		return 0;
+		return (long)value;
 	}
 
 
@@ -60,23 +54,41 @@ public class Result<T> implements CourseResult<T>{
 	@Override
 	public double getDouble() {
 		// TODO Auto-generated method stub
-		return 0;
+		return (double)value;
 	}
 
 
 
 	@Override
 	public boolean getBoolean() {
-		// TODO Auto-generated method stub
-		return false;
+		return (boolean)value;
+	}
+
+	@Override
+	public String getString() {
+		return (String)value;
 	}
 
 
 
 	@Override
-	public String getString() {
+	public byte getByte() {
 		// TODO Auto-generated method stub
-		return null;
+		return (byte)value;
+	}
+
+
+
+	@Override
+	public short getShort() {
+		return (short)value;
+	}
+
+
+
+	@Override
+	public float getFloat() {
+		return (float)value;
 	}
 
 }

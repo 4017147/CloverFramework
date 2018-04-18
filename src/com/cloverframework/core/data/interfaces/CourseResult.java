@@ -13,7 +13,10 @@ public interface CourseResult<T> {
 	List<T> getList();
 	List<Object> getObjectList();
 	Map<String, Object> getMap();
+	byte getByte();
+	short getShort();
 	int getInt();
+	float getFloat();
 	long getLong();
 	double getDouble();
 	boolean getBoolean();

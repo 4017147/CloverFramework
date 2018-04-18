@@ -645,13 +645,28 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * 无论输入是什么类型，在dsl中都不会负责字段检查和操作（除了获取字面值和判断参数个数），
 	 * 如何检查和获取参数的规则由你的程序决定。
 	 * @param <V>
-	 * @throws ArgsCountNotMatch 
+	 * @throws ArgsCountNotMatch 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
 	 */
 	@Override
 	public  AbstractCourse setValues(Object... values){
-		if(this.values==null)
+			byte n = 0;
+			byte s = 0;
+			for(Object o:values) {
+				if(o instanceof AbstractCourse) {
+					n++;
+					int size = ((AbstractCourse)o).getElements().length;
+					s+=size;
+					if(size!=1 && size+values.length-n!=fields.size()) {
+						//参数值个数只能为1个或者和字段个数相同
+						//TODO logging
+						return this;
+					}
+				}
+			}
+			if(values.length+n!=1 && values.length+s-n!=fields.size())
+				return this;
 			try {
-				this.values = new Values(fields.size(), values);
+				this.values = new Values(values);
 			} catch (ArgsCountNotMatch e) {
 				// TODO Auto-generated catch block
 				//如果value异常则为null，后续操作应当抛出空指针异常
