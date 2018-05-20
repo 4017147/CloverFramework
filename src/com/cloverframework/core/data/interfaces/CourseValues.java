@@ -3,7 +3,7 @@ package com.cloverframework.core.data.interfaces;
 import java.util.List;
 
 /**
- * 要求对值参数分装实现值的获取方法
+ * 对Course的节点值参数封装实现值的获取方法
  * @author yl
  *
  */

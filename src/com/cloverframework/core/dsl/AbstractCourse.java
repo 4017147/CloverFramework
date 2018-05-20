@@ -16,8 +16,10 @@ import com.cloverframework.core.data.interfaces.ValueSet;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.interfaces.CourseInterface;
-import com.cloverframework.core.exception.ArgsCountNotMatch;
-import com.cloverframework.core.exception.CourseIsClosed;
+import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
+import com.cloverframework.core.exceptions.ArgsCountNotMatch;
+import com.cloverframework.core.exceptions.CourseIsClosed;
+import com.cloverframework.core.exceptions.ExceptionFactory;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.ArgsMatcher;
@@ -39,7 +41,7 @@ import com.cloverframework.core.util.json.JsonUtil;
 public abstract class AbstractCourse<A> implements CourseInterface{
 	
 	/**course代理*/
-	CourseProxy proxy;//上级传递
+	CourseProxyInterface proxy;//上级传递
 	
 	/** course标识*/
 	protected String id;
@@ -174,6 +176,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				literal = new ArrayList<String>(50);
 			if(literal_te==null)
 				literal_te = new ArrayList<String>(50);
+			id = course.id;
 			proxy = course.proxy;
 			isFork = course.isFork;
 			isForkm = course.isForkm;
@@ -199,7 +202,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				init(previous);
 				if(isFork||isForkm && elements.length>0) 
 					setModel(elements[0]);
-				this.elements = fill(elements,literal,literal_te,proxy.domainService);
+				this.elements = fill(elements,literal,literal_te,proxy.getDomainService());
 				if((isFork||isForkm) && origin!=null) 
 					if(model!=null) {
 						if(origin.type==this.type) {
@@ -651,28 +654,25 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public  AbstractCourse setValues(Object... values){
 			byte n = 0;
 			byte s = 0;
-			for(Object o:values) {
-				if(o instanceof AbstractCourse) {
-					n++;
-					int size = ((AbstractCourse)o).getElements().length;
-					s+=size;
-					if(size!=1 && size+values.length-n!=fields.size()) {
+			try {
+				for(Object o:values) {
+					int size = 0;
+					if(o instanceof AbstractCourse) {
+						n++;
+						size = ((AbstractCourse)o).getElements().length;
+						s+=size;
+					}
+					if(size!=1 && s+values.length-n!=fields.size()) {
 						//参数值个数只能为1个或者和字段个数相同
 						//TODO logging
-						return this;
+						throw new ArgsCountNotMatch(fields.size(),s+values.length-n);			
 					}
 				}
-			}
-			if(values.length+n!=1 && values.length+s-n!=fields.size())
-				return this;
-			try {
 				this.values = new Values(values);
 			} catch (ArgsCountNotMatch e) {
-				// TODO Auto-generated catch block
-				//如果value异常则为null，后续操作应当抛出空指针异常
-				e.printStackTrace();
+				throw ExceptionFactory.wrapException("Error setting values in "+id+",cause：", e);
 			}
-		return this;
+			return this;
 	}
 	
 	/**

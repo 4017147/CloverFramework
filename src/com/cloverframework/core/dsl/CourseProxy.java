@@ -34,7 +34,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	HashMap<String,C> shareSpace = new HashMap<String,C>();
 	
 	protected DomainService domainService;
-	
+
 	CourseRepository<T,C> repository;
 	
 	
@@ -101,7 +101,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 初始化一个course
 	 */
 	@Override
-	public C initCourse(String id,C course,CourseProxy<T,C> proxy,byte status) {
+	public C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,byte status) {
 		//course.domainService = service;
 		course.setId(id);
 		course.proxy = proxy;
@@ -148,7 +148,15 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		this.repository = repository;
 	}
 
-	
+	@Override
+	public DomainService getDomainService() {
+		return domainService;
+	}
+
+	@Override
+	public void setDomainService(DomainService domainService) {
+		this.domainService = domainService;
+	}
 	
 	/**
 	 * 获取course list的友好信息
@@ -284,14 +292,15 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		course.origin = getCourse(id).next;
 		return course;
 	}
-
+	
 	/**
 	 * 将当前course标记为end状态并放入sharespace
 	 * 1、如果course没有一个有效的id则不会放入sharespace
 	 * 2、如果没有对当前course进行end，在下一次start新course时当前course会被取代。
 	 * 3、分支course不会放入sharespace
 	 */
-	protected void END() {
+	@Override
+	public void END() {
 		C course = getCurrCourse();
 		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
 			setCourse(course.id, course);			
@@ -314,6 +323,14 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return repository.query(course);
 	}
 	
+	@Override
+	public Object execute(String type) {
+		if(type=="get") 
+			return executeOne(getCurrCourse());
+		else
+			return commit(getCurrCourse());
+	}
+
 	/**
 	 * 直接提交当前的一条course语句
 	 * @return
@@ -327,13 +344,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return repository.commit(course);
 	}
 	
-	
-	Object execute(String type) {
-		if(type=="get") 
-			return executeOne(getCurrCourse());
-		else
-			return commit(getCurrCourse());
-	}
 	
 	/**
 	 * 将当前proxy对象移交仓储，仓储根据不用的proxy实例和泛化执行对应的操作

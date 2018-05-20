@@ -1,12 +1,28 @@
 package com.cloverframework.core.dsl.interfaces;
 
+import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.AbstractCourse;
-import com.cloverframework.core.dsl.CourseProxy;
 import com.cloverframework.core.repository.CourseRepository;
 
 public interface CourseProxyInterface<T,C extends AbstractCourse> {
-	C initCourse(String id,C course,CourseProxy<T,C> proxy,byte status);
-	public void setRepository(CourseRepository<T,C> repository);
-	public T executeOne(C course);
-	public int commit(C course);
+	/**
+	 * proxy和service必需是一对一的关系
+	 * @return
+	 */
+	DomainService getDomainService();
+	
+	void setDomainService(DomainService domainService);
+	
+	void END();
+	
+	void setRepository(CourseRepository<T,C> repository);
+	
+	C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,byte status);
+	
+	T executeOne(C course);
+	
+	Object execute(String type);
+	
+	int commit(C course);
+	
 }

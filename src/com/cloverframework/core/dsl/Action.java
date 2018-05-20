@@ -172,7 +172,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 * {@inheritDoc}，
 	 * 当 {@link Action#startWork()}开启，将fork或无给定id的course加入工作区
 	 */
-	protected void END() {
+	public void END() {
 		//必需
 		super.END();
 		C course = getCurrCourse();

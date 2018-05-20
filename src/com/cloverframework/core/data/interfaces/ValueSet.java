@@ -3,7 +3,7 @@ package com.cloverframework.core.data.interfaces;
 import com.cloverframework.core.dsl.AbstractCourse;
 
 /**
- * 该接口用于设置Course的基本数据类型values
+ * 设置Course的基本数据类型参数values的值
  * @author yl
  *
  * @param <A>

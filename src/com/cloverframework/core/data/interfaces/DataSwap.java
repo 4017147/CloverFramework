@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 领域层通过该接口与数据接口层实现交互
+ * 仓储层通过该接口与数据接口层实现交互
  * @author yl
  *
  * @param <T>

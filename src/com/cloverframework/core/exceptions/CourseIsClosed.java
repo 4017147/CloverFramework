@@ -1,4 +1,4 @@
-package com.cloverframework.core.exception;
+package com.cloverframework.core.exceptions;
 
 public class CourseIsClosed extends Exception{
 
