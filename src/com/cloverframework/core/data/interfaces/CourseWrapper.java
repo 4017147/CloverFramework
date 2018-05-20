@@ -1,5 +1,6 @@
 package com.cloverframework.core.data.interfaces;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 /**
@@ -7,12 +8,13 @@ import java.util.Set;
  * @author yl
  *
  */
-public interface CourseWrapper{
+
+import com.cloverframework.core.data.Result;
+public interface CourseWrapper extends Iterator<CourseWrapper>{
 	String id();
 	String type();
 	String opType();
 	CourseWrapper previous();
-	CourseWrapper next();
 	CourseWrapper parent();
 	List<CourseWrapper> sons();
 	List<String> fields();
@@ -20,4 +22,5 @@ public interface CourseWrapper{
 	List<Object> entities();
 	CourseValues value();
 	String json();
+	CourseResult result(CourseResult result);
 }

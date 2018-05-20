@@ -10,10 +10,10 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface DataSwap<T> {
-	CourseWrapper transfer();
-	Iterator<CourseWrapper> getCourseIterator();
+public interface DataSwap<T> extends Iterable<CourseWrapper>{
+	CourseWrapper open();
 	void setResult(DataSet<T> data);
 	void setResult(List<T> list, List<Object> objectList, Map<String, Object> map, Object value);
 	void setResult(CourseResult<T> result);
+	void close();
 }

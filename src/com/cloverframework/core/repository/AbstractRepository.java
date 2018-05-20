@@ -19,7 +19,7 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 	private final T doGet(C course,ICourseMode<T> mode) {
 		String type = course.getSubType();
 		if (type == CourseType.get) {
-			return mode.get(new DataSwaper<T,C>(course));
+			return mode.get(new DataSwaper<T>(course));
 		}
 		return null;
 	}
@@ -27,13 +27,13 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 	private final int doOther(C course,ICourseMode<T> mode) {
 		String type = course.getType();
 		if (type == CourseType.add) {
-			return(mode.add(new DataSwaper<T,C>(course)));
+			return(mode.add(new DataSwaper<T>(course)));
 		}
 		if (type == CourseType.put) {
-			return(mode.put(new DataSwaper<T,C>(course)));
+			return(mode.put(new DataSwaper<T>(course)));
 		}
 		if (type == CourseType.remove) {
-			return(mode.remove(new DataSwaper<T,C>(course)));
+			return(mode.remove(new DataSwaper<T>(course)));
 		}
 		return 0;
 	}

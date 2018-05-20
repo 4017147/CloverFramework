@@ -34,7 +34,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
 	
 	/** 每个work集合初始大小*/
-	private static byte workSize = 10;
+	private static byte workSize = 20;
 	
 	/** 只有当workable为1的时候，course才会被填入work区*/
 	private static ThreadLocal<Byte> workable = new  ThreadLocal<Byte>();

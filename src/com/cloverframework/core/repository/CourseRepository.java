@@ -17,6 +17,11 @@ public class CourseRepository<T,C extends AbstractCourse> extends AbstractReposi
 	public void setMode(ICourseMode<T> mode) {
 		this.mode = mode;
 	}
+	
+	public CourseRepository() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	public final int fromProxy(CourseProxy<T,C> proxy) {
 		return super.fromProxy(proxy, mode);

@@ -13,48 +13,45 @@ import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Wrapper;
 
 @SuppressWarnings("unchecked")
-public class DataSwaper<T,C extends AbstractCourse> implements DataSwap<T>{
-	private C course;
-	
+public class DataSwaper<T> implements DataSwap<T>,Iterable<CourseWrapper>{
+	private Wrapper wrapper;
 
-	protected C getCourse() {
-		return course;
-	}
-
-	protected void setCourse(C course) {
-		this.course = course;
-	}
 	
-	public DataSwaper(C course) {
+	public DataSwaper(AbstractCourse course) {
 		super();
-		this.course = course;
-	}
-
-	@Override
-	public Iterator<CourseWrapper> getCourseIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		this.wrapper = new Wrapper(course);
 	}
 
 	@Override
 	public void setResult(DataSet<T> data) {
-		course.setResult(new Result<T>(data.toList(),data.toObjectList(),data.toMap(),data.value()));
+		wrapper.result(new Result<T>(data.toList(),data.toObjectList(),data.toMap(),data.value()));
 		
 	}
 
 	@Override
 	public void setResult(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
-		course.setResult(new Result<T>(list, objectList, map, value));
+		wrapper.result(new Result<T>(list, objectList, map, value));
 	}
 
 	@Override
 	public void setResult(CourseResult<T> result) {
-		course.setResult(result);
+		wrapper.result(result);
 	}
 
 	@Override
-	public CourseWrapper transfer() {
-		return new Wrapper(course);
+	public Iterator<CourseWrapper> iterator() {
+		return wrapper;
 	}
 
+	@Override
+	public CourseWrapper open() {
+		return wrapper;
+	}
+
+	@Override
+	public void close() {
+		this.wrapper = null;
+	}
+	
+	
 }

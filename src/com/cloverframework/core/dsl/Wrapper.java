@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.data.interfaces.CourseWrapper;
 @SuppressWarnings("rawtypes")
@@ -87,5 +88,23 @@ public class Wrapper implements CourseWrapper{
 	public String json() {
 		return course.getJsonString();
 	}
+
+	@Override
+	public boolean hasNext() {
+		return course.next==null?false:true;
+	}
+
+	@Override
+	public CourseResult result(CourseResult result) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+
+
+	
+	
 
 }

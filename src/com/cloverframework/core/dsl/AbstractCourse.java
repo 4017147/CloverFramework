@@ -97,7 +97,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**
 	 * 返回数据接口
 	 */
-	private CourseResult<?> result;
+	private CourseResult result;
 
 	/**json输出工具*/
 	static JsonUtil jutil;
@@ -414,7 +414,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 			builder.append(nextline+"\u001b[94m").append(type).append("\u001b[0m ");
 		else
 			builder.append(nextline).append(type);
-		if(id!=null)builder.append("id:"+id);
+		if(id!=null && type==CourseType.root)builder.append("id:"+id);
 			fields.ifPresent((field)->{
 				field.forEach((f)->builder.append(f).append(","));
 				if(!sons.isPresent()&&!entities.isPresent())
@@ -686,7 +686,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	
-	public CourseResult<?> getResult(){
+	public CourseResult getResult(){
 		return this.result;
 	}
 
