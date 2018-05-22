@@ -666,17 +666,17 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 						size = size + ((AbstractCourse)o).getElements().length;
 					}
 					count = size+values.length-n;
-					if(ifCountValues) {
-						//如果字段数>1则参数个数必须和字段数相等
-						if(fields.size()>1 && count!=fields.size()) {
-							throw new ArgsCountNotMatch(fields.size(),count);
-							//如果字段数为1则至少有一个参数
-						}else if(fields.size()<=1 && count<1) {
-							throw new ArgsCountNotMatch(fields.size(),count);
-						}
-					}else if(!ifCountValues && count<1) {
+				}
+				if(ifCountValues) {
+					//如果字段数>1则参数个数必须和字段数相等
+					if(fields.size()>1 && count!=fields.size()) {
+						throw new ArgsCountNotMatch(fields.size(),count);
+						//如果字段数为1则至少有一个参数
+					}else if(fields.size()<2 && count<1) {
 						throw new ArgsCountNotMatch(fields.size(),count);
 					}
+				}else if(!ifCountValues && count<1) {
+					throw new ArgsCountNotMatch(fields.size(),count);
 				}
 				this.values = new Values(values);
 			} catch (ArgsCountNotMatch e) {
