@@ -128,6 +128,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 
 	IArgsMatcher argsMather = new ArgsMatcher();
 	
+	/**是否开启参数映射*/
+	public static boolean ifCountValues = true;
+	
 	/**是否输出simpleName */
 	public static boolean condition1 = true;//根传递
 	
@@ -654,18 +657,25 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public  AbstractCourse setValues(Object... values){
 			byte n = 0;
 			byte s = 0;
+			int size = 0;
+			int count = 0;
 			try {
 				for(Object o:values) {
-					int size = 0;
 					if(o instanceof AbstractCourse) {
 						n++;
-						size = ((AbstractCourse)o).getElements().length;
-						s+=size;
+						size = size + ((AbstractCourse)o).getElements().length;
 					}
-					if(size!=1 && s+values.length-n!=fields.size()) {
-						//参数值个数只能为1个或者和字段个数相同
-						//TODO logging
-						throw new ArgsCountNotMatch(fields.size(),s+values.length-n);			
+					count = size+values.length-n;
+					if(ifCountValues) {
+						//如果字段数>1则参数个数必须和字段数相等
+						if(fields.size()>1 && count!=fields.size()) {
+							throw new ArgsCountNotMatch(fields.size(),count);
+							//如果字段数为1则至少有一个参数
+						}else if(fields.size()<=1 && count<1) {
+							throw new ArgsCountNotMatch(fields.size(),count);
+						}
+					}else if(!ifCountValues && count<1) {
+						throw new ArgsCountNotMatch(fields.size(),count);
 					}
 				}
 				this.values = new Values(values);
