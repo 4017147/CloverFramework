@@ -97,7 +97,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**
 	 * 返回数据接口
 	 */
-	private CourseResult result;
+	private ThreadLocal<CourseResult> result;
 
 	/**json输出工具*/
 	static JsonUtil jutil;
@@ -698,7 +698,12 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	
 	
 	public CourseResult getResult(){
-		return this.result;
+		if(this.result==null && this.type == CourseType.root) {
+			this.result = new ThreadLocal<CourseResult>();
+			return this.result.get();
+		}else
+			return null;
+		
 	}
 
 	/**
@@ -706,8 +711,10 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @param result
 	 */
 	public void setResult(CourseResult<?> result) {
-		if(this.result==null)
-			this.result = result;
+		if(this.result==null && this.type == CourseType.root) {
+			this.result = new ThreadLocal<CourseResult>();
+			this.result.set(result);
+		}
 	}
 
 	@Override

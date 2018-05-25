@@ -8,8 +8,6 @@ import com.cloverframework.core.data.interfaces.DataSwap;
 *    
 */
 public interface ICourseMode<T> {
-	T get(DataSwap<T> swaper);
-	int add(DataSwap<T> swaper);
-	int put(DataSwap<T> swaper);
-	int remove(DataSwap<T> swaper);
+	T query(DataSwap<T> swaper);
+	int update(DataSwap<T> swaper);
 }

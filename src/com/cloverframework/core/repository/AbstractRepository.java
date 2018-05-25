@@ -16,24 +16,18 @@ import com.cloverframework.core.util.interfaces.CourseType;
  *
  */
 public abstract class AbstractRepository<T,C extends AbstractCourse>{
-	private final T doGet(C course,ICourseMode<T> mode) {
+	private final T doQuery(C course,ICourseMode<T> mode) {
 		String type = course.getSubType();
 		if (type == CourseType.get) {
-			return mode.get(new DataSwaper<T>(course));
+			return mode.query(new DataSwaper<T>(course));
 		}
 		return null;
 	}
 	
-	private final int doOther(C course,ICourseMode<T> mode) {
+	private final int doUpdate(C course,ICourseMode<T> mode) {
 		String type = course.getType();
-		if (type == CourseType.add) {
-			return(mode.add(new DataSwaper<T>(course)));
-		}
-		if (type == CourseType.put) {
-			return(mode.put(new DataSwaper<T>(course)));
-		}
-		if (type == CourseType.remove) {
-			return(mode.remove(new DataSwaper<T>(course)));
+		if (type != CourseType.get) {
+			return(mode.update(new DataSwaper<T>(course)));
 		}
 		return 0;
 	}
@@ -46,9 +40,9 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 		for(String key:map.keySet()) {
 			C course = map.get(key);
 			if(course.getType()==CourseType.get)
-				doGet(course,mode);
+				doQuery(course,mode);
 			else
-				doOther(course,mode);
+				doUpdate(course,mode);
 		}
 		return 1;
 	}
@@ -57,18 +51,18 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 		List<C> list = action.getWorkSpace();
 		for(C course:list) {
 			if(course.getType()==CourseType.get)
-				doGet(course,mode);
+				doQuery(course,mode);
 			else
-				doOther(course,mode);
+				doUpdate(course,mode);
 		}
 		return 1;
 	}
 	
 	public final T query(C course,ICourseMode<T> mode) {
-		return doGet(course,mode);
+		return doQuery(course,mode);
 	}
 	public final int commit(C course,ICourseMode<T> mode) {
-		return doOther(course,mode);
+		return doUpdate(course,mode);
 	}
 	
 	/*====================简单CRUD模式模板方法================== */

@@ -28,6 +28,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
 	byte level = 1;
 	
+	volatile int courseCount;
 	/**最后产生的course对象，无论什么方法，要求每次产生新的course都必须移除旧的course*/
 	C newest;
 	/**share区，用于缓存course对象*/
@@ -247,6 +248,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
+	 * 带缓存的FORK，
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
 	 * 则进行分支，否则不进行分支，并且按照START(id)模式进行
 	 * @param id
@@ -305,7 +307,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
 			setCourse(course.id, course);			
 		}else if(course.getStatus()==Course.END && course.id==null){
-			course.id = String.valueOf(course.hashCode());
+			course.id = String.valueOf(System.currentTimeMillis());
 		}
 	}
 
