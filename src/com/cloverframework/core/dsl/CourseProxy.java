@@ -307,7 +307,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		}else if(course.getStatus()==Course.END && course.id==null){
 			course.id = String.valueOf(course.hashCode());
 		}
-		//course.type = course.next.type;
 	}
 
 	/**
@@ -343,6 +342,8 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public int commit(C course) {
 		return repository.commit(course);
 	}
+	
+	
 	
 	
 	/**

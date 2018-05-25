@@ -86,8 +86,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**对象值*/
 	List<Object> entities;
 	
-	/**参数值*/
-	private CourseValues values;
+	/**参数值,该值线程独立*/
+	private ThreadLocal<CourseValues> values = new ThreadLocal<CourseValues>();
 	
 	/**
 	 * 基础数据类型value设置接口
@@ -355,7 +355,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		if(this.next!=null) {
 			next = this.next.buildJsonNode();
 		}
-		courseData = new JsonFields(type, optype, fields, types, values==null?null:values.toString(), son, next);
+		courseData = new JsonFields(type, optype, fields, types, 
+				values==null?null:(values.get()==null?null:values.get().toString()), son, next);
 		return courseData;
 	}
 	
@@ -407,7 +408,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		Optional<List<AbstractCourse>> sons = Optional.ofNullable(this.sons);
 		Optional<List<Object>> entities = Optional.ofNullable(this.entities);
 		Optional<String> optype = Optional.ofNullable(this.optype);
-		Optional<CourseValues> values = Optional.ofNullable(this.values);
+		Optional<CourseValues> values = Optional.ofNullable(this.values.get());
 		Optional<AbstractCourse> next = Optional.ofNullable(this.next);
 		StringBuilder builder = new StringBuilder(56);
 		String nextline = "\n";
@@ -462,15 +463,14 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 
 	/**
-	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建
+	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建,并返回原有节点
 	 */
 	protected static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object b[]) {
 		if(a.getStatus()<WAIT)
 			try {
-				throw new CourseIsClosed(a.getType());
+				throw new CourseIsClosed(a.getType());	
 			} catch (CourseIsClosed e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw ExceptionFactory.wrapException("Course create error,"+a.getId(), e);	
 			}
 		old = constructor.apply(a, b);
 		return old;
@@ -637,7 +637,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 
 	@Override
 	public CourseValues getValues() {
-		return values;
+		return values.get();
 	}
 	
 	/**
@@ -678,7 +678,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				}else if(!ifCountValues && count<1) {
 					throw new ArgsCountNotMatch(fields.size(),count);
 				}
-				this.values = new Values(values);
+				this.values.remove();
+				this.values.set(new Values(values));
 			} catch (ArgsCountNotMatch e) {
 				throw ExceptionFactory.wrapException("Error setting values in "+id+",cause：", e);
 			}
@@ -691,7 +692,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @return
 	 */
 	public AbstractCourse setValues(CourseValues values) {
-		this.values = values;
+		this.values.set(values);
 		return this;
 	}
 	

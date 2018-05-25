@@ -15,7 +15,8 @@ import com.cloverframework.core.dsl.Wrapper;
 @SuppressWarnings("unchecked")
 public class DataSwaper<T> implements DataSwap<T>,Iterable<CourseWrapper>{
 	private Wrapper wrapper;
-
+	
+	
 	
 	public DataSwaper(AbstractCourse course) {
 		super();

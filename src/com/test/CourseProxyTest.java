@@ -287,12 +287,11 @@ public class CourseProxyTest implements DomainService{
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			START("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30,40).and(demo.getF5()).eq(1,2)
+			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
 			.END();
 		}}; 
 		println(cp.toString());
 		println(cp.START("a").getJsonString());
-		cp = null;
 	}
 	
 }
