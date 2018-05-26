@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 
 import com.cloverframework.core.data.VSet;
@@ -98,6 +102,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * 返回数据接口
 	 */
 	private ThreadLocal<CourseResult> result;
+	
+	private ThreadLocal<CompletableFuture<CourseResult>> futureResult;
 
 	/**json输出工具*/
 	static JsonUtil jutil;
@@ -352,9 +358,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 				son.add(abc.buildJsonNode());
 			}
 		}
-		if(this.next!=null) {
+		if(this.next!=null) 
 			next = this.next.buildJsonNode();
-		}
+		
 		courseData = new JsonFields(type, optype, fields, types, 
 				values==null?null:(values.get()==null?null:values.get().toString()), son, next);
 		return courseData;
@@ -388,9 +394,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 						fields.add(type$field);
 					String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf(".")).lastIndexOf(".")+1),fullName.lastIndexOf(".")));
 					types.add(type);					
-				}else {
+				}else 
 					entities.add(obj);
-				}
+				
 		}
 	}
 	
@@ -470,7 +476,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 			try {
 				throw new CourseIsClosed(a.getType());	
 			} catch (CourseIsClosed e) {
-				throw ExceptionFactory.wrapException("Course create error,"+a.getId(), e);	
+				throw ExceptionFactory.wrapException("Course create error,id:"+a.getId(), e);	
 			}
 		old = constructor.apply(a, b);
 		return old;
@@ -530,9 +536,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	@Override
 	public void destroy() {
 		//TODO
-		if(next!=null) {
+		if(next!=null) 
 			next.destroy();
-		}
+		
 		proxy = null;
 		elements = null;
 		previous = null;
@@ -581,16 +587,25 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 */
 	@Override
 	public Object execute() {
-		//CourseProxy cp = proxy;
-		AbstractCourse course = this;
-		while(course.previous!=null)
-			course = course.previous;
-		String t = course.getType();
 		END();
-		return proxy.execute(t);
+		return proxy.execute();
 	}
 	
+	public Object executeFuture() {
+		END();
+		return proxy.executeFuture();
+	}
 	
+	@Override
+	public int commit() {
+		END();
+		return proxy.commit();
+	}
+	
+	public int commitFuture() {
+		END();
+		return proxy.commitFuture();
+	}
 	
 	/**
 	 * 提供一个该course的结构的字面描述，为调试提供方便，实际过程和所见描述的并不能画上等号。
@@ -654,9 +669,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @throws ArgsCountNotMatch 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
 	 */
 	@Override
-	public  AbstractCourse setValues(Object... values){
+	public  AbstractCourse<?> setValues(Object... values){
 			byte n = 0;
-			byte s = 0;
 			int size = 0;
 			int count = 0;
 			try {
@@ -696,26 +710,49 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		return this;
 	}
 	
-	
-	public CourseResult getResult(){
-		if(this.result==null && this.type == CourseType.root) {
-			this.result = new ThreadLocal<CourseResult>();
-			return this.result.get();
-		}else
-			return null;
-		
+	@Override
+	public CourseResult<?> getResult(){
+		if(result!=null)
+			return result.get();
+		if(futureResult!=null)
+			try {
+				return futureResult.get().get(CourseProxy.getGetResultTimeout(), TimeUnit.SECONDS);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				ExceptionFactory.wrapException("CourseResult error in "+id, e);
+			}
+		return null;
 	}
 
 	/**
 	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
 	 * @param result
 	 */
+	@Override
 	public void setResult(CourseResult<?> result) {
-		if(this.result==null && this.type == CourseType.root) {
-			this.result = new ThreadLocal<CourseResult>();
-			this.result.set(result);
-		}
+		createResult();
+		this.result.set(result);
 	}
+
+	public void setResult(CompletableFuture<CourseResult> futureResult) {
+		createFutureResult();
+		this.futureResult.set(futureResult);
+	}
+	
+	public ThreadLocal<CompletableFuture<CourseResult>> getFutureResult() {
+		return futureResult;
+	}
+
+	
+	private void createResult(){
+		if(result==null && type == CourseType.root) 
+			result = new ThreadLocal<CourseResult>();
+	}
+	
+	private void createFutureResult(){
+		if(result==null && type == CourseType.root) 
+			futureResult = new ThreadLocal<CompletableFuture<CourseResult>>();
+	}
+	
 
 	@Override
 	public String getType() {

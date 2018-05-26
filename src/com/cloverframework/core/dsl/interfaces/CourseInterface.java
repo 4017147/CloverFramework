@@ -1,5 +1,6 @@
 package com.cloverframework.core.dsl.interfaces;
 
+import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.exceptions.ArgsCountNotMatch;
@@ -11,9 +12,20 @@ import com.cloverframework.core.exceptions.ArgsCountNotMatch;
  */
 public interface CourseInterface {
 	void destroy();
-	public Object execute();
+	
+	Object execute();
+	
+	int commit();
+	
 	CourseValues getValues();
-	@SuppressWarnings("rawtypes")
-	AbstractCourse setValues(Object ...values) throws ArgsCountNotMatch;
+	
+	AbstractCourse<?> setValues(Object ...values);
+	
 	String getType();
+	
+	CourseResult<?> getResult();
+	
+	void setResult(CourseResult<?> result);
+	
+	
 }

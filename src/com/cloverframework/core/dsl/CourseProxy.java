@@ -3,8 +3,10 @@ package com.cloverframework.core.dsl;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.Course.Count;
@@ -65,6 +67,8 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	
 	public static final String[] Model = {U,I,C,UB,UA,MB,MA,M,RM,CB,CA};
 	
+	private static int getResultTimeout = 3;
+	
 	@Override
 	public C getCurrCourse() {
 		return newest;
@@ -97,7 +101,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return shareSpace.remove(id);
 	}
 	
-	/*----------------------private method-------------------- */
 	/**
 	 * 初始化一个course
 	 */
@@ -130,9 +133,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return null;
 	}
 	
-	/*----------------------public method-------------------- */
-	
-	
 	
 	public CourseProxy() {}
 
@@ -159,6 +159,14 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		this.domainService = domainService;
 	}
 	
+	public static int getGetResultTimeout() {
+		return getResultTimeout;
+	}
+
+	public static void setGetResultTimeout(int getResultTimeout) {
+		CourseProxy.getResultTimeout = getResultTimeout;
+	}
+
 	/**
 	 * 获取course list的友好信息
 	 * @see CourseProxy#getInfo()
@@ -200,7 +208,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 				if(types.length<2)
 					newc = (C) CourseFactory.create(Course.class);
 				else
-					newc = (C) CourseFactory.create((Class<C>) types[1]);				
+					newc = CourseFactory.create((Class<C>) types[1]);				
 			}
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
@@ -315,39 +323,72 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 直接执行当前的一条course语句
 	 * @return
 	 */
-	public T executeOne() {
-		return repository.query(getCurrCourse());
+	public T execute() {
+		return execute(getCurrCourse());
 	}
 	
 	@Override
-	public T executeOne(C course) {
+	public T execute(C course) {
 		return repository.query(course);
 	}
 	
 	@Override
-	public Object execute(String type) {
-		if(type=="get") 
-			return executeOne(getCurrCourse());
-		else
-			return commit(getCurrCourse());
+	public Object execute(String id) {
+		C course = getCourse(id);
+		return executeGeneral(course);
 	}
 
+	public Object executeGeneral(C course) {
+		if(course!=null && course.next.type==CourseType.get) 
+			return execute(course);
+		else
+			return commit(course);
+	}
+	
 	/**
 	 * 直接提交当前的一条course语句
 	 * @return
 	 */
 	public int commit() {
-		return repository.commit(getCurrCourse());
+		return commit(getCurrCourse());
 	}
-	
+
 	@Override
 	public int commit(C course) {
 		return repository.commit(course);
 	}
-	
-	
-	
-	
+
+	private <K> CompletableFuture<CourseResult<T>> applyFutureResult(C course,K t){
+		return CompletableFuture.supplyAsync(()->{
+			setObject(t,(K)executeGeneral(course));
+			return course.getResult();
+		});
+	}
+
+	private <O, K> void setObject(O obj,K t) {
+		obj = (O) t;
+	}
+
+	@Override
+	public T executeFuture() {
+		T t = null;
+		C course = getCurrCourse();
+		if(course.getFutureResult()==null) {
+			course.setResult(applyFutureResult(course,t));
+		}
+		return t;
+	}
+
+	@Override
+	public int commitFuture() {
+		int t = 0;
+		C course = getCurrCourse();
+		if(course.getFutureResult()==null) {
+			course.setResult(applyFutureResult(course,t));
+		}
+		return t;
+	}
+
 	/**
 	 * 将当前proxy对象移交仓储，仓储根据不用的proxy实例和泛化执行对应的操作
 	 * @return

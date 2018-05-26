@@ -14,13 +14,18 @@ import com.cloverframework.core.dsl.Wrapper;
 
 @SuppressWarnings("unchecked")
 public class DataSwaper<T> implements DataSwap<T>,Iterable<CourseWrapper>{
-	private Wrapper wrapper;
+	private CourseWrapper wrapper;
 	
 	
 	
 	public DataSwaper(AbstractCourse course) {
 		super();
 		this.wrapper = new Wrapper(course);
+	}
+	
+	public DataSwaper(CourseWrapper wrapper) {
+		super();
+		this.wrapper = wrapper;
 	}
 
 	@Override

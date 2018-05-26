@@ -1,6 +1,6 @@
 package com.cloverframework.core.exceptions;
 
-public class CourseIsClosed extends Exception{
+public class CourseIsClosed extends RuntimeException{
 
 	/**
 	 * 

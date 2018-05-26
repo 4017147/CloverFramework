@@ -3,7 +3,7 @@ package com.cloverframework.core.domain;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.repository.CourseRepository;
-import com.cloverframework.core.repository.interfaces.ICourseMode;
+import com.cloverframework.core.repository.interfaces.CourseMode;
 import com.dao.impl.UserDao;
 import com.entity.User;
 

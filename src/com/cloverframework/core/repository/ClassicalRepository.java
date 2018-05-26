@@ -2,7 +2,7 @@ package com.cloverframework.core.repository;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.AbstractCourse;
-import com.cloverframework.core.repository.interfaces.IClassicalMode;
+import com.cloverframework.core.repository.interfaces.ClassicalMode;
 
 /**
  * 一个的经典dao层仓储，不适用Course工具提交，但它仍然是通用的，直接由领域服务直接调用接口方法获得dao层数据。
@@ -11,9 +11,9 @@ import com.cloverframework.core.repository.interfaces.IClassicalMode;
  *
  */
 public class ClassicalRepository<C extends AbstractCourse> extends AbstractRepository<Object,C>{
-	private IClassicalMode mode;
+	private ClassicalMode mode;
 	
-	public void setMode(IClassicalMode mode) {
+	public void setMode(ClassicalMode mode) {
 		this.mode = mode;
 	}
 	public <E> E get(Class<E> Class,Integer key,DomainService service) {

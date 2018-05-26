@@ -3,12 +3,16 @@ package com.cloverframework.core.repository;
 import java.util.List;
 import java.util.Map;
 
+import com.cloverframework.core.data.interfaces.CourseWrapper;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.CourseProxy;
-import com.cloverframework.core.repository.interfaces.IClassicalMode;
-import com.cloverframework.core.repository.interfaces.ICourseMode;
+import com.cloverframework.core.dsl.Wrapper;
+import com.cloverframework.core.exceptions.CourseTypeException;
+import com.cloverframework.core.exceptions.ExceptionFactory;
+import com.cloverframework.core.repository.interfaces.ClassicalMode;
+import com.cloverframework.core.repository.interfaces.CourseMode;
 import com.cloverframework.core.util.interfaces.CourseType;
 /**
  * 这是一个抽象的仓储，其子类面向领域服务层，由子类负责仓储接口的实际调用。
@@ -16,24 +20,28 @@ import com.cloverframework.core.util.interfaces.CourseType;
  *
  */
 public abstract class AbstractRepository<T,C extends AbstractCourse>{
-	private final T doQuery(C course,ICourseMode<T> mode) {
-		String type = course.getSubType();
+	private final T doQuery(C course,CourseMode<T> mode) {
+		CourseWrapper wrapper = new Wrapper(course);
+		String type = wrapper.next().type();
 		if (type == CourseType.get) {
 			return mode.query(new DataSwaper<T>(course));
+		}else {
+			throw ExceptionFactory.wrapException("Type of course id:"+course.getId()+" should be "+CourseType.get, new CourseTypeException(type));
 		}
-		return null;
 	}
 	
-	private final int doUpdate(C course,ICourseMode<T> mode) {
-		String type = course.getType();
+	private final int doUpdate(C course,CourseMode<T> mode) {
+		CourseWrapper wrapper = new Wrapper(course);
+		String type = wrapper.next().type();
 		if (type != CourseType.get) {
-			return(mode.update(new DataSwaper<T>(course)));
+			return(mode.update(new DataSwaper<T>(wrapper)));
+		}else {
+			throw ExceptionFactory.wrapException("Type of course id:"+course.getId()+" should not be "+CourseType.get, new CourseTypeException(type));
 		}
-		return 0;
 	}
 	
 
-	public final int fromProxy(CourseProxy<T,C> proxy,ICourseMode<T> mode) {
+	public final int fromProxy(CourseProxy<T,C> proxy,CourseMode<T> mode) {
 		if(!(proxy instanceof Action))
 			return 0;
 		Map<String,C> map = proxy.getShareSpace();
@@ -47,7 +55,7 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 		return 1;
 	}
 	
-	public final int fromAction(Action<T,C> action,ICourseMode<T> mode) {
+	public final int fromAction(Action<T,C> action,CourseMode<T> mode) {
 		List<C> list = action.getWorkSpace();
 		for(C course:list) {
 			if(course.getType()==CourseType.get)
@@ -58,26 +66,26 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 		return 1;
 	}
 	
-	public final T query(C course,ICourseMode<T> mode) {
+	public final T query(C course,CourseMode<T> mode) {
 		return doQuery(course,mode);
 	}
-	public final int commit(C course,ICourseMode<T> mode) {
+	public final int commit(C course,CourseMode<T> mode) {
 		return doUpdate(course,mode);
 	}
 	
 	/*====================简单CRUD模式模板方法================== */
 	
 	
-	public final <E> E get(Class<E> Class,Integer key,IClassicalMode mode,DomainService service) {
+	public final <E> E get(Class<E> Class,Integer key,ClassicalMode mode,DomainService service) {
 		return mode.get(Class,key);			
 	}
-	public final <E> int add(E entity,IClassicalMode mode,DomainService service) {
+	public final <E> int add(E entity,ClassicalMode mode,DomainService service) {
 		return mode.add(entity);
 	}
-	public final <E> int put(E entity,IClassicalMode mode,DomainService service) {
+	public final <E> int put(E entity,ClassicalMode mode,DomainService service) {
 		return mode.put(entity);
 	}
-	public final <E> int remove(Class<E> Class,Integer key,IClassicalMode mode,DomainService service) {
+	public final <E> int remove(Class<E> Class,Integer key,ClassicalMode mode,DomainService service) {
 		return mode.remove(Class,key);
 	}
 	

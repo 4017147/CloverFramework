@@ -7,7 +7,7 @@ import com.cloverframework.core.data.interfaces.DataSwap;
 * 
 *    
 */
-public interface ICourseMode<T> {
+public interface CourseMode<T> {
 	T query(DataSwap<T> swaper);
 	int update(DataSwap<T> swaper);
 }

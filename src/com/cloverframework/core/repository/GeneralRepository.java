@@ -4,8 +4,8 @@ import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.CourseProxy;
-import com.cloverframework.core.repository.interfaces.IClassicalMode;
-import com.cloverframework.core.repository.interfaces.ICourseMode;
+import com.cloverframework.core.repository.interfaces.ClassicalMode;
+import com.cloverframework.core.repository.interfaces.CourseMode;
 /**
  * 一个通用的仓储，整合了Course和经典仓储
  * @author yl
@@ -13,15 +13,15 @@ import com.cloverframework.core.repository.interfaces.ICourseMode;
  */
 public class GeneralRepository<T,C extends AbstractCourse> extends AbstractRepository<T,C>{
 	//建议使用IOC容器注入
-		private ICourseMode<T> courseMode;
-		private IClassicalMode baseMode;
+		private CourseMode<T> courseMode;
+		private ClassicalMode baseMode;
 		
 		
-		public void setCourseMode(ICourseMode<T> courseMode) {
+		public void setCourseMode(CourseMode<T> courseMode) {
 			this.courseMode = courseMode;
 		}
 
-		public void setBaseMode(IClassicalMode baseMode) {
+		public void setBaseMode(ClassicalMode baseMode) {
 			this.baseMode = baseMode;
 		}
 

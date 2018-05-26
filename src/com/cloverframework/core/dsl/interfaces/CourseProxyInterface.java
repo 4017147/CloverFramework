@@ -19,10 +19,18 @@ public interface CourseProxyInterface<T,C extends AbstractCourse> {
 	
 	C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,byte status);
 	
-	T executeOne(C course);
+	T execute();
 	
-	Object execute(String type);
+	T execute(C course);
+	
+	T executeFuture();
+	
+	Object execute(String id);
+	
+	int commit();
 	
 	int commit(C course);
+	
+	int commitFuture();
 	
 }
