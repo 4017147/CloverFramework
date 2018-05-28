@@ -27,8 +27,8 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
 	private ThreadLocal<C> newest = new ThreadLocal<C>();
 	
-	/** share区，用于缓存每个线程产生的course*/
-	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
+//	/** share区，用于缓存每个线程产生的course*/
+//	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
 	
 	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
 	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();

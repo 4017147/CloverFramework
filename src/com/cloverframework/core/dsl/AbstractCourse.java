@@ -28,6 +28,7 @@ import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.ELOperation;
+import com.cloverframework.core.util.ELType;
 import com.cloverframework.core.util.interfaces.CourseOpt;
 import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.IArgsMatcher;
@@ -143,12 +144,14 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**是否输出颜色 */
 	public static boolean condition2 = true;//根传递
 	
-	/**正在填充*/
-	public static final byte FILL 		=-1;
-	/**关闭*/
-	public static final byte END 		=-2;
+	/**无操作*/
+	public static final byte LOCKED 	=-4;
 	/**异常*/
 	public static final byte ERROR 		=-3;
+	/**关闭*/
+	public static final byte END 		=-2;
+	/**正在填充*/
+	public static final byte FILL 		=-1;
 	/**待填充*/
 	public static final byte WAIT 		= 0;
 	/**添加字面值(从lambda)*/
@@ -195,11 +198,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 设置节点的字段值，该方法是父类委托子类的构造方法调用的。
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
-	 * 执行后都会将字面列表清空
-	 * 通常情况下，值传入要先于方法返回值传入，
-	 * 在传入节点参数的时候，按照直接值->实体->方法字面值->三元
+	 * 执行后都会将字面列表清空，通常情况下，值传入要先于方法返回值传入，
+	 * 在传入节点参数的时候，按照枚举->实体->方法字面值->三元
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
@@ -251,7 +252,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 */
 	protected void setModel(Object o) {
 		if(o.getClass()==String.class) {
-			for(String s:CourseProxy.Model) {
+			for(String s:ELType.Model) {
 				if(s.equals(o)) {
 					model = s;
 					break;
@@ -710,6 +711,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		return this;
 	}
 	
+	/**
+	 * 返回该course的result对象，如果同步result存在则优先返回，否则返回异步result
+	 */
 	@Override
 	public CourseResult<?> getResult(){
 		if(result!=null)
@@ -733,6 +737,10 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 		this.result.set(result);
 	}
 
+	/**
+	 * 设置异步result对象
+	 * @param futureResult
+	 */
 	public void setResult(CompletableFuture<CourseResult> futureResult) {
 		createFutureResult();
 		this.futureResult.set(futureResult);

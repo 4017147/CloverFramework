@@ -55,7 +55,7 @@ public final class Course extends AbstractCourse<Course>{
 	 * @author yl
 	 *
 	 */
-	public static final class Get extends AbstractCourse<Get>{
+	public static final class Get extends AbstractCourse{
 		
 		@SuppressWarnings("static-access")
 		public Get(AbstractCourse previous, Object... obj) {

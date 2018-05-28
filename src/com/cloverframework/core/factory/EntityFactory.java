@@ -15,7 +15,7 @@ import net.sf.cglib.proxy.MethodProxy;
 
 public final class EntityFactory {
 	/**  
-	 * 保存线程id和course的map，这里使用的是ConcurrentHashMap，因此修改操作是线程安全的，但是get和某些操作可能会交迭，
+	 * 保存线程id和course的map，这里使用的是ConcurrentHashMap,但是get和某些操作可能会交迭，
 	 * 在确保线程和course是一对一的情况下(正常应用情况下)，不会存在线程安全问题，在多对一的情况下就必需进行同步。<p>
 	 * 另外在使用不同的web服务容器时，需要考虑容器的并发规则，通常一次业务过程的创建对应的某个（java）线程应该是确定的，否则不适用。
 	 * <p>该map的初始大小应根据web服务容器的并发线程数量（如线程池的数量）来设置，比它少稍大一点并且是2的倍数
