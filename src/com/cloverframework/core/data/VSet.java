@@ -4,68 +4,68 @@ import com.cloverframework.core.data.interfaces.ValueSet;
 import com.cloverframework.core.dsl.AbstractCourse;
 
 
-public final class VSet<A> implements ValueSet<A>{
+public final class VSet implements ValueSet{
 
-	AbstractCourse<A> course;
+	AbstractCourse course;
 	
 	
-	public VSet(AbstractCourse<A> course) {
+	public VSet(AbstractCourse course) {
 		super();
 		this.course = course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setBoolean(boolean... val) {
+	public AbstractCourse setBoolean(boolean... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setByte(byte... val) {
+	public AbstractCourse setByte(byte... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setShort(short... val) {
+	public AbstractCourse setShort(short... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setInt(int... val) {
+	public AbstractCourse setInt(int... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setLong(long... val) {
+	public AbstractCourse setLong(long... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setFloat(float... val) {
+	public AbstractCourse setFloat(float... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setDouble(double... val) {
+	public AbstractCourse setDouble(double... val) {
 		course.setValues(new Values(val));
 		return course;
 	}
 
 
 	@Override
-	public AbstractCourse<A> setString(String... val) {
+	public AbstractCourse setString(String... val) {
 		course.setValues(new Values(val));
 		return course;
 	}

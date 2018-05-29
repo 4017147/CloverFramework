@@ -1,10 +1,9 @@
 package com.cloverframework.core.dsl;
 
-import java.util.function.Function;
-
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.Course.Count;
 import com.cloverframework.core.util.interfaces.CourseType;
+import com.cloverframework.core.util.lambda.CreateSon;
 
 /**
  * 创建course的子节点默认方法接口，在proxy中通过继承该接口实现方法调用创建子节点。
@@ -12,7 +11,7 @@ import com.cloverframework.core.util.interfaces.CourseType;
  * @author yl
  *
  */
-public interface SubNodeCourse{
+public interface SonCreator{
 	public AbstractCourse getCurrCourse();
 	
 	
@@ -21,7 +20,7 @@ public interface SubNodeCourse{
 	 * @param function
 	 * @return
 	 */
-	default <R> R createNode(Function<AbstractCourse,R> function) {
+	default <R> R create(CreateSon<R> constructor,String optype,boolean isSon, Object... obj) {
 		AbstractCourse course = getCurrCourse();
 		AbstractCourse last = null;
 		//搜索最后主干节点
@@ -29,8 +28,7 @@ public interface SubNodeCourse{
 			last = course;
 			course = course.next;
 		}
-		R r = function.apply(last);
-		return r;
+		return constructor.apply(last, optype, isSon, obj);
 	}
 
 	/**
@@ -40,7 +38,7 @@ public interface SubNodeCourse{
 	 */
 	default Condition $(Object...obj){
 		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
-		return createNode((last)->new Condition(last,CourseType.by,true,obj));
+		return create(Condition::new,CourseType.by,true,obj);
 	}
 	
 	/**
@@ -49,6 +47,6 @@ public interface SubNodeCourse{
 	 * @return
 	 */
 	default Count count(Object obj) {
-		return createNode((last)->new Count(last,CourseType.count,true,obj));
+		return create(Count::new,CourseType.count,true,obj);
 	}
 }

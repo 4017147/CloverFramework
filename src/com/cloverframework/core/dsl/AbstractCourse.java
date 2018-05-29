@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import com.cloverframework.core.data.VSet;
 import com.cloverframework.core.data.Values;
@@ -34,6 +35,8 @@ import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.IArgsMatcher;
 import com.cloverframework.core.util.json.JsonFields;
 import com.cloverframework.core.util.json.JsonUtil;
+import com.cloverframework.core.util.lambda.CreateSon;
+import com.sun.corba.se.impl.ior.OldJIDLObjectKeyTemplate;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
@@ -43,7 +46,7 @@ import com.cloverframework.core.util.json.JsonUtil;
  * 
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractCourse<A> implements CourseInterface{
+public abstract class AbstractCourse implements CourseInterface,MainCreator{
 	
 	/**course代理*/
 	CourseProxyInterface proxy;//上级传递
@@ -54,6 +57,9 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	
 	/**节点元素*/
 	private Object[] elements;	
+	
+	private int[] argsHash;
+	
 	
 	/**方法字面值列表*/
 	List<String> literal;//上级传递
@@ -97,7 +103,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**
 	 * 基础数据类型value设置接口
 	 */
-	public final ValueSet<A> value = new VSet<A>(this);
+	public final ValueSet value = new VSet(this);
 	
 	/**
 	 * 返回数据接口
@@ -144,10 +150,10 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**是否输出颜色 */
 	public static boolean condition2 = true;//根传递
 	
-	/**无操作*/
-	public static final byte LOCKED 	=-4;
 	/**异常*/
-	public static final byte ERROR 		=-3;
+	public static final byte ERROR 		=-4;
+	/**无操作*/
+	public static final byte LOCKED 	=-3;
 	/**关闭*/
 	public static final byte END 		=-2;
 	/**正在填充*/
@@ -200,11 +206,16 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	/**
 	 * 如果根节点status异常，则不会执行，否则正常执行并刷新根节点的status。
 	 * 执行后都会将字面列表清空，通常情况下，值传入要先于方法返回值传入，
-	 * 在传入节点参数的时候，按照枚举->实体->方法字面值->三元
+	 * 在传入节点参数的时候，只能包括并且按照枚举->实体->方法字面值->三元,
+	 * 通常情况下这几类型必需具有不变性。
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
 		try {
+			argsHash = new int[elements.length];
+			for(int i = 0;i<elements.length;i++) {
+				argsHash[i] = elements[i]==null?0: elements[i].hashCode();
+			}
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
 			if(status>=WAIT) {
@@ -262,9 +273,8 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 设置son，一个节点只有一个son，son的next不作为当前节点的son，
-	 * 并且会清除son原来的previous之间的关系，恢复当前节点跟previous的关系，
-	 * 因为子节点的创建要先于当前节点
+	 * 设置son，son和同辈son是链表结构，并且清除son原来的previous之间的关系，
+	 * 恢复当前节点跟previous的关系，因为子节点的创建语法上先于当前节点
 	 * @param object
 	 */
 	protected void setSon(Object object) {
@@ -464,24 +474,35 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * Warning!If the status is less than END,you can not change status
 	 * @param status
 	 */
-	protected void setStatus(byte status) {
+	void setStatus(byte status) {
 		if(this.status>END)
 			this.status = status;
 	}
 
-	/**
-	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在，则不会重复创建,并返回原有节点
-	 */
-	protected static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object b[]) {
+/*	*//**
+	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在并且认为和当前创建节点等价，
+	 * 则不会重复创建,并返回原有节点
+	 *//*
+	protected static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object obj[]) {
 		if(a.getStatus()<WAIT)
 			try {
 				throw new CourseIsClosed(a.getType());	
 			} catch (CourseIsClosed e) {
 				throw ExceptionFactory.wrapException("Course create error,id:"+a.getId(), e);	
 			}
-		old = constructor.apply(a, b);
-		return old;
-	}
+		if(old!=null) {
+			int[] oldArgsHash = old.getArgsHash();
+			if(oldArgsHash!=null && oldArgsHash.length==obj.length) {
+				for(int i = 0;i<oldArgsHash.length;i++) {
+					if(oldArgsHash[i]!=(obj[i]==null?0:obj[i].hashCode())) {
+						return constructor.apply(a, obj);
+					}
+				}
+				return old;
+			}
+		}
+		return constructor.apply(a, obj);
+	}*/
 	
 	/**
 	 * 
@@ -501,7 +522,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public AbstractCourse() {}
 	
 	/**
-	 * 创建主干节点
+	 * 创建一个主干节点类型的course
 	 * @param previous
 	 * @param courseType
 	 * @param obj
@@ -514,7 +535,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 	
 	/**
-	 * 创建子节点
+	 * 创建一个子节点类型的course
 	 * @param parent
 	 * @param courseType
 	 * @param isSon
@@ -526,7 +547,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 			this.isSon = true;
 			this.parent = parent;
 		}
-		this.previous = parent;
+		this.previous = parent;//传递previous参数
 		setElements(obj);
 		this.previous = null;
 	}
@@ -635,7 +656,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	}
 
 	
-	public void addEntity(Object entity) {
+	void addEntity(Object entity) {
 		entities.add(entity);
 	}
 
@@ -670,7 +691,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * @throws ArgsCountNotMatch 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
 	 */
 	@Override
-	public  AbstractCourse<?> setValues(Object... values){
+	public  AbstractCourse setValues(Object... values){
 			byte n = 0;
 			int size = 0;
 			int count = 0;
@@ -781,7 +802,7 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * 可以通过设置一个继承CourseOpt的接口扩充节点类型常量
 	 * @param optype
 	 */
-	public void setOptype(String optype) {
+	void setOptype(String optype) {
 		this.optype = optype;
 	}
 	
@@ -819,12 +840,12 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	 * 可以通过设置一个规则校验器来自定义节点参数校验规则
 	 * @param pattern
 	 */
-	public void setPattern(IArgsMatcher pattern) {
+	void setPattern(IArgsMatcher pattern) {
 		this.argsMather = pattern;
 	}
 
 	
-	public void setId(String id) {
+	void setId(String id) {
 		//String reg = "^\\s*$";
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
@@ -838,6 +859,11 @@ public abstract class AbstractCourse<A> implements CourseInterface{
 	public List<String> getFields() {
 		return fields;
 	}
+
+	public int[] getArgsHash() {
+		return argsHash;
+	}
+
 
 	
 	

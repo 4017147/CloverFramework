@@ -25,7 +25,7 @@ import com.cloverframework.core.util.lambda.Literal;
  *
  */
 @SuppressWarnings("rawtypes")
-public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,SubNodeCourse,ELType{
+public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,SonCreator,ELType{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法，需要相应的+1（仅开发过程中可设置，对外隐藏）*/
 	byte level = 1;
@@ -91,6 +91,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 创建对应的泛型course
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	protected C createCourse() {
 		C newc = null;
 		try {
@@ -115,24 +116,26 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 
 	/**
 	 * 创建异步执行对象并设置course异步的result
+	 * @param <K>
 	 * @param course
 	 * @param t
 	 * @return
 	 */
-	private <K> CompletableFuture<CourseResult<T>> applyFutureResult(C course,K t){
+	private <K> CompletableFuture<CourseResult> applyFutureResult(C course,K k){
 		return CompletableFuture.supplyAsync(()->{
-			setObject(t,(K)executeGeneral(course));
+			setObject(k,executeGeneral(course));
 			return course.getResult();
 		});
 	}
 
 	/**
 	 * 闭包变量final赋值
+	 * @param <K>
 	 * @param obj
 	 * @param t
 	 */
-	private <O, K> void setObject(O obj,K t) {
-		obj = (O) t;
+	private <K> void setObject(K k,Object obj) {
+		k = (K) obj;
 	}
 
 	@Override

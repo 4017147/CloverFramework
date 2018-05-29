@@ -19,7 +19,7 @@ public interface CourseInterface {
 	
 	CourseValues getValues();
 	
-	AbstractCourse<?> setValues(Object ...values);
+	AbstractCourse setValues(Object ...values);
 	
 	String getType();
 	

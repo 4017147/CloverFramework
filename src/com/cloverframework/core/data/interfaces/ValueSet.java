@@ -8,13 +8,13 @@ import com.cloverframework.core.dsl.AbstractCourse;
  *
  * @param <A>
  */
-public interface ValueSet<A> {
-	AbstractCourse<A> setBoolean(boolean...val);
-	AbstractCourse<A> setByte(byte...val);
-	AbstractCourse<A> setShort(short...val);
-	AbstractCourse<A> setInt(int...val);
-	AbstractCourse<A> setLong(long...val);
-	AbstractCourse<A> setFloat(float...val);
-	AbstractCourse<A> setDouble(double...val);
-	AbstractCourse<A> setString(String...val);
+public interface ValueSet {
+	AbstractCourse setBoolean(boolean...val);
+	AbstractCourse setByte(byte...val);
+	AbstractCourse setShort(short...val);
+	AbstractCourse setInt(int...val);
+	AbstractCourse setLong(long...val);
+	AbstractCourse setFloat(float...val);
+	AbstractCourse setDouble(double...val);
+	AbstractCourse setString(String...val);
 }

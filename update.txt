@@ -1,7 +1,7 @@
 1.6.5
-1.增加Course支持异步和响应式的API支持
+1.增加Course支持异步和响应式的API、函数式API支持
 2.Action和CourseProxy接口调整，整合默认方法方式继承扩展功能
-
+3.默认方法功能插拔模式
 
 1.6.4
 1.CourseProxy接口调整
