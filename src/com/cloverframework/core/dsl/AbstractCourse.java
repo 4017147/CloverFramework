@@ -7,25 +7,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
-import com.cloverframework.core.data.VSet;
-import com.cloverframework.core.data.Values;
 import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
-import com.cloverframework.core.data.interfaces.ValueSet;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.interfaces.CourseInterface;
 import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
-import com.cloverframework.core.exceptions.ArgsCountNotMatch;
-import com.cloverframework.core.exceptions.CourseIsClosed;
-import com.cloverframework.core.exceptions.ExceptionFactory;
-import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.ELOperation;
@@ -35,8 +23,6 @@ import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.IArgsMatcher;
 import com.cloverframework.core.util.json.JsonFields;
 import com.cloverframework.core.util.json.JsonUtil;
-import com.cloverframework.core.util.lambda.CreateSon;
-import com.sun.corba.se.impl.ior.OldJIDLObjectKeyTemplate;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
@@ -46,7 +32,7 @@ import com.sun.corba.se.impl.ior.OldJIDLObjectKeyTemplate;
  * 
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractCourse implements CourseInterface,MainCreator{
+public abstract class AbstractCourse implements CourseInterface{
 	
 	/**course代理*/
 	CourseProxyInterface proxy;//上级传递
@@ -98,19 +84,14 @@ public abstract class AbstractCourse implements CourseInterface,MainCreator{
 	List<Object> entities;
 	
 	/**参数值,该值线程独立*/
-	private ThreadLocal<CourseValues> values = new ThreadLocal<CourseValues>();
-	
-	/**
-	 * 基础数据类型value设置接口
-	 */
-	public final ValueSet value = new VSet(this);
+	ThreadLocal<CourseValues> values = new ThreadLocal<CourseValues>();
 	
 	/**
 	 * 返回数据接口
 	 */
-	private ThreadLocal<CourseResult> result;
+	ThreadLocal<CourseResult> result;
 	
-	private ThreadLocal<CompletableFuture<CourseResult>> futureResult;
+	ThreadLocal<CompletableFuture<CourseResult>> futureResult;
 
 	/**json输出工具*/
 	static JsonUtil jutil;
@@ -478,31 +459,6 @@ public abstract class AbstractCourse implements CourseInterface,MainCreator{
 		if(this.status>END)
 			this.status = status;
 	}
-
-/*	*//**
-	 * 通过输入的节点创建函数表达式执行节点创建，如果节点已存在并且认为和当前创建节点等价，
-	 * 则不会重复创建,并返回原有节点
-	 *//*
-	protected static Object create(AbstractCourse old,BiFunction<AbstractCourse, Object[], AbstractCourse> constructor,AbstractCourse a,Object obj[]) {
-		if(a.getStatus()<WAIT)
-			try {
-				throw new CourseIsClosed(a.getType());	
-			} catch (CourseIsClosed e) {
-				throw ExceptionFactory.wrapException("Course create error,id:"+a.getId(), e);	
-			}
-		if(old!=null) {
-			int[] oldArgsHash = old.getArgsHash();
-			if(oldArgsHash!=null && oldArgsHash.length==obj.length) {
-				for(int i = 0;i<oldArgsHash.length;i++) {
-					if(oldArgsHash[i]!=(obj[i]==null?0:obj[i].hashCode())) {
-						return constructor.apply(a, obj);
-					}
-				}
-				return old;
-			}
-		}
-		return constructor.apply(a, obj);
-	}*/
 	
 	/**
 	 * 
@@ -518,6 +474,10 @@ public abstract class AbstractCourse implements CourseInterface,MainCreator{
 	}
 
 	/*----------------------public method-------------------- */
+	@Override
+	public AbstractCourse getThis() {
+		return this;
+	}
 	
 	public AbstractCourse() {}
 	
@@ -576,58 +536,6 @@ public abstract class AbstractCourse implements CourseInterface,MainCreator{
 		argsMather = null;
 	}
 
-	/**
-	 * 结束当前的一条course语句，则该course不可再添加语句，
-	 * 并且执行end方法在大多情况下都是必须的，如果没有正常的执行end，
-	 * 会导致当前定义的course被下一次操作快速抛弃而不会进行缓存
-	 */
-	public void END() {
-		try {
-			if(status!=END) {
-				status = END;
-				if (previous!=null) 
-					previous.END(); 
-				else {
-					proxy.END();
-					EntityFactory.removeCourse(Thread.currentThread().getId());				
-				}				
-			}
-		}
-		finally {
-			if(status!=END) {
-				proxy = null;
-				literal = null;
-				literal_te = null;
-				EntityFactory.removeCourse(Thread.currentThread().getId());
-			}
-		}
-	}
-
-	/**
-	 * 直接END()并执行当前对象course语句
-	 * @return
-	 */
-	@Override
-	public Object execute() {
-		END();
-		return proxy.execute();
-	}
-	
-	public Object executeFuture() {
-		END();
-		return proxy.executeFuture();
-	}
-	
-	@Override
-	public int commit() {
-		END();
-		return proxy.commit();
-	}
-	
-	public int commitFuture() {
-		END();
-		return proxy.commitFuture();
-	}
 	
 	/**
 	 * 提供一个该course的结构的字面描述，为调试提供方便，实际过程和所见描述的并不能画上等号。
@@ -671,113 +579,13 @@ public abstract class AbstractCourse implements CourseInterface,MainCreator{
 	public byte getStatus() {
 		return status;
 	}
-
-	@Override
-	public CourseValues getValues() {
-		return values.get();
-	}
 	
-	/**
-	 * 设置该节点的参数值，如name = ?中的参数，如果参数是基本类型，
-	 * 建议使用value属性的基本类型方法，以减少装箱和类型转换的开销。<p>
-	 * 参数是领域字段（字典，lambda，方法字面值），需要通过$输入参数:
-	 * {@link CourseProxy#$(Object...)}来获取，否则一律作为值来对待。
-	 * 多个参数，可传入这些参数的领域实体一次性完成，但是你的程序应当知道如何处理它们的关系，又如
-	 * 参数是自定义值对象，你也许需要通过工具实现跟领域实体字段之间的匹配和复制，如beancopier，
-	 * 但是一般情况下你无须使用自定义值对象，而是利用dsl构造关系即可。
-	 * 无论输入是什么类型，在dsl中都不会负责字段检查和操作（除了获取字面值和判断参数个数），
-	 * 如何检查和获取参数的规则由你的程序决定。
-	 * @param <V>
-	 * @throws ArgsCountNotMatch 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
-	 */
-	@Override
-	public  AbstractCourse setValues(Object... values){
-			byte n = 0;
-			int size = 0;
-			int count = 0;
-			try {
-				for(Object o:values) {
-					if(o instanceof AbstractCourse) {
-						n++;
-						size = size + ((AbstractCourse)o).getElements().length;
-					}
-					count = size+values.length-n;
-				}
-				if(ifCountValues) {
-					//如果字段数>1则参数个数必须和字段数相等
-					if(fields.size()>1 && count!=fields.size()) {
-						throw new ArgsCountNotMatch(fields.size(),count);
-						//如果字段数为1则至少有一个参数
-					}else if(fields.size()<2 && count<1) {
-						throw new ArgsCountNotMatch(fields.size(),count);
-					}
-				}else if(!ifCountValues && count<1) {
-					throw new ArgsCountNotMatch(fields.size(),count);
-				}
-				this.values.remove();
-				this.values.set(new Values(values));
-			} catch (ArgsCountNotMatch e) {
-				throw ExceptionFactory.wrapException("Error setting values in "+id+",cause：", e);
-			}
-			return this;
-	}
-	
-	/**
-	 * 传入一个构造完成的值对象设置为当前节点的values
-	 * @param values
-	 * @return
-	 */
-	public AbstractCourse setValues(CourseValues values) {
-		this.values.set(values);
-		return this;
-	}
-	
-	/**
-	 * 返回该course的result对象，如果同步result存在则优先返回，否则返回异步result
-	 */
-	@Override
-	public CourseResult<?> getResult(){
-		if(result!=null)
-			return result.get();
-		if(futureResult!=null)
-			try {
-				return futureResult.get().get(CourseProxy.getGetResultTimeout(), TimeUnit.SECONDS);
-			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				ExceptionFactory.wrapException("CourseResult error in "+id, e);
-			}
-		return null;
-	}
-
-	/**
-	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
-	 * @param result
-	 */
-	@Override
-	public void setResult(CourseResult<?> result) {
-		createResult();
-		this.result.set(result);
-	}
-
-	/**
-	 * 设置异步result对象
-	 * @param futureResult
-	 */
-	public void setResult(CompletableFuture<CourseResult> futureResult) {
-		createFutureResult();
-		this.futureResult.set(futureResult);
-	}
-	
-	public ThreadLocal<CompletableFuture<CourseResult>> getFutureResult() {
-		return futureResult;
-	}
-
-	
-	private void createResult(){
+	void createResult(){
 		if(result==null && type == CourseType.root) 
 			result = new ThreadLocal<CourseResult>();
 	}
 	
-	private void createFutureResult(){
+	void createFutureResult(){
 		if(result==null && type == CourseType.root) 
 			futureResult = new ThreadLocal<CompletableFuture<CourseResult>>();
 	}

@@ -2,7 +2,6 @@ package com.cloverframework.core.dsl;
 
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.Course.Count;
-import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.lambda.CreateSon;
 
 /**
@@ -20,7 +19,7 @@ public interface SonCreator{
 	 * @param function
 	 * @return
 	 */
-	default <R> R create(CreateSon<R> constructor,String optype,boolean isSon, Object... obj) {
+	default <R> R create(CreateSon<R> constructor,boolean isSon, Object ...obj) {
 		AbstractCourse course = getCurrCourse();
 		AbstractCourse last = null;
 		//搜索最后主干节点
@@ -28,7 +27,7 @@ public interface SonCreator{
 			last = course;
 			course = course.next;
 		}
-		return constructor.apply(last, optype, isSon, obj);
+		return constructor.apply(last, isSon, obj);
 	}
 
 	/**
@@ -38,7 +37,7 @@ public interface SonCreator{
 	 */
 	default Condition $(Object...obj){
 		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
-		return create(Condition::new,CourseType.by,true,obj);
+		return create(Condition::new,true,obj);
 	}
 	
 	/**
@@ -47,6 +46,6 @@ public interface SonCreator{
 	 * @return
 	 */
 	default Count count(Object obj) {
-		return create(Count::new,CourseType.count,true,obj);
+		return create(Count::new,true,obj);
 	}
 }

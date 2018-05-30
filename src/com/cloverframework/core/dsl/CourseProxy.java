@@ -47,47 +47,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	private static int getResultTimeout = 3;
 	
 	/**
-	 * 初始化一个course并发送到factory的course集合中，
-	 * 并且判断存入的course与刚刚创建的course是否引用相同，
-	 * 如果不相同则抛出异常
-	 * @return 返回一个根节点
-	 */
-	private C begin(C course) {
-		Thread t = Thread.currentThread();
-		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
-		//System.out.println(t.getStackTrace().length-level);
-		return (C) EntityFactory.putCourse(course, t, t.getStackTrace().length-level);
-	}
-
-	/**
-	 * 如果shareSpace中已存在对应id的course状态为LOCKED，则返当前创建的course，
-	 * 否则返回已存在的course，如果已存在的course为null，则返回当前创建的course
-	 * @param cover 默认false：是否覆盖shareSpace中状态为LOCKED的course
-	 * @return
-	 */
-	protected C addCourse(String id,boolean cover) {
-		C old = getCourse(id);
-		C newc = createCourse();
-		newc = initCourse(id,newc,this,Course.WAIT);
-		if(old!=null && old.getStatus()==AbstractCourse.LOCKED) {
-			//TODO add logging warning
-			if(cover) {	
-				setCourse(old.id, newc);			
-				setCurrCourse(newc);
-				return newc;
-			}
-			newc.id = id+"$temp";
-			newc.isFork = true;
-			setCurrCourse(newc);
-			return newc;
-		}else if(old==null){
-			setCurrCourse(newc);
-			return newc;
-		}else 
-			return old;
-	}
-
-	/**
 	 * 创建对应的泛型course
 	 * @return
 	 */
@@ -112,6 +71,47 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 			e.printStackTrace();
 		}
 		return newc;
+	}
+
+	/**
+	 * 如果shareSpace查找对应id的course状态为LOCKED，则返当新建的course，
+	 * 否则查找的course，如果查找的course为null，则返回新建的course
+	 * @param cover 默认false：是否覆盖shareSpace中状态为LOCKED的course
+	 * @return
+	 */
+	protected C addCourse(String id,boolean cover) {
+		C old = getCourse(id);
+		C newc = createCourse();
+		newc = initCourse(id,newc,this,Course.WAIT);
+		if(old!=null && old.getStatus()==AbstractCourse.LOCKED) {
+			//TODO add logging warning
+			if(cover) {	
+				setCourse(old.id, newc);			
+				setCurrCourse(newc);
+				return newc;
+			}
+			newc.id = id+"$sub";
+			newc.isFork = true;//不共享缓存
+			setCurrCourse(newc);
+			return newc;
+		}else if(old==null){
+			setCurrCourse(newc);
+			return newc;
+		}else 
+			return old;
+	}
+
+	/**
+	 * 初始化一个course并发送到factory的course集合中，
+	 * 并且判断存入的course与刚刚创建的course是否引用相同，
+	 * 如果不相同则抛出异常
+	 * @return 返回一个根节点
+	 */
+	private C begin(C course) {
+		Thread t = Thread.currentThread();
+		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
+		//System.out.println(t.getStackTrace().length-level);
+		return (C) EntityFactory.putCourse(course, t, t.getStackTrace().length-level);
 	}
 
 	/**
