@@ -1,6 +1,7 @@
 package com.cloverframework.core.dsl;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,11 +28,13 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
 	private ThreadLocal<C> newest = new ThreadLocal<C>();
 	
-//	/** share区，用于缓存每个线程产生的course*/
-//	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
+	/** share区，用于缓存每个线程产生的course*/
+	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
 	
+//	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
+//	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
 	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
-	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
+	private ThreadLocal<LinkedHashMap<String, C>> workSpace = new ThreadLocal<LinkedHashMap<String, C>>();
 	
 	/** 每个work集合初始大小*/
 	private static byte workSize = 20;
@@ -40,6 +43,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	private static ThreadLocal<Byte> workable = new  ThreadLocal<Byte>();
 	
 
+	
 	
 	public Action() {}
 	
@@ -85,7 +89,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 * 获取当前线程的work区
 	 * @return
 	 */
-	public List<C> getWorkSpace() {
+	public LinkedHashMap<String, C> getWorkSpace() {
 		return workSpace.get();
 	}
 
@@ -110,7 +114,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 */
 	public void startWork() {
 		workSpace.remove();
-		workSpace.set(new ArrayList<C>(workSize));
+		workSpace.set(new LinkedHashMap<String, C>(workSize));
 		workable.remove();
 		workable.set((byte)1);
 	}
@@ -121,7 +125,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 */
 	public int endWork() {
 		if(workSpace.get()!=null) {
-			for(C course:workSpace.get()) {
+			for(C course:workSpace.get("")) {
 				course.destroy();
 			}
 			workSpace.get().clear();
@@ -142,9 +146,9 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 * {@inheritDoc}
 	 */
 	@Override
-	public C START() {
+	public C Master() {
 		//必需
-		return super.START();
+		return super.Master();
 	}
 
 	/**
@@ -152,9 +156,9 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 * 当 {@link Action#startWork()}开启，匹配到的course会填入workspace
 	 */
 	@Override
-	public C START(String id) {
+	public C Master(String id) {
 		//必需
-		C course = super.START(id);
+		C course = super.Master(id);
 		return course;
 	}
 
@@ -162,9 +166,9 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
 	 * 则进行分支，否则不进行分支，分支的course将存入workspace
 	 */
-	public C FORK(String id) {
+	public C Branch(String id) {
 		//必需
-		C course = super.FORK(id);
+		C course = super.Branch(id);
 		return course;
 	}
 	
@@ -177,7 +181,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 		super.END();
 		C course = getCurrCourse();
 		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-			workSpace.get().add(course);
+			workSpace.get().put(course.id,course);
 	}	
 	
 	@Override

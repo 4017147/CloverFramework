@@ -1,5 +1,10 @@
-package com.cloverframework.core.util;
+package com.cloverframework.core.util.interfaces;
 
+/**
+ * 元素操作常量接口
+ * @author yl
+ *
+ */
 public interface ELType {
 	/**并集 */
 	public static final String U = "U";

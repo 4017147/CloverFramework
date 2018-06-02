@@ -42,20 +42,20 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	//@Test
+	@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this);
-		cp.START("a").get(cp.$(),
-				demo.getF1(),
-				demo.getF2(),
-				demo.getF3(),
-				demo.getF4()).by(
-						demo.getF5(),
-						demo.getF6()).LIMIT(0, 10).END();
+//		cp.Master("a").get(cp.$(),
+//				demo.getF1(),
+//				demo.getF2(),
+//				demo.getF3(),
+//				demo.getF4()).by(
+//						demo.getF5(),
+//						demo.getF6()).LIMIT(0, 10).END();
 		
-		Get get = cp.START("b").get(cp.$(),
+		Get get = cp.Master("b").get(cp.$(),
 				demo.getF1(),
 				demo.getF2(),
 				demo.getF3(),
@@ -74,7 +74,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test2() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a").get($(),
+			Master("a").get($(),
 					demo.getF1(),
 					demo.getF2(),
 					demo,demo,
@@ -99,7 +99,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test3() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("b").get(
+			Master("b").get(
 					//
 					$(demo::getF5,demo::getF6),
 					Demo_D.f1,
@@ -112,7 +112,7 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.f2).END();
 		}};
 		println(cp.toString());
-		println(cp.START("b").getJsonString());
+		println(cp.Master("b").getJsonString());
 	}
 	
 	/**
@@ -124,7 +124,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test4() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("b").get(
+			Master("b").get(
 					$(demo::getF5,demo::getF6,demo::getF9),
 					Demo_D.f1,
 					demo.getF7(),
@@ -136,7 +136,7 @@ public class CourseProxyTest implements DomainService{
 					Demo_D.f2,
 					demo,demo
 					).END();
-			println(START("b").toString());
+			println(Master("b").toString());
 		}};
 		//println(cp.toString());
 	}
@@ -148,9 +148,9 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test5() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a").get(Demo_D.f1,Demo_D.f2).END();
-			START("b").get(Demo_D.f3,Demo_D.f4).END();
-			START("c").get(Demo_D.f5,Demo_D.f6).END();
+			Master("a").get(Demo_D.f1,Demo_D.f2).END();
+			Master("b").get(Demo_D.f3,Demo_D.f4).END();
+			Master("c").get(Demo_D.f5,Demo_D.f6).END();
 		}};
 		println(cp.toString());
 	}
@@ -163,9 +163,9 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test6() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a").get(Demo_D.f1,Demo_D.f2).END();
-			FORK("a").get(Demo_D.f3,Demo_D.f4).END();
-			FORKM("a").get(Demo_D.f5,Demo_D.f6).by(Demo_D.f7,Demo_D.f8).END();
+			Master("a").get(Demo_D.f1,Demo_D.f2).END();
+			Branch("a").get(Demo_D.f3,Demo_D.f4).END();
+			BranchM("a").get(Demo_D.f5,Demo_D.f6).by(Demo_D.f7,Demo_D.f8).END();
 		}};
 		println(cp.toString());
 		
@@ -177,7 +177,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test7() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
+			Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
 			//FORKM("a").get(U,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
 			
 			//FORKM("a").get(I,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
@@ -188,13 +188,13 @@ public class CourseProxyTest implements DomainService{
 			
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f1,Demo_D.f2).END();
-			FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
+			BranchM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7,Demo_D.f8,Demo_D.f9,Demo_D.f10,Demo_D.f3).END();
 			
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6).END();
 			//FORKM("a").get(RM,Demo_D.f5,Demo_D.f6).END();
 			//FORKM("a").get(M,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
-			FORKM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
+			BranchM("a").get(RM,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
 			
 			//FORKM("a").get(MA,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
 			//FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).END();
@@ -212,12 +212,12 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test8() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
+			Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
 			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
 			
-			FORKM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
-			FORKM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
+			BranchM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
+			BranchM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
 			//FORKM("a").get().by(Demo_D.f8,Demo_D.f9).END();
 		}};
 		println(cp.toString());
@@ -231,7 +231,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test9() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a")
+			Master("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
 			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
@@ -240,7 +240,7 @@ public class CourseProxyTest implements DomainService{
 			
 		}}; 
 		println(cp.toString());
-		println(cp.START("a").getJsonString());
+		println(cp.Master("a").getJsonString());
 	}
 	 
 	/**
@@ -250,14 +250,14 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test10() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a")
+			Master("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10).eq(20)
 			.END();
 			
 		}}; 
 		println(cp.toString());
-		println(cp.START("a").getJsonString());
+		println(cp.Master("a").getJsonString());
 	}
 	
 	/**
@@ -267,13 +267,13 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test11() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a")
+			Master("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10).eq(20).setInt(30).setString("hello")
 			.END();
 		}}; 
 		println(cp.toString());
-		println(cp.START("a").getJsonString());
+		println(cp.Master("a").getJsonString());
 	}
 	
 	/**
@@ -282,16 +282,16 @@ public class CourseProxyTest implements DomainService{
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test12() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			START("a")
+			Master("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
 			.END();
 		}}; 
 		println(cp.toString());
-		println(cp.START("a").getJsonString());
+		println(cp.Master("a").getJsonString());
 	}
 	
 }

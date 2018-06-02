@@ -5,7 +5,7 @@ import com.cloverframework.core.dsl.Course.Count;
 import com.cloverframework.core.util.lambda.CreateSon;
 
 /**
- * 创建course的子节点默认方法接口，在proxy中通过继承该接口实现方法调用创建子节点。
+ * 子节点创建器接口，在proxy中通过继承该接口实现方法调用创建子节点。
  * 不可继承其他接口，避免菱形继承复杂判断。
  * @author yl
  *
@@ -31,13 +31,13 @@ public interface SonCreator{
 	}
 
 	/**
-	 * 创建condition类型子节点
+	 * 创建condition类型节点,用于字段=字段
 	 * @param obj
 	 * @return
 	 */
 	default Condition $(Object...obj){
 		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
-		return create(Condition::new,true,obj);
+		return create(Condition::new,false,obj);
 	}
 	
 	/**

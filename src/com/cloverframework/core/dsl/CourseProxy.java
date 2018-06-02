@@ -10,11 +10,13 @@ import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.interfaces.CourseOperation;
 import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
+import com.cloverframework.core.exceptions.CourseIdException;
+import com.cloverframework.core.exceptions.ExceptionFactory;
 import com.cloverframework.core.factory.CourseFactory;
 import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
-import com.cloverframework.core.util.ELType;
 import com.cloverframework.core.util.interfaces.CourseType;
+import com.cloverframework.core.util.interfaces.ELType;
 import com.cloverframework.core.util.lambda.DSLFunction;
 import com.cloverframework.core.util.lambda.Literal;
 /**
@@ -27,7 +29,7 @@ import com.cloverframework.core.util.lambda.Literal;
 @SuppressWarnings("rawtypes")
 public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,SonCreator,ELType{
 	/** 用于计算产生字面值的方法栈长是否合法，
-	 * 如果别的方法中调用该类中的START()或START(args)方法，需要相应的+1（仅开发过程中可设置，对外隐藏）*/
+	 * 如果别的方法中调用该类中的START()或START(args)方法，需要相应的+1（仅开发过程中可设置，隐藏）*/
 	byte level = 1;
 	
 	/**最后产生的course对象，无论什么方法，要求每次产生新的course都必须移除旧的course*/
@@ -47,7 +49,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	private static int getResultTimeout = 3;
 	
 	/**
-	 * 创建对应的泛型course
+	 * 创建对应的泛型course头部节点
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -57,11 +59,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 			//获取父类泛型参数，默认第二个泛型参数为泛型course，没有参数或者没提供，使用默认的course
 			Type type = this.getClass().getGenericSuperclass();
 			if(type==Object.class) {
-				newc = (C) CourseFactory.create(Course.class);
+				newc = (C) new Course();
 			}else {
 				Type[] types = ((ParameterizedType)type).getActualTypeArguments();
 				if(types.length<2)
-					newc = (C) CourseFactory.create(Course.class);
+					newc = (C) new Course();
 				else
 					newc = CourseFactory.create((Class<C>) types[1]);				
 			}
@@ -74,44 +76,48 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 
 	/**
-	 * 如果shareSpace查找对应id的course状态为LOCKED，则返当新建的course，
-	 * 否则查找的course，如果查找的course为null，则返回新建的course
+	 * 该方法根据已有的course和新建course的状态决定是否缓存这些course。
+	 * 如果shareSpace查找对应id的course状态为LOCKED，则返查找的course，
+	 * 如果查找的course为null，则返回新建的course，如果新建的course为fork则不缓存
 	 * @param cover 默认false：是否覆盖shareSpace中状态为LOCKED的course
 	 * @return
 	 */
-	protected C addCourse(String id,boolean cover) {
+	protected C addCourse(String id,boolean isFork,boolean isCover,int option) {
 		C old = getCourse(id);
 		C newc = createCourse();
-		newc = initCourse(id,newc,this,Course.WAIT);
-		if(old!=null && old.getStatus()==AbstractCourse.LOCKED) {
-			//TODO add logging warning
-			if(cover) {	
-				setCourse(old.id, newc);			
-				setCurrCourse(newc);
+		newc = initCourse(id,newc,this,option);//必需先经过初始化再入缓存
+		if(old==null){
+			setCurrCourse(newc);
+			if(isFork==true) {
+				newc.isFork = true;
 				return newc;
 			}
-			newc.id = id+"$sub";
-			newc.isFork = true;//不共享缓存
-			setCurrCourse(newc);
+			setCourse(newc.id, newc);	
 			return newc;
-		}else if(old==null){
-			setCurrCourse(newc);
+		}
+		if(old!=null && old.getStatus()==LOCKED) {
+			setCourse(newc.id, newc);//存入缓存的id不重复
+			newc.next = old.next;
 			return newc;
-		}else 
-			return old;
+		} 
+		return old;
 	}
 
+	protected C addCourse(String id,boolean isFork,int option) {
+		return addCourse(id,isFork,false,option);
+	}
+	
 	/**
 	 * 初始化一个course并发送到factory的course集合中，
 	 * 并且判断存入的course与刚刚创建的course是否引用相同，
 	 * 如果不相同则抛出异常
 	 * @return 返回一个根节点
 	 */
-	private C begin(C course) {
+	private C begin(C course,int var) {
 		Thread t = Thread.currentThread();
 		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
-		//System.out.println(t.getStackTrace().length-level);
-		return (C) EntityFactory.putCourse(course, t, t.getStackTrace().length-level);
+		System.out.println(t.getStackTrace().length-level+var);
+		return (C) EntityFactory.putCourse(course, t, t.getStackTrace().length-level+var);
 	}
 
 	/**
@@ -156,26 +162,32 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	@Override
-	public C getCourse(String id) {
-		return shareSpace.get(id);
+	public C getCourse(String key) {
+		return shareSpace.get(key);
 	}
 	
 	@Override
-	public void setCourse(String id,C course) {
-		shareSpace.put(id, course);
+	public void setCourse(String key,C course) {
+		//需要根据不同的缓存存入key
+		//TODO 容错处理
+		if(getCourse(key)==null) 
+			shareSpace.put(key,course);
+		else
+			shareSpace.put(key+'['+course.head+']',course);
 	}
 	
 	@Override
-	public C removeCourse(String id) {
-		return shareSpace.remove(id);
+	public C removeCourse(String key) {
+		return shareSpace.remove(key);
 	}
 	
 	/**
-	 * 初始化一个course
+	 * 初始化course
 	 */
 	@Override
-	public C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,byte status) {
+	public C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,int status) {
 		course.setId(id);
+		course.setHead();
 		course.proxy = proxy;
 		course.setStatus(status);
 		course.init(course);
@@ -244,70 +256,90 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	
 	
 	/**
-	 * 开始一个course的方法，通过该方法可以链式执行GET ADD PUT REMVE等方法
+	 * 创建一个DSL头部，通过该方法可以链式执行GET ADD PUT REMVE等方法
 	 * @return 返回一个根节点
 	 */
-	public C START() {
-		return begin(addCourse(String.valueOf(System.currentTimeMillis()),false));
+	public C Master() {
+		return begin(addCourse(String.valueOf(System.currentTimeMillis()),false,LOCKED),0);
 	}
 	
 	
-	public C START(String id,DSLFunction f) {
+	public C Master(String id,DSLFunction f) {
 		if(getCourse(id)==null)
 			f.build(id);
 		return getCourse(id);
 	}
 	
+	
 	/**
-	 * 在开始course时提供一个id作为它的标识，同时该course在end之后会被缓存，
-	 * 如果执行时该id的course存在缓存，则使用缓存的course。
-	 * 如果取出的course已经被缓存，则后面\重复的修改不会生效
+	 * 创建一个DSL头部，通过该方法可以链式执行GET ADD PUT REMVE等方法。
+	 * 
 	 * @param id 这个course的标识，不能包含空格
 	 * @return
 	 */
-	public C START(String id) {
-		return begin(addCourse(id,false));
+	public C Master(String id) {
+		String reg = "^[\\S]*$";
+		if(id!=null && id.matches(reg))
+			return begin(addCourse(id,false,LOCKED),0);
+		else 
+			throw ExceptionFactory.wrapException("Course id should not be empty or contains space", new CourseIdException(id));
 	}
 	
 	/**
 	 * 带缓存的FORK，
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
-	 * 则进行分支，否则不进行分支，并且按照START(id)模式进行
+	 * 则进行分支，否则不进行分支，并且按照Master(id)模式进行
 	 * @param id
 	 * @return
 	 */
-	public C FORKM(String id) {
+	public C BranchM(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false);
+			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,LOCKED);
 			fork.isForkm = true;
 			cross(ori,fork);
-			return begin(fork);
+			return begin(fork,0);
 		}else {
-			return begin(addCourse(id+"_NFM_"+System.currentTimeMillis(),false));
+			return begin(addCourse(id+"_NFM_"+System.currentTimeMillis(),false,LOCKED),0);
 		}
 	}
 	
 	/**
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
-	 * 则进行分支，否则不进行分支，并且按照START()模式进行
+	 * 则进行分支，否则不进行分支，并且按照Master()模式进行
 	 * @param id
 	 * @return
 	 */
-	public C FORK(String id) {
+	public C Branch(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),false);
-			fork.isFork = true;
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT);
 			cross(ori,fork);
-			return begin(fork);
+			return begin(fork,0);
 		}else {
-			return begin(addCourse(id+"_NF_"+System.currentTimeMillis(),false));
+			return begin(addCourse(id+"_NF_"+System.currentTimeMillis(),true,WAIT),0);
 		}		
 	}
 	
 	/**
-	 * 将fork和master关联
+	 * 内部使用，如果master已存在，则返回新建fork，否则返回新建master
+	 * @param id
+	 * @param var
+	 * @return
+	 */
+	private C Branch(String id,int var) {
+		C ori = getCourse(id);
+		if(ori!=null) {
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT);
+			cross(ori,fork);
+			return begin(fork,0);
+		}else {
+			C master = addCourse(id,true,WAIT);
+			return begin(master,var);
+		}		
+	}
+	/**
+	 * 将branch和master关联
 	 * @param id
 	 * @param course
 	 * @return
@@ -318,23 +350,19 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 将当前course标记为end状态并放入sharespace
-	 * 1、如果course没有一个有效的id则不会放入sharespace
-	 * 2、如果没有对当前course进行end，在下一次start新course时当前course会被取代。
-	 * 3、分支course不会放入sharespace
+	 * 接收course的回调参数，根据course的status执行对应的操作
 	 */
 	@Override
-	public void END() {
-		C course = getCurrCourse();
-		if(course.getStatus()==Course.END && course.id!=null && !course.isFork) {
-			setCourse(course.id, course);			
-		}else if(course.getStatus()==Course.END && course.id==null){
-			course.id = String.valueOf(System.currentTimeMillis());
+	public Object receive(C c,int option) {
+		switch(option) {
+		case rebase:return Branch(c.getId(),1);
 		}
+		return option;
 	}
 
+	
 	/**
-	 * 直接执行当前的一条course语句
+	 * 执行当前的一条course语句
 	 * @return
 	 */
 	public T execute() {
@@ -353,7 +381,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 
 	/**
-	 * 通用
+	 * 通用执行方法
 	 * @param course
 	 * @return
 	 */
@@ -365,7 +393,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 直接提交当前的一条course语句
+	 * 提交当前的一条course语句
 	 * @return
 	 */
 	public int commit() {
@@ -433,14 +461,14 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 */
 	public Object $(Literal ...lt) {
 		C course = getCurrCourse();
-		if(course.getStatus()==Course.WAIT)
+		if(course.getStatus()>=LOCKED)
 			if(course.literal!=null && course.literal.size()>0)
 				course.literal.clear();
-		course.setStatus(Course.LAMBDA);
+		course.setStatus(LAMBDA);
 		for(Literal li:lt) {
 			li.literal();
 		}
-		course.setStatus(Course.METHOD);
+		course.setStatus(METHOD);
 		return null;
 	}
 	
@@ -454,7 +482,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		course.literal_te.add(course.literal.get(course.literal.size()-1));
 		course.literal.remove(course.literal.size()-1);
 		course.literal.remove(course.literal.size()-1);
-		return Course.Te.te;
+		return AbstractCourse.Te.te;
 	}
 	
 	

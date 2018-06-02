@@ -15,9 +15,9 @@ public interface CourseOperation<C extends AbstractCourse> {
 	
 	public C removeCurrCourse();
 	
-	public C getCourse(String id);
+	public C getCourse(String key);
 		
-	public void setCourse(String id,C course);
+	public void setCourse(String key,C course);
 	
-	public C removeCourse(String id);
+	public C removeCourse(String key);
 }

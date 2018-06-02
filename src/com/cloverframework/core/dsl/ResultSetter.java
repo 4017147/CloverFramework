@@ -9,30 +9,23 @@ import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.dsl.interfaces.Accessable;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 
+/**
+ * 结果设置器接口
+ * @author yl
+ *
+ */
 public interface ResultSetter extends Accessable{
-	/**
-	 * 返回该course的result对象，如果同步result存在则优先返回，否则返回异步result
-	 */
-	default public CourseResult<?> getResult(){
-		AbstractCourse c = getThis();
-		if(c.result!=null)
-			return c.result.get();
-		if(c.futureResult!=null)
-			try {
-				return c.futureResult.get().get(CourseProxy.getGetResultTimeout(), TimeUnit.SECONDS);
-			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				ExceptionFactory.wrapException("CourseResult error in "+c.id, e);
-			}
-		return null;
-	}
-
 	/**
 	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
 	 * @param result
 	 */
 	default public void setResult(CourseResult<?> result) {
-		getThis().createResult();
-		getThis().result.set(result);
+		AbstractCourse root = getThis();
+		while(root.previous!=null) {
+			root = root.previous;
+		}
+		root.createResult();
+		root.result.set(result);
 	}
 
 	/**
@@ -40,11 +33,38 @@ public interface ResultSetter extends Accessable{
 	 * @param futureResult
 	 */
 	default public void setResult(CompletableFuture<CourseResult> futureResult) {
-		getThis().createFutureResult();
-		getThis().futureResult.set(futureResult);
+		AbstractCourse root = getThis();
+		while(root.previous!=null) {
+			root = root.previous;
+		}
+		root.createFutureResult();
+		root.futureResult.set(futureResult);
 	}
 	
+	/**
+	 * 返回该course的result对象，如果同步result存在则优先返回，否则返回异步result
+	 */
+	default public CourseResult<?> getResult(){
+		AbstractCourse root = getThis();
+		while(root.previous!=null) {
+			root = root.previous;
+		}
+		if(root.result!=null)
+			return root.result.get();
+		if(root.futureResult!=null)
+			try {
+				return root.futureResult.get().get(CourseProxy.getGetResultTimeout(), TimeUnit.SECONDS);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				ExceptionFactory.wrapException("CourseResult error in "+root.id, e);
+			}
+		return null;
+	}
+
 	default public ThreadLocal<CompletableFuture<CourseResult>> getFutureResult() {
-		return getThis().futureResult;
+		AbstractCourse root = getThis();
+		while(root.previous!=null) {
+			root = root.previous;
+		}
+		return root.futureResult;
 	}
 }

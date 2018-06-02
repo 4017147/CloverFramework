@@ -1,5 +1,10 @@
 package com.cloverframework.core.exceptions;
 
+/**
+ * Course关闭处于不可操作状态时抛出
+ * @author yl
+ *
+ */
 public class CourseIsClosed extends RuntimeException{
 
 	/**

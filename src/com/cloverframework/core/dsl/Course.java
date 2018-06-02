@@ -85,10 +85,10 @@ public final class Course extends AbstractCourse{
 		 */
 	public static class Aggregate extends AbstractCourse{
 	
-		public Aggregate(AbstractCourse previous, String courseType, Object... obj) {
+		public Aggregate(AbstractCourse previous,Object... obj) {
 			super(previous, CourseType.agg, obj);
 		}
-		protected Aggregate(AbstractCourse parent,String courseType,boolean isSon, Object... obj) {
+		public Aggregate(AbstractCourse parent,String courseType,boolean isSon, Object... obj) {
 			super(parent, courseType,isSon, obj);
 		}
 		//--------------------------------------------------
@@ -107,8 +107,8 @@ public final class Course extends AbstractCourse{
 	}
 	
 	public static final class Count extends Aggregate{
-		public Count(AbstractCourse parent, boolean isSon, Object... obj) {
-			super(parent, CourseType.count, isSon, obj);
+		public Count(AbstractCourse parent, Object... obj) {
+			super(parent, CourseType.count, true, obj);
 		}		
 	}
 
@@ -120,7 +120,7 @@ public final class Course extends AbstractCourse{
 	 */
 	public static final class Add extends AbstractCourse{
 
-		protected Add(AbstractCourse previous,Object... obj){
+		public Add(AbstractCourse previous,Object... obj){
 			super(previous,CourseType.add, obj);
 		}
 		
@@ -142,7 +142,7 @@ public final class Course extends AbstractCourse{
 	 */
 	public static final class Put extends AbstractCourse{
 
-		protected Put(AbstractCourse previous,Object... obj){
+		public Put(AbstractCourse previous,Object... obj){
 			super(previous,CourseType.put, obj);
 		}
 		//-------------------------------------------------------
@@ -158,7 +158,7 @@ public final class Course extends AbstractCourse{
 	*/
 	public static final class Remove extends AbstractCourse{
 
-		protected Remove(AbstractCourse previous,Object... obj){
+		public Remove(AbstractCourse previous,Object... obj){
 			super(previous,CourseType.remove, obj);
 		}
 		//-------------------------------------------------------
@@ -179,7 +179,7 @@ public final class Course extends AbstractCourse{
 		 * @param previous
 		 * @param obj
 		 */
-		protected Condition(AbstractCourse previous,Object... obj){
+		public Condition(AbstractCourse previous,Object... obj){
 			super(previous,CourseType.con, obj);
 		}
 		
@@ -200,8 +200,8 @@ public final class Course extends AbstractCourse{
 		 * @param isSon
 		 * @param obj
 		 */
-		protected Condition(AbstractCourse parent,String courseType,boolean isSon, Object... obj) {
-			super(parent, courseType,isSon, obj);
+		protected Condition(AbstractCourse parent,boolean isSon, Object... obj) {
+			super(parent, CourseType.con,isSon, obj);
 		}
 		
 		/**=*/
@@ -242,14 +242,14 @@ public final class Course extends AbstractCourse{
 	*/
 	public static final class By extends Condition{
 
-		protected By(AbstractCourse previous, Object... obj) {
+		public By(AbstractCourse previous, Object... obj) {
 			super(previous,CourseType.by, obj);
 		}	
 	}
 		
 	public static final class AND extends Condition{
 
-		protected AND(AbstractCourse previous, Object... obj) {
+		public AND(AbstractCourse previous, Object... obj) {
 			//注意如果非可变入参，此处会形成二维数组，需要转换后入参,如(Object[])obj
 			super(previous,CourseType.and, obj);
 		}
@@ -258,7 +258,7 @@ public final class Course extends AbstractCourse{
 	public static final class OR extends Condition{
 
 
-		protected OR(AbstractCourse previous, Object... obj) {
+		public OR(AbstractCourse previous, Object... obj) {
 			super(previous,CourseType.or, obj);
 		}
 		
@@ -266,7 +266,7 @@ public final class Course extends AbstractCourse{
 	
 	public static final class NOT extends Condition{
 
-		protected NOT(AbstractCourse previous, Object... obj) {
+		public NOT(AbstractCourse previous, Object... obj) {
 			super(previous,CourseType.not,obj);
 		}
 		
@@ -280,7 +280,7 @@ public final class Course extends AbstractCourse{
 		 */
 	public static final class GroupBy extends AbstractCourse{
 
-		protected GroupBy(AbstractCourse previous,Object... obj){
+		public GroupBy(AbstractCourse previous,Object... obj){
 			super(previous,CourseType.groupBy, obj);
 		}
 			//-------------------------------------------------------
@@ -312,7 +312,7 @@ public final class Course extends AbstractCourse{
 	public static final class Limit extends AbstractCourse{
 		@SuppressWarnings("unused")
 		private Object[] element;
-		protected Limit(AbstractCourse previous,int start,int end){
+		public Limit(AbstractCourse previous,int start,int end){
 			String obj = String.valueOf(start)+","+String.valueOf(end);
 			this.previous = previous;
 			setElements(obj);

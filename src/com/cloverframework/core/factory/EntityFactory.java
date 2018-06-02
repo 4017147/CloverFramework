@@ -3,17 +3,20 @@ package com.cloverframework.core.factory;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.swing.text.AbstractDocument.Content;
+
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.domain.annotation.Domain;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.CourseMethod;
+import com.cloverframework.core.dsl.interfaces.Constant;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public final class EntityFactory {
+public final class EntityFactory implements Constant{
 	/**  
 	 * 保存线程id和course的map，这里使用的是ConcurrentHashMap,但是get和某些操作可能会交迭，
 	 * 在确保线程和course是一对一的情况下(正常应用情况下)，不会存在线程安全问题，在多对一的情况下就必需进行同步。<p>
@@ -69,19 +72,19 @@ public final class EntityFactory {
 	private void setLiteral(String literalName,Thread t,int length) throws Exception {
 		Object[] courseInfo = null;
 		Course course = null;
+		System.out.println(length+literalName);
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
 			byte le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
 			if((course = (Course) courseInfo[0])!=null) {
-				if(course.getStatus()==Course.LAMBDA) 
+				if(course.getStatus()==LAMBDA) 
 					le = 2;
-				else if(course.getStatus()==Course.METHOD)
+				else if(course.getStatus()==METHOD)
 					le = 1;
 				if(length-le==(Integer)courseInfo[2]) {
-					if(course.getStatus()<Course.WAIT) 
+					if(course.getStatus()<=END) 
 						//TODO 抛出异常存在什么影响
 						throw new Exception("Course status error:"+course.getStatus());
 					CourseMethod.addLiteral(literalName,course,interceptor);
-					
 				}
 			}		
 		}
@@ -98,7 +101,7 @@ public final class EntityFactory {
 
 	/**
 	 * 
-	 * @param threadId 创建或调用course的线程id
+	 * @param threadId 创建或调用course的线程
 	 * @param proxy 创建的course
 	 * @param length 该线程方法的栈长
 	 * @throws Exception 

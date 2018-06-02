@@ -1,7 +1,7 @@
 package com.cloverframework.core.dsl.interfaces;
 
-import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.dsl.Callback;
+import com.cloverframework.core.dsl.HeadCreator;
 import com.cloverframework.core.dsl.MainCreator;
 import com.cloverframework.core.dsl.ResultSetter;
 import com.cloverframework.core.dsl.ValueSetter;
@@ -11,7 +11,7 @@ import com.cloverframework.core.dsl.ValueSetter;
  * @author yl
  *
  */
-public interface CourseInterface extends Callback,MainCreator,ValueSetter,ResultSetter{
+public interface CourseInterface extends HeadCreator,Callback,MainCreator,ValueSetter,ResultSetter{
 	void destroy();
 	
 	String getType();

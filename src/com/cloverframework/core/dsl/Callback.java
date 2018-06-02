@@ -1,9 +1,15 @@
 package com.cloverframework.core.dsl;
 
 import com.cloverframework.core.dsl.interfaces.Accessable;
+import com.cloverframework.core.dsl.interfaces.Constant;
 import com.cloverframework.core.factory.EntityFactory;
 
-public interface Callback extends Accessable{
+/**
+ * 回调proxy接口
+ * @author yl
+ *
+ */
+public interface Callback extends Accessable,Constant{
 	
 	/**
 	 * 结束当前的一条course语句，则该course不可再添加语句，
@@ -11,26 +17,50 @@ public interface Callback extends Accessable{
 	 * 会导致当前定义的course被下一次操作快速抛弃而不会进行缓存
 	 */
 	default public void END() {
-		AbstractCourse course = getThis();
+		AbstractCourse c = getThis();
 		try {
-			if(course.getStatus()!=AbstractCourse.END) {
-				course.setStatus(AbstractCourse.END);
-				if (course.previous!=null) 
-					course.previous.END(); 
+			if(c.getStatus()!=END) {
+				c.setStatus(END);
+				if (c.previous!=null) 
+					c.previous.END(); 
 				else {
-					course.proxy.END();
+					c.proxy.receive(c,END);
 					EntityFactory.removeCourse(Thread.currentThread().getId());				
 				}				
 			}
 		}
 		finally {
-			if(course.getStatus()!=AbstractCourse.END) {
-				course.proxy = null;
-				course.literal = null;
-				course.literal_te = null;
+			if(c.getStatus()!=END) {
+				c.proxy = null;
+				c.literal = null;
+				c.literal_te = null;
 				EntityFactory.removeCourse(Thread.currentThread().getId());
 			}
 		}
+	}
+	
+	default public void LOCK() {
+		AbstractCourse c = getThis();
+		try {
+			if(c.getStatus()!=LOCKED) {
+				c.setStatus(LOCKED);
+				if (c.previous!=null) 
+					c.previous.LOCK(); 
+				else {
+					c.proxy.receive(c,LOCKED);
+					EntityFactory.removeCourse(Thread.currentThread().getId());				
+				}				
+			}
+		}
+		finally {
+			if(c.getStatus()!=LOCKED) {
+				c.proxy = null;
+				c.literal = null;
+				c.literal_te = null;
+				EntityFactory.removeCourse(Thread.currentThread().getId());
+			}
+		}
+		
 	}
 	
 	

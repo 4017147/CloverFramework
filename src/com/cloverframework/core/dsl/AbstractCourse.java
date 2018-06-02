@@ -17,9 +17,9 @@ import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
 import com.cloverframework.core.util.ArgsFilter;
 import com.cloverframework.core.util.ArgsMatcher;
 import com.cloverframework.core.util.ELOperation;
-import com.cloverframework.core.util.ELType;
 import com.cloverframework.core.util.interfaces.CourseOpt;
 import com.cloverframework.core.util.interfaces.CourseType;
+import com.cloverframework.core.util.interfaces.ELType;
 import com.cloverframework.core.util.interfaces.IArgsMatcher;
 import com.cloverframework.core.util.json.JsonFields;
 import com.cloverframework.core.util.json.JsonUtil;
@@ -31,20 +31,26 @@ import com.cloverframework.core.util.json.JsonUtil;
  * 
  * 
  */
-@SuppressWarnings("rawtypes")
+
 public abstract class AbstractCourse implements CourseInterface{
 	
 	/**course代理*/
 	CourseProxyInterface proxy;//上级传递
 	
-	/** course标识*/
+	/**命名标识*/
 	protected String id;
 
+	/**
+	 * 头部标识,它可能是易变的以及有多个管理实现，不能作为查找唯一条件,
+	 * 然而判断两个course是否相同，使用id的方式并不能保证缓存的course的唯一性，
+	 * 因此需要结合id和head来判断。
+	 * */
+	protected String head;
 	
 	/**节点元素*/
 	private Object[] elements;	
 	
-	private int[] argsHash;
+	private Object[] args;
 	
 	
 	/**方法字面值列表*/
@@ -131,25 +137,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	/**是否输出颜色 */
 	public static boolean condition2 = true;//根传递
 	
-	/**异常*/
-	public static final byte ERROR 		=-4;
-	/**无操作*/
-	public static final byte LOCKED 	=-3;
-	/**关闭*/
-	public static final byte END 		=-2;
-	/**正在填充*/
-	public static final byte FILL 		=-1;
-	/**待填充*/
-	public static final byte WAIT 		= 0;
-	/**添加字面值(从lambda)*/
-	public static final byte LAMBDA 	= 1;
-	/**添加字面值(从方法)*/
-	public static final byte METHOD 	= 2;
-	/**添加字面值(从lambda三元)*/
-	public static final byte LAMBDA_TE 	= 3;
-	/**添加字面值(三元)*/
-	public static final byte TE 		= 4;
-	
 	
 	/**三元引用的返回标识*/
 	public enum Te{te}
@@ -162,11 +149,15 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * 这一般发生在一个course中断后，另一个course开启之前，尽管这个概率是很低的。
 	 * 
 	 */
-	private volatile byte status = WAIT;//上级传递
+	private volatile int status = WAIT;//上级传递
 	
 
 	/*----------------------private method-------------------- */
 
+	/**
+	 * 初始化数据依赖于前置节点
+	 * @param course
+	 */
 	protected void init(AbstractCourse course) {
 		if(course!=null) {
 			literal = course.literal;
@@ -193,16 +184,13 @@ public abstract class AbstractCourse implements CourseInterface{
 	 */
 	protected void setElements(Object... elements) {
 		try {
-			argsHash = new int[elements.length];
-			for(int i = 0;i<elements.length;i++) {
-				argsHash[i] = elements[i]==null?0: elements[i].hashCode();
-			}
+			args = elements;
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
-			if(status>=WAIT) {
+			if(status>=LOCKED) {
 				status = FILL;
 				init(previous);
-				if(isFork||isForkm && elements.length>0) 
+				if((isFork||isForkm) && elements.length>0) 
 					setModel(elements[0]);
 				this.elements = fill(elements,literal,literal_te,proxy.getDomainService());
 				if((isFork||isForkm) && origin!=null) 
@@ -219,7 +207,7 @@ public abstract class AbstractCourse implements CourseInterface{
 							this.elements = origin.elements;
 						origin = origin.next;
 					}
-				previous.status = status = WAIT;
+				status = previous.status;
 					//previous.next = this;//
 				if(entities==null) {
 					entities = new ArrayList<>();
@@ -243,7 +231,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param o
 	 */
 	protected void setModel(Object o) {
-		if(o.getClass()==String.class) {
+		if(o!=null && o.getClass()==String.class) {
 			for(String s:ELType.Model) {
 				if(s.equals(o)) {
 					model = s;
@@ -371,10 +359,10 @@ public abstract class AbstractCourse implements CourseInterface{
 			if(obj==null)continue;
 			if(obj.getClass().isEnum()) {
 				types.add(obj.getClass().getFields()[0].getName());
-				fields.add(obj.getClass().getFields()[0].getName()+"."+obj.toString());
+				fields.add(obj.getClass().getFields()[0].getName()+'.'+obj.toString());
 			}else if(obj.getClass()==String.class && !obj.getClass().isEnum()) {
 					String fullName = obj.toString();
-					String type$field = new String(fullName.substring(fullName.lastIndexOf(".",fullName.lastIndexOf(".")-1)+1, fullName.length()).replace(".get", "."));
+					String type$field = new String(fullName.substring(fullName.lastIndexOf('.',fullName.lastIndexOf('.')-1)+1, fullName.length()).replace(".get", "."));
 					if(lowerCase) {
 						char[] fc = type$field.toCharArray();
 						int index = type$field.lastIndexOf('.')+1;
@@ -384,7 +372,7 @@ public abstract class AbstractCourse implements CourseInterface{
 						fields.add(new String(fc));					
 					}else
 						fields.add(type$field);
-					String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf(".")).lastIndexOf(".")+1),fullName.lastIndexOf(".")));
+					String type = new String(fullName.substring((fullName.substring(0,fullName.lastIndexOf('.')).lastIndexOf('.')+1),fullName.lastIndexOf('.')));
 					types.add(type);					
 				}else 
 					entities.add(obj);
@@ -418,20 +406,20 @@ public abstract class AbstractCourse implements CourseInterface{
 			builder.append(nextline).append(type);
 		if(id!=null && type==CourseType.root)builder.append("id:"+id);
 			fields.ifPresent((field)->{
-				field.forEach((f)->builder.append(f).append(","));
+				field.forEach((f)->builder.append(f).append(','));
 				if(!sons.isPresent()&&!entities.isPresent())
 					builder.deleteCharAt(builder.length()-1);
 			});
 			sons.ifPresent((son)->{
-				son.forEach((s)->builder.append(s).append(","));
+				son.forEach((s)->builder.append(s).append(','));
 				if(!entities.isPresent())
 					builder.deleteCharAt(builder.length()-1);
 			});
 			entities.ifPresent((entity)->{
-				entity.forEach((s)->builder.append(s).append(","));
+				entity.forEach((s)->builder.append(s).append(','));
 				builder.deleteCharAt(builder.length()-1);
 			});
-			optype.ifPresent((s)->builder.append(" ").append(s).append(" "));
+			optype.ifPresent((s)->builder.append(' ').append(s).append(' '));
 			values.ifPresent((s)->builder.append(" values:").append(s.toString()));
 			next.ifPresent((s)->builder.append(s));
 		return builder.toString();
@@ -455,7 +443,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * Warning!If the status is less than END,you can not change status
 	 * @param status
 	 */
-	void setStatus(byte status) {
+	void setStatus(int status) {
 		if(this.status>END)
 			this.status = status;
 	}
@@ -534,6 +522,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		courseData = null;
 		origin = null;
 		argsMather = null;
+		args = null;
 	}
 
 	
@@ -576,7 +565,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		return model;
 	}
 
-	public byte getStatus() {
+	public int getStatus() {
 		return status;
 	}
 	
@@ -596,7 +585,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		return type;
 	}
 
-	public String getSubType() {
+	public String getNextType() {
 		if(next!=null)
 			return next.type;
 		return "";
@@ -654,9 +643,6 @@ public abstract class AbstractCourse implements CourseInterface{
 
 	
 	void setId(String id) {
-		//String reg = "^\\s*$";
-		String reg = "^[\\S]*$";
-		if(id!=null && id.matches(reg))
 		this.id = id;
 	}
 
@@ -668,8 +654,8 @@ public abstract class AbstractCourse implements CourseInterface{
 		return fields;
 	}
 
-	public int[] getArgsHash() {
-		return argsHash;
+	public Object[] getArgs() {
+		return args;
 	}
 
 

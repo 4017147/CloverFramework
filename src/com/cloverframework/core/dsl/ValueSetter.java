@@ -6,7 +6,11 @@ import com.cloverframework.core.dsl.interfaces.Accessable;
 import com.cloverframework.core.exceptions.ArgsCountNotMatch;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 
-
+/**
+ * 节点参数值对象创建器接口
+ * @author yl
+ *
+ */
 public interface ValueSetter extends Accessable{
 
 
