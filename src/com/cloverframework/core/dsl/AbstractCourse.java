@@ -203,8 +203,8 @@ public abstract class AbstractCourse implements CourseInterface{
 							isForkm = false;
 						}
 					}else {
-						if(this.elements==null)
-							this.elements = origin.elements;
+//						if(this.elements==null)
+//							this.elements = origin.elements;
 						origin = origin.next;
 					}
 				status = previous.status;
@@ -248,16 +248,16 @@ public abstract class AbstractCourse implements CourseInterface{
 	 */
 	protected void setSon(Object object) {
 		AbstractCourse node =  (AbstractCourse)object;
-		while(node.previous!=null) {
-			if(node.isSon)
-				break;
-			node = node.previous;
-		}
-		node.parent = this;
-		//if()
+		if(node.isSon==false) {
+			while(node.previous!=null) {
+				node = node.previous;
+			}			
+		}else 
+			node.parent = this;	
 		if(this.sons==null)
 			this.sons = new ArrayList<AbstractCourse>();
-		this.sons.add(node);
+		this.sons.add(node);			
+		
 	}
 
 	
@@ -328,21 +328,21 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @return
 	 */
 	protected JsonFields buildJsonNode() {
-		List<JsonFields> son = null;
+		List<JsonFields> sonList = null;
 		JsonFields next = null;
 		if(this.sons!=null) {
-			if(son==null)
-				son = new ArrayList<JsonFields>();
+			if(sonList==null)
+				sonList = new ArrayList<JsonFields>();
 			
-			for(AbstractCourse abc:this.sons) {
-				son.add(abc.buildJsonNode());
+			for(AbstractCourse a:this.sons) {
+				sonList.add(a.buildJsonNode());
 			}
 		}
 		if(this.next!=null) 
 			next = this.next.buildJsonNode();
 		
 		courseData = new JsonFields(type, optype, fields, types, 
-				values==null?null:(values.get()==null?null:values.get().toString()), son, next);
+				values==null?null:(values.get()==null?null:values.get().toString()), sonList, next);
 		return courseData;
 	}
 	
@@ -495,7 +495,7 @@ public abstract class AbstractCourse implements CourseInterface{
 			this.isSon = true;
 			this.parent = parent;
 		}
-		this.previous = parent;//传递previous参数
+		this.previous = this.parent;//传递previous参数
 		setElements(obj);
 		this.previous = null;
 	}

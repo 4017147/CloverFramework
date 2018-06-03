@@ -42,7 +42,7 @@ public interface MainCreator extends Constant{
 				}
 				return (O) old;
 				
-			}else if(oldArgs==null||old==null) 
+			}else if(old==null) 
 				return constructor.apply(rebase(previous),obj);
 		}
 		return constructor.apply(previous, obj);
@@ -55,20 +55,22 @@ public interface MainCreator extends Constant{
 	 * @return
 	 */
 	 default AbstractCourse rebase(AbstractCourse previous) {
+		 if(previous.isSon==true)
+			 return previous;
 		 String head = ((CourseProxy)previous.proxy).getCourse(previous.id).head;//优化
-		 AbstractCourse old = previous;
-		 while(old.previous!=null) {
-			 old = old.previous;
+		 AbstractCourse cur = previous;
+		 while(cur.previous!=null&&cur.previous.isSon==false) {
+			 cur = cur.previous;
 		 }
-		 if(old.head.equals(head))
-			return old;
-		 old.isFork = true;
-		 AbstractCourse next = old.next;
+		 if(head!=null&&cur.head!=null&&cur.head.equals(head))
+			return previous;
+		 cur.isFork = true;
+		 AbstractCourse next = cur.next;
 		 while(next!=null) {
-			 old.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(old, next.getArgs());
+			 cur.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(cur, next.getArgs());
 			 next = next.next;
 		 }
-		 return old;
+		 return cur;
 	 	}
 	
 	 /**

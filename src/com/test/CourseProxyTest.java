@@ -5,7 +5,6 @@ import static com.test.SYSOUT.println;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.cloverframework.core.domain.DomainService;
@@ -42,18 +41,18 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	@Test
+	//@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this);
-//		cp.Master("a").get(cp.$(),
-//				demo.getF1(),
-//				demo.getF2(),
-//				demo.getF3(),
-//				demo.getF4()).by(
-//						demo.getF5(),
-//						demo.getF6()).LIMIT(0, 10).END();
+		cp.Master("a").get(cp.$(),
+				demo.getF1(),
+				demo.getF2(),
+				demo.getF3(),
+				demo.getF4()).by(
+						demo.getF5(),
+						demo.getF6()).LIMIT(0, 10).END();
 		
 		Get get = cp.Master("b").get(cp.$(),
 				demo.getF1(),
@@ -62,7 +61,7 @@ public class CourseProxyTest implements DomainService{
 				demo.getF4());
 		de.getF10();de.getF9();
 		get.by(demo.getF5(),
-				demo.getF6()).LIMIT(0, 10).END();
+				demo.getF6()).LIMIT(0, 10).END();//实体对象
 		println(cp.toString());
 	}
 	
@@ -82,7 +81,7 @@ public class CourseProxyTest implements DomainService{
 					Demo_D.f4).by($(),
 							demo.getF1(),
 							demo.getF2(),
-							demo,demo,
+							demo,demo,//
 							Demo_D.f3,
 							Demo_D.f4).END();
 		}};
@@ -131,7 +130,7 @@ public class CourseProxyTest implements DomainService{
 					demo.getF8(),
 					$(demo!=null?demo::getF4:demo::getF3),
 					$(demo==null?demo::getF4:demo::getF3),
-					te(demo.getF5()==null?demo.getF3():demo.getF4()),
+					te(demo.getF5()==null?demo.getF3():demo.getF4()),//三元
 					te(demo.getF5()!=null?demo.getF3():demo.getF4()),
 					Demo_D.f2,
 					demo,demo
@@ -206,19 +205,18 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 * 首个参数用来开启FORK模式，参数不匹配不开启
-	 * 节点类型不匹配则关闭该节点和后续节点FORK模式
-	 * FORK节点如果没有参数，则该节点使用master节点的元素
+	 * 节点类型不匹配则关闭该节点和后续节点的FORK模式
 	 */
 	//@Test
 	public void test8() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
-			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
-			//START("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
+			//Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
+			Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).groupBy(Demo_D.f10).END();
+			//Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
 			
 			BranchM("a").get(Demo_D.f5,Demo_D.f6,Demo_D.f7).by(MB,Demo_D.f8,Demo_D.f9).END();
-			BranchM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
-			//FORKM("a").get().by(Demo_D.f8,Demo_D.f9).END();
+			//BranchM("a").get(MB,Demo_D.f5,Demo_D.f6,Demo_D.f7).by(Demo_D.f8,Demo_D.f9).END();
+			//BranchM("a").get().by(Demo_D.f8,Demo_D.f9).END();
 		}};
 		println(cp.toString());
 		
@@ -235,7 +233,7 @@ public class CourseProxyTest implements DomainService{
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
 			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
-			.or(Demo_D.f3,$(Demo_D.f5).gt(33).and(Demo_D.f6).lt(11))
+			.or(Demo_D.f3,$(Demo_D.f5).gt(33).or(Demo_D.f6).lt(11))
 			.END();
 			
 		}}; 
@@ -280,7 +278,7 @@ public class CourseProxyTest implements DomainService{
 	 * 使用$传入字段和方法参数
 	 * 值对象能够判断参数个数是否符合要求
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
-	 * 
+	 * 87
 	 */
 	//@Test
 	public void test12() {

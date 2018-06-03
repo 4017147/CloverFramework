@@ -6,7 +6,7 @@ import com.cloverframework.core.util.lambda.CreateSon;
 
 /**
  * 子节点创建器接口，在proxy中通过继承该接口实现方法调用创建子节点。
- * 不可继承其他接口，避免菱形继承复杂判断。
+ * 不可继承其他接口，避免菱形继承。
  * @author yl
  *
  */
@@ -19,15 +19,13 @@ public interface SonCreator{
 	 * @param function
 	 * @return
 	 */
-	default <R> R create(CreateSon<R> constructor,boolean isSon, Object ...obj) {
-		AbstractCourse course = getCurrCourse();
-		AbstractCourse last = null;
+	default <R> R create(CreateSon<R> constructor,boolean isSon,Object ...obj) {
+		AbstractCourse last = getCurrCourse();
 		//搜索最后主干节点
-		while(course!=null) {
-			last = course;
-			course = course.next;
+		while(last.next!=null) {
+			last = last.next;
 		}
-		return constructor.apply(last, isSon, obj);
+		return constructor.apply(last,true,obj);
 	}
 
 	/**
@@ -37,7 +35,7 @@ public interface SonCreator{
 	 */
 	default Condition $(Object...obj){
 		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
-		return create(Condition::new,false,obj);
+		return create(Condition::new,true,obj);
 	}
 	
 	/**

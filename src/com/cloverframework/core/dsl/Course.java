@@ -84,13 +84,13 @@ public final class Course extends AbstractCourse{
 		 *
 		 */
 	public static class Aggregate extends AbstractCourse{
-	
-		public Aggregate(AbstractCourse previous,Object... obj) {
-			super(previous, CourseType.agg, obj);
+
+		//注意方法的签名，由于最后的参数类型是可变长的，可能会优先匹配到参数个数较少的那一个，
+		//所以当你定义了多个构造方法，最好通过用函数接口引用对应的方法签名避免该问题
+		public Aggregate(AbstractCourse previous,String type,boolean isSon,Object... obj) {
+			super(previous, type,isSon, obj);
 		}
-		public Aggregate(AbstractCourse parent,String courseType,boolean isSon, Object... obj) {
-			super(parent, courseType,isSon, obj);
-		}
+		
 		//--------------------------------------------------
 		private By 		by;
 		private AND 	and;
@@ -107,9 +107,10 @@ public final class Course extends AbstractCourse{
 	}
 	
 	public static final class Count extends Aggregate{
-		public Count(AbstractCourse parent, Object... obj) {
+
+		public Count(AbstractCourse parent, boolean isSon,Object... obj) {
 			super(parent, CourseType.count, true, obj);
-		}		
+		}	
 	}
 
 
@@ -175,7 +176,7 @@ public final class Course extends AbstractCourse{
 	public static class Condition extends AbstractCourse{
 		
 		/**
-		 * 用于直接创建
+		 * 用于创建主节点
 		 * @param previous
 		 * @param obj
 		 */
@@ -184,15 +185,14 @@ public final class Course extends AbstractCourse{
 		}
 		
 		/**
-		 * 用于泛化节点创建
+		 * 用于创建泛化节点
 		 * @param previous
-		 * @param courseType
 		 * @param obj
 		 */
-		protected Condition(AbstractCourse previous,String courseType,Object... obj){
-			super(previous,courseType, obj);
+		public Condition(AbstractCourse previous,String type,Object... obj){
+			super(previous,type, obj);
 		}
-		
+	
 		/**
 		 * 用于子节点创建
 		 * @param parent
@@ -251,7 +251,7 @@ public final class Course extends AbstractCourse{
 
 		public AND(AbstractCourse previous, Object... obj) {
 			//注意如果非可变入参，此处会形成二维数组，需要转换后入参,如(Object[])obj
-			super(previous,CourseType.and, obj);
+			super(previous,CourseType.and,obj);
 		}
 	}
 	

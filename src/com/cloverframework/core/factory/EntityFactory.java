@@ -74,12 +74,12 @@ public final class EntityFactory implements Constant{
 		Course course = null;
 		System.out.println(length+literalName);
 		if((courseInfo = courses.get(t.getId()))!=null && ((Thread)courseInfo[1])==t) {
-			byte le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
+			int le = 1;//执行代理类的get方法时线程的方法栈长跟course方法栈长的差值，不同的虚拟机平台可能得到不同的值，则根据实际情况调整
 			if((course = (Course) courseInfo[0])!=null) {
 				if(course.getStatus()==LAMBDA) 
-					le = 2;
+					le = le+1;
 				else if(course.getStatus()==METHOD)
-					le = 1;
+					le = le+0;
 				if(length-le==(Integer)courseInfo[2]) {
 					if(course.getStatus()<=END) 
 						//TODO 抛出异常存在什么影响

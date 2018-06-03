@@ -6,10 +6,8 @@ import java.util.Map;
 
 import com.cloverframework.core.dsl.Course.AND;
 import com.cloverframework.core.dsl.Course.Add;
-import com.cloverframework.core.dsl.Course.Aggregate;
 import com.cloverframework.core.dsl.Course.By;
 import com.cloverframework.core.dsl.Course.Condition;
-import com.cloverframework.core.dsl.Course.Count;
 import com.cloverframework.core.dsl.Course.Get;
 import com.cloverframework.core.dsl.Course.GroupBy;
 import com.cloverframework.core.dsl.Course.NOT;
@@ -45,8 +43,6 @@ public class CourseFactory implements CourseType{
 			constructors.put(or, OR::new);
 			constructors.put(not, NOT::new);
 			constructors.put(groupBy, GroupBy::new);
-			constructors.put(agg, Aggregate::new);
-			constructors.put(count, Count::new);
 			
 			constructors = Collections.unmodifiableMap(constructors);
 		}
