@@ -13,7 +13,6 @@ import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
 import com.cloverframework.core.exceptions.CourseIdException;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 import com.cloverframework.core.factory.CourseFactory;
-import com.cloverframework.core.factory.EntityFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.ELType;
@@ -27,7 +26,7 @@ import com.cloverframework.core.util.lambda.Literal;
  *
  */
 @SuppressWarnings("rawtypes")
-public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,SonCreator,ELType{
+public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,LiteralSetter,SonCreator,ELType{
 	/** 用于计算产生字面值的方法栈长是否合法，
 	 * 如果别的方法中调用该类中的START()或START(args)方法，需要相应的+1（仅开发过程中可设置，隐藏）*/
 	byte level = 1;
@@ -41,7 +40,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	protected DomainService domainService;
 
 	CourseRepository<T,C> repository;
-	
 	
 	/**
 	 * 异步执行course等待超时秒
@@ -103,9 +101,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return old;
 	}
 
-	protected C addCourse(String id,boolean isFork,int option) {
-		return addCourse(id,isFork,false,option);
-	}
+	protected C addCourse(String id,boolean isFork,int option,int var) {
+		C c = addCourse(id,isFork,false,option);
+		beginLiteral(c,var);
+		return c;
+	};
 	
 	/**
 	 * 初始化一个course并发送到factory的course集合中，
@@ -113,11 +113,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 如果不相同则抛出异常
 	 * @return 返回一个根节点
 	 */
-	private C begin(C course,int var) {
+	private void beginLiteral(AbstractCourse course,int var) {
 		Thread t = Thread.currentThread();
 		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
 		System.out.println(t.getStackTrace().length-level+var);
-		return (C) EntityFactory.putCourse(course, t, t.getStackTrace().length-level+var);
+		putCourse(course,t.getStackTrace().length-level+var);
 	}
 
 	/**
@@ -260,7 +260,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @return 返回一个根节点
 	 */
 	public C Master() {
-		return begin(addCourse(String.valueOf(System.currentTimeMillis()),false,LOCKED),0);
+		return addCourse(String.valueOf(System.currentTimeMillis()),false,LOCKED,0);
 	}
 	
 	
@@ -280,7 +280,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C Master(String id) {
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
-			return begin(addCourse(id,false,LOCKED),0);
+			return addCourse(id,false,LOCKED,0);
 		else 
 			throw ExceptionFactory.wrapException("Course id should not be empty or contains space", new CourseIdException(id));
 	}
@@ -295,12 +295,12 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C BranchM(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,LOCKED);
+			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,LOCKED,0);
 			fork.isForkm = true;
 			cross(ori,fork);
-			return begin(fork,0);
+			return fork;
 		}else {
-			return begin(addCourse(id+"_NFM_"+System.currentTimeMillis(),false,LOCKED),0);
+			return addCourse(id+"_NFM_"+System.currentTimeMillis(),false,LOCKED,0);
 		}
 	}
 	
@@ -313,11 +313,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C Branch(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT);
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT,0);
 			cross(ori,fork);
-			return begin(fork,0);
+			return fork;
 		}else {
-			return begin(addCourse(id+"_NF_"+System.currentTimeMillis(),true,WAIT),0);
+			return addCourse(id+"_NF_"+System.currentTimeMillis(),true,WAIT,0);
 		}		
 	}
 	
@@ -330,12 +330,12 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	private C Branch(String id,int var) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT);
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT,0);
 			cross(ori,fork);
-			return begin(fork,0);
+			return fork;
 		}else {
-			C master = addCourse(id,true,WAIT);
-			return begin(master,var);
+			C master = addCourse(id,true,WAIT,0);
+			return master;
 		}		
 	}
 	/**
@@ -442,8 +442,8 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @return null
 	 */
 	public Object $() {
-		if(getCurrCourse().literal!=null && getCurrCourse().literal.size()>0)
-			getCurrCourse().literal.clear();
+		if(getLiteral()!=null && getCurrCourse().getLiteral().size()>0)
+			getLiteral().clear();
 		return null;
 	}
 	
@@ -462,8 +462,8 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public Object $(Literal ...lt) {
 		C course = getCurrCourse();
 		if(course.getStatus()>=LOCKED)
-			if(course.literal!=null && course.literal.size()>0)
-				course.literal.clear();
+			if(getLiteral()!=null && getLiteral().size()>0)
+				getLiteral().clear();;
 		course.setStatus(LAMBDA);
 		for(Literal li:lt) {
 			li.literal();
@@ -478,10 +478,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @return
 	 */
 	public Object te(Object obj) {
-		C course = getCurrCourse();
-		course.literal_te.add(course.literal.get(course.literal.size()-1));
-		course.literal.remove(course.literal.size()-1);
-		course.literal.remove(course.literal.size()-1);
+		getLiteral_te().add(getLiteral().get(getLiteral().size()-1));
+		getLiteral().remove(getLiteral().size()-1);
+		getLiteral().remove(getLiteral().size()-1);
 		return AbstractCourse.Te.te;
 	}
 	

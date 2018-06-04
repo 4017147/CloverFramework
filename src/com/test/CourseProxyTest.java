@@ -5,6 +5,7 @@ import static com.test.SYSOUT.println;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.cloverframework.core.domain.DomainService;
@@ -12,7 +13,6 @@ import com.cloverframework.core.domain.annotation.Domain;
 import com.cloverframework.core.dsl.Course;
 import com.cloverframework.core.dsl.Course.Get;
 import com.cloverframework.core.dsl.CourseProxy;
-import com.cloverframework.core.factory.EntityFactory;
 import com.dict.entity.Demo_D;
 import com.entity.Demo;
 import com.entity.User;
@@ -21,10 +21,10 @@ import com.entity.User;
 public class CourseProxyTest implements DomainService{
 	private static Demo demo;
 
-	@SuppressWarnings("static-access")
 	@BeforeClass
 	public static void setup() {
-		 demo= EntityFactory.getInstance().getStaple(Demo.class);
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(null);
+		 demo= cp.getStaple(Demo.class);
 		 demo.setF5("f5");
 		 demo.setF6("f6");
 		 demo.setF7("f7");
@@ -99,7 +99,7 @@ public class CourseProxyTest implements DomainService{
 	public void test3() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b").get(
-					//
+					//无取值
 					$(demo::getF5,demo::getF6),
 					Demo_D.f1,
 					Demo_D.f2,
@@ -124,12 +124,12 @@ public class CourseProxyTest implements DomainService{
 	public void test4() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b").get(
-					$(demo::getF5,demo::getF6,demo::getF9),
+					//$(demo::getF5,demo::getF6,demo::getF9),
 					Demo_D.f1,
 					demo.getF7(),
 					demo.getF8(),
-					$(demo!=null?demo::getF4:demo::getF3),
-					$(demo==null?demo::getF4:demo::getF3),
+//					$(demo!=null?demo::getF4:demo::getF3),
+//					$(demo==null?demo::getF4:demo::getF3),
 					te(demo.getF5()==null?demo.getF3():demo.getF4()),//三元
 					te(demo.getF5()!=null?demo.getF3():demo.getF4()),
 					Demo_D.f2,
@@ -278,7 +278,6 @@ public class CourseProxyTest implements DomainService{
 	 * 使用$传入字段和方法参数
 	 * 值对象能够判断参数个数是否符合要求
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
-	 * 87
 	 */
 	//@Test
 	public void test12() {
@@ -292,4 +291,28 @@ public class CourseProxyTest implements DomainService{
 		println(cp.Master("a").getJsonString());
 	}
 	
+	//回调测试
+	@Test
+	public void test13() {
+		
+	}
+	
+	/**
+	 * 缓存利用测试
+	 */
+	//@Test
+	public void test14() {
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
+			Master("a")
+			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
+			.END();
+			Master("a")
+			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
+			.END();
+		}}; 
+		println(cp.toString());
+		println(cp.Master("b").getJsonString());
+	}
 }

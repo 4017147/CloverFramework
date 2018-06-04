@@ -50,7 +50,8 @@ public interface MainCreator extends Constant{
 
 	/**
 	 * 将一个正在进行对比的course的节点作为末端，创建一个fork类型的course,
-	 * 并返回最后匹配成功的节点对应的新的course节点
+	 * 并返回最后匹配成功的节点对应的新的course节点，如果正在调用的是子节点，
+	 * 则从子节点开始返回
 	 * @param <P>
 	 * @return
 	 */

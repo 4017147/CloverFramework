@@ -25,16 +25,16 @@ public interface Callback extends Accessable,Constant{
 					c.previous.END(); 
 				else {
 					c.proxy.receive(c,END);
-					EntityFactory.removeCourse(Thread.currentThread().getId());				
+					//EntityFactory.removeCourse(Thread.currentThread().getId());				
 				}				
 			}
 		}
 		finally {
 			if(c.getStatus()!=END) {
 				c.proxy = null;
-				c.literal = null;
-				c.literal_te = null;
-				EntityFactory.removeCourse(Thread.currentThread().getId());
+				//c.literal = null;
+				//c.literal_te = null;
+				//EntityFactory.removeCourse(Thread.currentThread().getId());
 			}
 		}
 	}
@@ -48,16 +48,16 @@ public interface Callback extends Accessable,Constant{
 					c.previous.LOCK(); 
 				else {
 					c.proxy.receive(c,LOCKED);
-					EntityFactory.removeCourse(Thread.currentThread().getId());				
+					//EntityFactory.removeCourse(Thread.currentThread().getId());				
 				}				
 			}
 		}
 		finally {
 			if(c.getStatus()!=LOCKED) {
 				c.proxy = null;
-				c.literal = null;
-				c.literal_te = null;
-				EntityFactory.removeCourse(Thread.currentThread().getId());
+				//c.literal = null;
+				//c.literal_te = null;
+				//EntityFactory.removeCourse(Thread.currentThread().getId());
 			}
 		}
 		

@@ -53,11 +53,11 @@ public abstract class AbstractCourse implements CourseInterface{
 	private Object[] args;
 	
 	
-	/**方法字面值列表*/
-	List<String> literal;//上级传递
-	
-	/**三元方法字面值列表*/
-	List<String> literal_te;
+//	/**方法字面值列表*/
+//	List<String> literal;//上级传递
+//	
+//	/**三元方法字面值列表*/
+//	List<String> literal_te;
 	
 	/**节点类型*/
 	protected String type;
@@ -160,12 +160,12 @@ public abstract class AbstractCourse implements CourseInterface{
 	 */
 	protected void init(AbstractCourse course) {
 		if(course!=null) {
-			literal = course.literal;
-			literal_te = course.literal_te;
-			if(literal==null)
-				literal = new ArrayList<String>(50);
-			if(literal_te==null)
-				literal_te = new ArrayList<String>(50);
+//			literal = course.literal;
+//			literal_te = course.literal_te;
+//			if(literal==null)
+//				literal = new ArrayList<String>(50);
+//			if(literal_te==null)
+//				literal_te = new ArrayList<String>(50);
 			id = course.id;
 			proxy = course.proxy;
 			isFork = course.isFork;
@@ -192,7 +192,7 @@ public abstract class AbstractCourse implements CourseInterface{
 				init(previous);
 				if((isFork||isForkm) && elements.length>0) 
 					setModel(elements[0]);
-				this.elements = fill(elements,literal,literal_te,proxy.getDomainService());
+				this.elements = fill(elements,getLiteral(),getLiteral_te(),proxy.getDomainService());
 				if((isFork||isForkm) && origin!=null) 
 					if(model!=null) {
 						if(origin.type==this.type) {
@@ -215,10 +215,8 @@ public abstract class AbstractCourse implements CourseInterface{
 				buildData(true);
 			}
 		}finally {
-			if(literal!=null) 
-				literal.clear();
-			if(literal_te!=null) 
-				literal_te.clear();
+			getLiteral().clear();;
+			getLiteral_te().clear();
 		}
 	}
 
@@ -425,19 +423,19 @@ public abstract class AbstractCourse implements CourseInterface{
 		return builder.toString();
 	}
 	
-	protected void addLiteral(String methodName) {
-		if(literal.size()>49)
-			System.out.println(literal.size());
-		else
-			literal.add(methodName);			
-	}
-
-	protected void addLiteral_te(String methodName) {
-		if(literal_te.size()>49)
-			System.out.println(literal_te.size());
-		else
-			literal_te.add(methodName);			
-	}
+//	protected void addLiteral(String methodName) {
+//		if(literal.size()>49)
+//			System.out.println(literal.size());
+//		else
+//			literal.add(methodName);			
+//	}
+//
+//	protected void addLiteral_te(String methodName) {
+//		if(literal_te.size()>49)
+//			System.out.println(literal_te.size());
+//		else
+//			literal_te.add(methodName);			
+//	}
 
 	/**
 	 * Warning!If the status is less than END,you can not change status
@@ -453,8 +451,8 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param id 这个course的标识，给定的字符串不能包含空格
 	 */
 	protected AbstractCourse(String id){
-		literal = new ArrayList<String>(50);
-		literal_te = new ArrayList<String>(50);
+//		literal = new ArrayList<String>(50);
+//		literal_te = new ArrayList<String>(50);
 		//String reg = "^\\s*$";
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
