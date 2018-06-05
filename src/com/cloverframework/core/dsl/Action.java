@@ -19,11 +19,11 @@ import com.cloverframework.core.dsl.interfaces.CourseOperation;
  * @param <C>
  */
 public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> implements CourseOperation<C>{
-	{
-		/** 用于计算产生字面值的方法栈长是否合法，
-		 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
-		level +=1;		
-	}
+//	{
+//		/** 用于计算产生字面值的方法栈长是否合法，
+//		 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
+//		level +=1;		
+//	}
 	
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
 	private ThreadLocal<C> newest = new ThreadLocal<C>();

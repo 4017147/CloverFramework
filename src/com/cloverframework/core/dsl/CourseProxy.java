@@ -17,19 +17,14 @@ import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.interfaces.ELType;
 import com.cloverframework.core.util.lambda.DSLFunction;
-import com.cloverframework.core.util.lambda.Literal;
 /**
- * 泛型C extends AbstractCourse，下面统称course
+ * 泛型C extends AbstractCourse，内部统称course，而对于测试和用户可称为DSL
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
  * 该类大部分方法是线程不安全的。
  * @author yl
  *
  */
-@SuppressWarnings("rawtypes")
 public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,LiteralSetter,SonCreator,ELType{
-	/** 用于计算产生字面值的方法栈长是否合法，
-	 * 如果别的方法中调用该类中的START()或START(args)方法，需要相应的+1（仅开发过程中可设置，隐藏）*/
-	byte level = 1;
 	
 	/**最后产生的course对象，无论什么方法，要求每次产生新的course都必须移除旧的course*/
 	C newest;
@@ -77,48 +72,30 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 该方法根据已有的course和新建course的状态决定是否缓存这些course。
 	 * 如果shareSpace查找对应id的course状态为LOCKED，则返查找的course，
 	 * 如果查找的course为null，则返回新建的course，如果新建的course为fork则不缓存
-	 * @param cover 默认false：是否覆盖shareSpace中状态为LOCKED的course
 	 * @return
 	 */
-	protected C addCourse(String id,boolean isFork,boolean isCover,int option) {
+	protected C addCourse(String id,boolean isFork,int option) {
+		setThread(1);
 		C old = getCourse(id);
 		C newc = createCourse();
 		newc = initCourse(id,newc,this,option);//必需先经过初始化再入缓存
 		if(old==null){
 			setCurrCourse(newc);
-			if(isFork==true) {
+			if(isFork==true||id.equals("")) {
 				newc.isFork = true;
 				return newc;
 			}
 			setCourse(newc.id, newc);	
 			return newc;
 		}
-		if(old!=null && old.getStatus()==LOCKED) {
-			setCourse(newc.id, newc);//存入缓存的id不重复
-			newc.next = old.next;
+		if(old!=null && old.getStatus()<=LOCKED) {
+			setCurrCourse(newc);
+			//newc.next = old.next;
 			return newc;
 		} 
 		return old;
 	}
-
-	protected C addCourse(String id,boolean isFork,int option,int var) {
-		C c = addCourse(id,isFork,false,option);
-		beginLiteral(c,var);
-		return c;
-	};
 	
-	/**
-	 * 初始化一个course并发送到factory的course集合中，
-	 * 并且判断存入的course与刚刚创建的course是否引用相同，
-	 * 如果不相同则抛出异常
-	 * @return 返回一个根节点
-	 */
-	private void beginLiteral(AbstractCourse course,int var) {
-		Thread t = Thread.currentThread();
-		//调整该方法的位置需要修改length的值，每多一个上级方法调用length-1
-		System.out.println(t.getStackTrace().length-level+var);
-		putCourse(course,t.getStackTrace().length-level+var);
-	}
 
 	/**
 	 * 创建异步执行对象并设置course异步的result
@@ -172,8 +149,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		//TODO 容错处理
 		if(getCourse(key)==null) 
 			shareSpace.put(key,course);
-		else
-			shareSpace.put(key+'['+course.head+']',course);
 	}
 	
 	@Override
@@ -260,10 +235,15 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @return 返回一个根节点
 	 */
 	public C Master() {
-		return addCourse(String.valueOf(System.currentTimeMillis()),false,LOCKED,0);
+		return addCourse("",false,UNLOCKED);
 	}
 	
-	
+	/**
+	 * 如果缓存的course不存在则执行DSL，否则返回已缓存的course
+	 * @param id
+	 * @param f
+	 * @return
+	 */
 	public C Master(String id,DSLFunction f) {
 		if(getCourse(id)==null)
 			f.build(id);
@@ -280,7 +260,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C Master(String id) {
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
-			return addCourse(id,false,LOCKED,0);
+			return addCourse(id,false,UNLOCKED);
 		else 
 			throw ExceptionFactory.wrapException("Course id should not be empty or contains space", new CourseIdException(id));
 	}
@@ -295,12 +275,12 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C BranchM(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,LOCKED,0);
+			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,UNLOCKED);
 			fork.isForkm = true;
 			cross(ori,fork);
 			return fork;
 		}else {
-			return addCourse(id+"_NFM_"+System.currentTimeMillis(),false,LOCKED,0);
+			return addCourse(id+"_NFM_"+System.currentTimeMillis(),false,UNLOCKED);
 		}
 	}
 	
@@ -313,11 +293,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public C Branch(String id) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT,0);
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
 			cross(ori,fork);
 			return fork;
 		}else {
-			return addCourse(id+"_NF_"+System.currentTimeMillis(),true,WAIT,0);
+			return addCourse(id+"_NF_"+System.currentTimeMillis(),true,UNLOCKED);
 		}		
 	}
 	
@@ -330,11 +310,11 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	private C Branch(String id,int var) {
 		C ori = getCourse(id);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,WAIT,0);
+			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
 			cross(ori,fork);
 			return fork;
 		}else {
-			C master = addCourse(id,true,WAIT,0);
+			C master = addCourse(id,true,UNLOCKED);
 			return master;
 		}		
 	}
@@ -356,6 +336,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	public Object receive(C c,int option) {
 		switch(option) {
 		case rebase:return Branch(c.getId(),1);
+		case UNLOCKED:unLock(c);break;
+		case LOCKED:lock(c);break;
+		case END:END(c);break;
 		}
 		return option;
 	}
@@ -434,55 +417,41 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return repository.fromProxy(this);
 	}
 	
-	
-	/**
-	 * 一系列的字面值参数的开头，例如：如果在GET($(),user.getName(),user.getId())之前，
-	 * 在course方法以外的地方使用了User.getName()等方法，
-	 * 则$()方法是必需出现在参数的第一位，以抹除之前无关的字面值。
-	 * @return null
-	 */
-	public Object $() {
-		if(getLiteral()!=null && getCurrCourse().getLiteral().size()>0)
-			getLiteral().clear();
-		return null;
-	}
-	
-	/**
-	 * 方法引用，以lambda的方式提供方法字面参数，
-	 * 如GET($(user::getName))相当于GET(user.getName()),当有多个方法字面值需要获取，最好用该方式。<p>
-	 * 例如：GET($(user::getName,user::getId,user,user::getCode),首项为lambda的情况下不需要$()。
-	 * 如果字面值中还有user.getName()这样的方法引用，那么lambda的任意一个表达式必需写在字面值参数的第一位。
-	 * 
-	 * @param lt 实体类的lambda表达式，如user::getName，建议采用此种语法而非()->user.getName(),
-	 * 因为这种写法会带来隐患，比如可在lambda中执行多个句柄，这样会令字面值参数跟期望的不一致，
-	 * 尽管Course已经尽力避免这种情况，但是无法完全阻止通过这种手段输入，这是由于java语言机制限制了，因此在实际使用中
-	 * 需要多加留意。并且，在其他层面（如domainMatch、EntityFactory）会对该问题进行原则上的处理。
-	 * @return null
-	 */
-	public Object $(Literal ...lt) {
-		C course = getCurrCourse();
-		if(course.getStatus()>=LOCKED)
-			if(getLiteral()!=null && getLiteral().size()>0)
-				getLiteral().clear();;
-		course.setStatus(LAMBDA);
-		for(Literal li:lt) {
-			li.literal();
+	public void lock(C course) {
+		synchronized (course) {
+			toEnd(course,LOCKED);
 		}
-		course.setStatus(METHOD);
-		return null;
 	}
 	
-	/**
-	 * 可获取三元运算结果的字面值
-	 * @param obj @see {@link CourseProxy#$(Literal...)}
-	 * @return
-	 */
-	public Object te(Object obj) {
-		getLiteral_te().add(getLiteral().get(getLiteral().size()-1));
-		getLiteral().remove(getLiteral().size()-1);
-		getLiteral().remove(getLiteral().size()-1);
-		return AbstractCourse.Te.te;
+	public void unLock(C course) {
+		synchronized (course) {
+			toEnd(course,UNLOCKED);
+		}
 	}
+	
+	public void END(C course) {
+		synchronized (course) {
+			toEnd(course,END);
+		}
+	}
+	
+	private void toEnd(AbstractCourse course,int type) {
+		course = getCourse(course.id);
+		if(course!=null && course.type==CourseType.root) {
+			do {
+				if(course.getStatus()!=type) {
+					course.setStatus(type);
+				}
+				if(course.sons!=null)
+					for(AbstractCourse c:course.sons) {
+						c.setStatus(type);
+					}				
+				course = course.next;
+			}
+			while (course.next!=null);			
+		}				
+	}
+	
 	
 	
 }

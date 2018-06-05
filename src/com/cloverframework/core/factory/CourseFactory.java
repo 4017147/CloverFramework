@@ -31,8 +31,9 @@ public class CourseFactory implements CourseType{
 	}
 	
 	private static Map<String,CreateMain<?>> constructors = new HashMap<>();
-		
-		{
+	
+	private static void init(){
+		if(constructors.size()<1) {
 			constructors.put(get, Get::new);
 			constructors.put(add, Add::new);
 			constructors.put(put, Put::new);
@@ -43,9 +44,9 @@ public class CourseFactory implements CourseType{
 			constructors.put(or, OR::new);
 			constructors.put(not, NOT::new);
 			constructors.put(groupBy, GroupBy::new);
-			
 			constructors = Collections.unmodifiableMap(constructors);
 		}
+	}
 	
 		/**
 		 * 根据给定的节点类型返回对应的节点构造方法函数引用
@@ -53,6 +54,7 @@ public class CourseFactory implements CourseType{
 		 * @return
 		 */
 		public static CreateMain<?> getConstructor(String type) {
+			init();
 			CreateMain<?> cm = constructors.get(type);
 			if(cm==null)
 				return getExtendsConstructor(type);

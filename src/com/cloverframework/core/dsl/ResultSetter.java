@@ -25,6 +25,7 @@ public interface ResultSetter extends Accessable{
 			root = root.previous;
 		}
 		root.createResult();
+		root.futureResult.remove();
 		root.result.set(result);
 	}
 
@@ -38,6 +39,7 @@ public interface ResultSetter extends Accessable{
 			root = root.previous;
 		}
 		root.createFutureResult();
+		root.futureResult.remove();
 		root.futureResult.set(futureResult);
 	}
 	

@@ -69,6 +69,7 @@ public interface ValueSetter extends Accessable{
 	 * @return
 	 */
 	default public AbstractCourse setValues(CourseValues values) {
+		getThis().values.remove();
 		getThis().values.set(values);
 		return getThis();
 	}

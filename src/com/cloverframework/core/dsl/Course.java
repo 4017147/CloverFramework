@@ -12,7 +12,6 @@ public final class Course extends AbstractCourse{
 	 /*
 	  * 为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
 	  */
-	
 	private Get 	get;
 	private Add 	add;
 	private Put 	put;
@@ -21,7 +20,9 @@ public final class Course extends AbstractCourse{
 	/**
 	 * 反射创建，public
 	 */
-	public Course() {this.type = CourseType.root;}
+	public Course() {
+		this.type = CourseType.root;
+	}
 	
 	/**
 	 * 开启一个GET描述的Course，代表从数据提供方获取相应的内容

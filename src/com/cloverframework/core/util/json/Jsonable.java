@@ -90,6 +90,12 @@ public abstract class Jsonable implements Serializable{
 		this.next = next;
 	}
 
+	@Override
+	public String toString() {
+		return "Jsonable [type=" + type + ", types=" + types + ", fields=" + fields + ", optype=" + optype + ", values="
+				+ values + ", son=" + son + ", next=" + next + "]";
+	}
+
 
 	
 

@@ -52,13 +52,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	
 	private Object[] args;
 	
-	
-//	/**方法字面值列表*/
-//	List<String> literal;//上级传递
-//	
-//	/**三元方法字面值列表*/
-//	List<String> literal_te;
-	
 	/**节点类型*/
 	protected String type;
 	
@@ -81,10 +74,10 @@ public abstract class AbstractCourse implements CourseInterface{
 	protected boolean isSon;
 	
 	/**字段值*/
-	List<String> fields;
+	List<String> fields = new ArrayList<>();
 	
 	/**查询类型*/
-	Set<String> types;
+	Set<String> types = new HashSet<String>();//需要全限定定名
 	
 	/**对象值*/
 	List<Object> entities;
@@ -149,29 +142,30 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * 这一般发生在一个course中断后，另一个course开启之前，尽管这个概率是很低的。
 	 * 
 	 */
-	private volatile int status = WAIT;//上级传递
+	private volatile int status = UNLOCKED;//上级传递
 	
 
+	/**当前线程方法栈帧基准累计数，用于计算产生字面值的方法栈长是否合法*/
+	ThreadLocal<Integer> level = new ThreadLocal<Integer>();
+	{
+		level.set(4);
+	}
+	
 	/*----------------------private method-------------------- */
-
+	
 	/**
 	 * 初始化数据依赖于前置节点
 	 * @param course
 	 */
 	protected void init(AbstractCourse course) {
 		if(course!=null) {
-//			literal = course.literal;
-//			literal_te = course.literal_te;
-//			if(literal==null)
-//				literal = new ArrayList<String>(50);
-//			if(literal_te==null)
-//				literal_te = new ArrayList<String>(50);
 			id = course.id;
 			proxy = course.proxy;
 			isFork = course.isFork;
 			isForkm = course.isForkm;
 			origin = course.origin;
 			argsMather = course.argsMather;	
+			level = course.level;
 		}
 	}
 	
@@ -187,7 +181,7 @@ public abstract class AbstractCourse implements CourseInterface{
 			args = elements;
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
-			if(status>=LOCKED) {
+			if(status>LOCKED) {
 				status = FILL;
 				init(previous);
 				if((isFork||isForkm) && elements.length>0) 
@@ -215,7 +209,7 @@ public abstract class AbstractCourse implements CourseInterface{
 				buildData(true);
 			}
 		}finally {
-			getLiteral().clear();;
+			getLiteral().clear();
 			getLiteral_te().clear();
 		}
 	}
@@ -338,7 +332,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		}
 		if(this.next!=null) 
 			next = this.next.buildJsonNode();
-		
+			
 		courseData = new JsonFields(type, optype, fields, types, 
 				values==null?null:(values.get()==null?null:values.get().toString()), sonList, next);
 		return courseData;
@@ -350,8 +344,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param lowerCase 方法名首字母是否转小写
 	 */
 	private void buildData(boolean lowerCase) {
-		fields = new ArrayList<String>();
-		types = new HashSet<String>();//需要全限定定名
 		
 		for(Object obj:elements) {
 			if(obj==null)continue;
@@ -422,20 +414,6 @@ public abstract class AbstractCourse implements CourseInterface{
 			next.ifPresent((s)->builder.append(s));
 		return builder.toString();
 	}
-	
-//	protected void addLiteral(String methodName) {
-//		if(literal.size()>49)
-//			System.out.println(literal.size());
-//		else
-//			literal.add(methodName);			
-//	}
-//
-//	protected void addLiteral_te(String methodName) {
-//		if(literal_te.size()>49)
-//			System.out.println(literal_te.size());
-//		else
-//			literal_te.add(methodName);			
-//	}
 
 	/**
 	 * Warning!If the status is less than END,you can not change status
@@ -451,9 +429,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param id 这个course的标识，给定的字符串不能包含空格
 	 */
 	protected AbstractCourse(String id){
-//		literal = new ArrayList<String>(50);
-//		literal_te = new ArrayList<String>(50);
-		//String reg = "^\\s*$";
 		String reg = "^[\\S]*$";
 		if(id!=null && id.matches(reg))
 			this.id = id;
@@ -477,6 +452,10 @@ public abstract class AbstractCourse implements CourseInterface{
 		this.type = courseType;
 		previous.next = this;
 		this.previous = previous;
+		if(this.previous.type!=CourseType.root) 
+			beginLiteral(this, level.get()+1);
+		else
+			beginLiteral(this, level.get());
 		setElements(obj);
 	}
 	
@@ -494,6 +473,7 @@ public abstract class AbstractCourse implements CourseInterface{
 			this.parent = parent;
 		}
 		this.previous = this.parent;//传递previous参数
+		beginLiteral(this, level.get());
 		setElements(obj);
 		this.previous = null;
 	}

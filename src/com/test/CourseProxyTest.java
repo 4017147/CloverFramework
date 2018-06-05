@@ -2,6 +2,9 @@ package com.test;
 
 import static com.test.SYSOUT.println;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -52,7 +55,7 @@ public class CourseProxyTest implements DomainService{
 				demo.getF3(),
 				demo.getF4()).by(
 						demo.getF5(),
-						demo.getF6()).LIMIT(0, 10).END();
+						demo.getF6()).and(demo.getF5());
 		
 		Get get = cp.Master("b").get(cp.$(),
 				demo.getF1(),
@@ -61,7 +64,7 @@ public class CourseProxyTest implements DomainService{
 				demo.getF4());
 		de.getF10();de.getF9();
 		get.by(demo.getF5(),
-				demo.getF6()).LIMIT(0, 10).END();//实体对象
+				demo.getF6()).LIMIT(0, 10);//实体对象，limit
 		println(cp.toString());
 	}
 	
@@ -99,7 +102,6 @@ public class CourseProxyTest implements DomainService{
 	public void test3() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b").get(
-					//无取值
 					$(demo::getF5,demo::getF6),
 					Demo_D.f1,
 					Demo_D.f2,
@@ -111,7 +113,6 @@ public class CourseProxyTest implements DomainService{
 							Demo_D.f2).END();
 		}};
 		println(cp.toString());
-		println(cp.Master("b").getJsonString());
 	}
 	
 	/**
@@ -124,32 +125,35 @@ public class CourseProxyTest implements DomainService{
 	public void test4() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b").get(
-					//$(demo::getF5,demo::getF6,demo::getF9),
-					Demo_D.f1,
+					$(demo::getF5,demo::getF6,demo::getF9),
+					Demo_D.f1,//顺序
 					demo.getF7(),
 					demo.getF8(),
-//					$(demo!=null?demo::getF4:demo::getF3),
-//					$(demo==null?demo::getF4:demo::getF3),
-					te(demo.getF5()==null?demo.getF3():demo.getF4()),//三元
+					$(demo!=null?demo::getF4:demo::getF3),
+					$(demo==null?demo::getF4:demo::getF3),
+					te(demo.getF5()==null?demo.getF3():demo.getF4()),
 					te(demo.getF5()!=null?demo.getF3():demo.getF4()),
 					Demo_D.f2,
 					demo,demo
 					).END();
-			println(Master("b").toString());
+			println(getCourse("b").toString());
 		}};
 		//println(cp.toString());
 	}
 	
 	
 	/**
-	 * sharespace区测试
+	 * sharespace区缓存测试
+	 * 只缓存生产的第一个DSL
 	 */
 	//@Test
 	public void test5() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Master("a").get(Demo_D.f1,Demo_D.f2).END();
-			Master("b").get(Demo_D.f3,Demo_D.f4).END();
-			Master("c").get(Demo_D.f5,Demo_D.f6).END();
+			Master("a").get(Demo_D.f2);
+			Master("a").get(Demo_D.f1,Demo_D.f2);
+			Master("b").get(Demo_D.f3,Demo_D.f4);
+			Master("c").get(Demo_D.f5,Demo_D.f6);
+			Master("c").get(Demo_D.f6);
 		}};
 		println(cp.toString());
 	}
@@ -238,7 +242,7 @@ public class CourseProxyTest implements DomainService{
 			
 		}}; 
 		println(cp.toString());
-		println(cp.Master("a").getJsonString());
+		println(cp.getCourse("a").getJsonString());
 	}
 	 
 	/**
@@ -255,7 +259,7 @@ public class CourseProxyTest implements DomainService{
 			
 		}}; 
 		println(cp.toString());
-		println(cp.Master("a").getJsonString());
+		println(cp.getCourse("a").getJsonString());
 	}
 	
 	/**
@@ -271,48 +275,107 @@ public class CourseProxyTest implements DomainService{
 			.END();
 		}}; 
 		println(cp.toString());
-		println(cp.Master("a").getJsonString());
+		println(cp.getCourse("a").getJsonString());
 	}
 	
 	/**
 	 * 使用$传入字段和方法参数
-	 * 值对象能够判断参数个数是否符合要求
+	 * 值对象能够判断参数个数是否符合要求,当多个字段值时，
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
+	 * 当单个字段值时，参数不能为空但是个数没有限制
 	 */
-	//@Test
+	@Test
 	public void test12() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
 			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
+			.by(Demo_D.f10,Demo_D.f8).eq(40,$(demo.getF5())).and(demo.getF5()).eq(1,2)
 			.END();
 		}}; 
 		println(cp.toString());
-		println(cp.Master("a").getJsonString());
-	}
-	
-	//回调测试
-	@Test
-	public void test13() {
-		
+		println(cp.getCourse("a").getJsonString());
 	}
 	
 	/**
-	 * 缓存利用测试
+	 * 回调测试
+	 */
+	//@Test
+	public void test13() {
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
+			Master("a")
+			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.by(Demo_D.f10).eq(20)
+			.LOCK();
+			println(getCourse("a").getStatus());
+			getCourse("a").UNLOCK();
+			println(getCourse("a").getStatus());
+			getCourse("a").END();
+			println(getCourse("a").getStatus());
+		}}; 
+	}
+	
+	/**
+	 * 缓存判断测试
+	 * 如果DSL已存在则不执行当前DSL
 	 */
 	//@Test
 	public void test14() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Master("a")
-			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
-			.END();
-			Master("a")
-			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10,Demo_D.f8).eq($(demo.getF5()),30).and(demo.getF5()).eq(1,2)
-			.END();
+			int k = 10;
+			int b = 20;
+			User user = new User();
+			for(int i=0;i<1;i++) {
+				Master(String.valueOf(i),(name)->{
+					Master(name)
+					.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+					.by(Demo_D.f10,Demo_D.f8).eq(k,b).and(demo.getF5()).eq(user.getId(),2);
+				});
+			}
 		}}; 
 		println(cp.toString());
-		println(cp.Master("b").getJsonString());
 	}
+	
+	/**
+	 * 多线程安全测试
+	 * 值和结果线程独立
+	 * @throws InterruptedException 
+	 */
+	//@Test
+	public void test15() throws InterruptedException {
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
+			Course a = Master("a");
+			Thread t1 = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					a.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+					.by(Demo_D.f10,Demo_D.f8).eq(40,$(demo.getF5())).and(demo.getF5()).eq(1,2);
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("t1"+a);
+				}
+			});
+			
+			Thread t2 = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					a.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+					.by(Demo_D.f10,Demo_D.f8).eq(50,$(demo.getF6())).and(demo.getF6()).eq(3,4);
+					System.out.println(a);
+				}
+			});
+			
+			t1.start();
+			Thread.sleep(1000);
+			t2.start();
+			
+		}}; 
+		
+		
+	}
+	
 }

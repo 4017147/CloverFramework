@@ -14,7 +14,8 @@ public class JsonUtil {
 		ObjectMapper om = new ObjectMapper();
 
 		try {
-			return om.writerWithDefaultPrettyPrinter().writeValueAsString(ja);
+			String a = om.writerWithDefaultPrettyPrinter().writeValueAsString(ja);
+			return a;
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

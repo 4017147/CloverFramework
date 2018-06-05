@@ -26,24 +26,8 @@ public interface MainCreator extends Constant{
 	default <O extends AbstractCourse> O create(O old,CreateMain<O> constructor,AbstractCourse previous,Object ...obj) {
 		if(previous.getStatus()<=END)
 			throw ExceptionFactory.wrapException("Course create error,id:"+previous.getId(), new CourseIsClosed(previous.getType()));
-		if(previous.isFork==false) {
-			Object[] oldArgs = null;
-			if(old!=null)
-				oldArgs = old.getArgs();
-			if(oldArgs!=null && oldArgs.length==obj.length) {
-				for(int i = 0;i<oldArgs.length;i++) {
-					if(oldArgs[i]!=obj[i]) {
-						if(old.getStatus()==LOCKED)
-							//容错处理
-							return constructor.apply(rebase(previous),obj);
-						else
-							return constructor.apply(previous,obj);
-					}
-				}
-				return (O) old;
-				
-			}else if(old==null) 
-				return constructor.apply(rebase(previous),obj);
+		if(old!=null) {
+			return old;
 		}
 		return constructor.apply(previous, obj);
 	}
@@ -51,11 +35,11 @@ public interface MainCreator extends Constant{
 	/**
 	 * 将一个正在进行对比的course的节点作为末端，创建一个fork类型的course,
 	 * 并返回最后匹配成功的节点对应的新的course节点，如果正在调用的是子节点，
-	 * 则从子节点开始返回
+	 * 则从子节点开始返回,注意，该方法将忽略彼此的value一致性
 	 * @param <P>
 	 * @return
 	 */
-	 default AbstractCourse rebase(AbstractCourse previous) {
+	 static AbstractCourse rebase(AbstractCourse previous) {
 		 if(previous.isSon==true)
 			 return previous;
 		 String head = ((CourseProxy)previous.proxy).getCourse(previous.id).head;//优化
@@ -65,10 +49,11 @@ public interface MainCreator extends Constant{
 		 }
 		 if(head!=null&&cur.head!=null&&cur.head.equals(head))
 			return previous;
-		 cur.isFork = true;
 		 AbstractCourse next = cur.next;
-		 while(next!=null) {
+		 cur = (AbstractCourse) previous.proxy.receive(cur, rebase);
+		 while(next!=null&&next!=previous) {
 			 cur.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(cur, next.getArgs());
+			 cur = cur.next;
 			 next = next.next;
 		 }
 		 return cur;
@@ -80,7 +65,7 @@ public interface MainCreator extends Constant{
 	  * @param b
 	  * @return
 	  */
-	 default boolean equals(AbstractCourse a,AbstractCourse b) {
+	 static boolean equals(AbstractCourse a,AbstractCourse b) {
 		 if(a==null||b==null)
 			 return false;
 		 while(a.previous!=null) {

@@ -17,7 +17,7 @@ public interface Constant {
 	/**正在填充*/
 	public static final int FILL 		=-1;
 	/**待填充*/
-	public static final int WAIT 		= 0;
+	public static final int UNLOCKED 	= 0;
 	/**添加字面值(从lambda)*/
 	public static final int LAMBDA 		= 1;
 	/**添加字面值(从方法)*/
@@ -25,7 +25,7 @@ public interface Constant {
 	/**添加字面值(从lambda三元)*/
 	public static final int LAMBDA_TE 	= 3;
 	/**添加字面值(三元)*/
-	public static final int TE 			= 4;
+	public static final int METHOD_TE 	= 4;
 	
 	//-------------------------proxy-------------------------
 	
