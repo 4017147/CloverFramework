@@ -1,22 +1,23 @@
 package com.cloverframework.core.dsl;
 
-import com.cloverframework.core.dsl.interfaces.Constant;
 import com.cloverframework.core.exceptions.CourseIsClosed;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 import com.cloverframework.core.factory.CourseFactory;
+import com.cloverframework.core.util.interfaces.CourseType;
 import com.cloverframework.core.util.lambda.CreateMain;
 
 /**
- * 主线节点创建器接口
+ * 主线节点创建器
  * @author yl
  *
  */
-public interface MainCreator extends Constant{
-
+public interface MainCreator extends LiteralSetter{
+	/**当前线程方法栈帧基准累计数，用于计算产生字面值的方法栈长是否合法*/
+	int level = 0;
+	
 	/**
-	 * 通过输入的节点创建函数表达式执行节点创建，如果相同位置的节点已存，
-	 * 并且被认为和当前创建节点等价，则不会创建,如果相同位置的节点不存在或者不等价，
-	 * 如果LOCKED，则进行rebase，如果不是LOCKED，则替换原有节点
+	 * 通过输入的节点创建函数表达式执行节点创建，如果相同位置的节点已存在
+	 * 则返回已有节点
 	 * @param old
 	 * @param constructor
 	 * @param previous
@@ -25,13 +26,42 @@ public interface MainCreator extends Constant{
 	 */
 	default <O extends AbstractCourse> O create(O old,CreateMain<O> constructor,AbstractCourse previous,Object ...obj) {
 		if(previous.getStatus()<=END)
-			throw ExceptionFactory.wrapException("Course create error,id:"+previous.getId(), new CourseIsClosed(previous.getType()));
+			throw ExceptionFactory.wrapException("Course create error,id:"+previous.getId(), new CourseIsClosed(previous.getType()));	
+		
 		if(old!=null) {
+			while(old.isComplete.get()==false) {
+				//已有节点是否构造完成
+				System.out.println("waiting");
+			}
+			//NOTE 
+			$();
+			setLevel(previous,old);
 			return old;
+		}else {
+			O newo = constructor.apply(previous, obj);
+			if(newo.isComplete.compareAndSet(false, true)==false) {
+				//
+				System.out.println("isComletet");
+			}
+			$();
+			setLevel(previous,newo);
+			return newo;			
 		}
-		return constructor.apply(previous, obj);
 	}
 
+	/**
+	 * 该方法尽量用在同一个方法中，因为栈长需要固定的数
+	 * @param previous
+	 * @param newc
+	 */
+	default void setLevel(AbstractCourse previous,AbstractCourse newc) {
+		//int l = newc.level.get();
+		if(previous.type!=CourseType.root) 
+			beginLiteral(newc, level+2);
+		else
+			beginLiteral(newc, level+2);
+	}
+	
 	/**
 	 * 将一个正在进行对比的course的节点作为末端，创建一个fork类型的course,
 	 * 并返回最后匹配成功的节点对应的新的course节点，如果正在调用的是子节点，
@@ -50,7 +80,7 @@ public interface MainCreator extends Constant{
 		 if(head!=null&&cur.head!=null&&cur.head.equals(head))
 			return previous;
 		 AbstractCourse next = cur.next;
-		 cur = (AbstractCourse) previous.proxy.receive(cur, rebase);
+		 cur = previous.proxy.receive(cur, rebase);
 		 while(next!=null&&next!=previous) {
 			 cur.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(cur, next.getArgs());
 			 cur = cur.next;

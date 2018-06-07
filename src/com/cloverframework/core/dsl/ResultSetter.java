@@ -10,11 +10,13 @@ import com.cloverframework.core.dsl.interfaces.Accessable;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 
 /**
- * 结果设置器接口
+ * 结果设置器
  * @author yl
  *
  */
 public interface ResultSetter extends Accessable{
+	
+	
 	/**
 	 * result不会跟随节点立刻创建，根据流程会推迟到仓储接收返回结果时创建
 	 * @param result

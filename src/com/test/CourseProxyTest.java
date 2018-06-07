@@ -2,9 +2,6 @@ package com.test;
 
 import static com.test.SYSOUT.println;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -101,7 +98,7 @@ public class CourseProxyTest implements DomainService{
 	//@Test
 	public void test3() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Master("b").get(
+			Master("b1111").get(
 					$(demo::getF5,demo::getF6),
 					Demo_D.f1,
 					Demo_D.f2,
@@ -237,7 +234,7 @@ public class CourseProxyTest implements DomainService{
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
 			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
-			.or(Demo_D.f3,$(Demo_D.f5).gt(33).or(Demo_D.f6).lt(11))
+			.or(Demo_D.f3,$(Demo_D.f5).gt(33).or(Demo_D.f6).lt(11))//condition节点共存问题
 			.END();
 			
 		}}; 
@@ -284,11 +281,11 @@ public class CourseProxyTest implements DomainService{
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
 	 * 当单个字段值时，参数不能为空但是个数没有限制
 	 */
-	@Test
+	//@Test
 	public void test12() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
-			.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
+			.get(demo.getF5(),count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 			.by(Demo_D.f10,Demo_D.f8).eq(40,$(demo.getF5())).and(demo.getF5()).eq(1,2)
 			.END();
 		}}; 
@@ -316,7 +313,8 @@ public class CourseProxyTest implements DomainService{
 	
 	/**
 	 * 缓存判断测试
-	 * 如果DSL已存在则不执行当前DSL
+	 * 如果DSL已存在则不执行当前DSL,
+	 * 测试10000次执行效率
 	 */
 	//@Test
 	public void test14() {
@@ -324,58 +322,16 @@ public class CourseProxyTest implements DomainService{
 			int k = 10;
 			int b = 20;
 			User user = new User();
-			for(int i=0;i<1;i++) {
-				Master(String.valueOf(i),(name)->{
-					Master(name)
+			for(int i=0;i<1000;i++) {
+				Master(String.valueOf(i),(a)->{
+					Master(a)
 					.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
 					.by(Demo_D.f10,Demo_D.f8).eq(k,b).and(demo.getF5()).eq(user.getId(),2);
 				});
 			}
 		}}; 
-		println(cp.toString());
+		//println(cp.toString());
 	}
 	
-	/**
-	 * 多线程安全测试
-	 * 值和结果线程独立
-	 * @throws InterruptedException 
-	 */
-	//@Test
-	public void test15() throws InterruptedException {
-		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Course a = Master("a");
-			Thread t1 = new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					a.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-					.by(Demo_D.f10,Demo_D.f8).eq(40,$(demo.getF5())).and(demo.getF5()).eq(1,2);
-					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					System.out.println("t1"+a);
-				}
-			});
-			
-			Thread t2 = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					a.get(count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-					.by(Demo_D.f10,Demo_D.f8).eq(50,$(demo.getF6())).and(demo.getF6()).eq(3,4);
-					System.out.println(a);
-				}
-			});
-			
-			t1.start();
-			Thread.sleep(1000);
-			t2.start();
-			
-		}}; 
-		
-		
-	}
 	
 }

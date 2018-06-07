@@ -1,7 +1,7 @@
 package com.cloverframework.core.dsl.interfaces;
 
 /**
- * 常量接口，无方法
+ * 常量接口
  * @author yl
  *
  */
@@ -9,34 +9,58 @@ public interface Constant {
 	
 	//-----------------------course-----------------------
 	/**异常*/
-	public static final int ERROR 		=-4;
+	int ERROR 		=-4;
+	
 	/**关闭,不能执行任何设置操作*/
-	public static final int END 		=-3;
+	int END 		=-3;
+	
 	/**锁定*/
-	public static final int LOCKED 		=-2;
+	int LOCKED 		=-2;
+	
 	/**正在填充*/
-	public static final int FILL 		=-1;
+	int FILL 		=-1;
+	
 	/**待填充*/
-	public static final int UNLOCKED 	= 0;
+	int UNLOCKED 	= 0;
+	
 	/**添加字面值(从lambda)*/
-	public static final int LAMBDA 		= 1;
+	int LAMBDA 		= 1;
+	
 	/**添加字面值(从方法)*/
-	public static final int METHOD 		= 2;
+	int METHOD 		= 2;
+	
 	/**添加字面值(从lambda三元)*/
-	public static final int LAMBDA_TE 	= 3;
+	int LAMBDA_TE 	= 3;
+	
 	/**添加字面值(三元)*/
-	public static final int METHOD_TE 	= 4;
+	int METHOD_TE 	= 4;
 	
 	//-------------------------proxy-------------------------
 	
+	/**准备*/
+	int ready 			= 10;
+	
 	/**查询*/
-	public static final int execute 		= 11;
+	int execute 		= 11;
+	
 	/**更新*/
-	public static final int commit 			= 12;
+	int commit 			= 12;
+	
 	/**无阻塞查询*/
-	public static final int executeFuture 	= 13;
+	int executeFuture 	= 13;
+	
 	/**无阻塞更新*/
-	public static final int commitFuture 	= 14;
+	int commitFuture 	= 14;
+	
 	/**重建分支*/
-	public static final int rebase 			= 15;
+	int rebase 			= 15;
+	
+	//-----------------------domainScope--------------------------
+	
+	/**领域服务内*/
+	int domain 	= 20;
+	
+	/**本地线程*/
+	int local 	= 21;
+	
 }

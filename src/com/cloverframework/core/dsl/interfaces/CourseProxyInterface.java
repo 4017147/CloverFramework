@@ -2,9 +2,11 @@ package com.cloverframework.core.dsl.interfaces;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.AbstractCourse;
+import com.cloverframework.core.dsl.SonCreator;
 import com.cloverframework.core.repository.CourseRepository;
+import com.cloverframework.core.util.interfaces.ELType;
 
-public interface CourseProxyInterface<T,C extends AbstractCourse> extends Constant{
+public interface CourseProxyInterface<T,C extends AbstractCourse> extends SonCreator,ELType{
 	/**
 	 * proxy和service必需是一对一的关系
 	 * @return
@@ -13,7 +15,7 @@ public interface CourseProxyInterface<T,C extends AbstractCourse> extends Consta
 	
 	void setDomainService(DomainService domainService);
 	
-	Object receive(C c,int option);
+	C receive(C c,int option);
 	
 	void setRepository(CourseRepository<T,C> repository);
 	

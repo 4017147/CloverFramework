@@ -10,7 +10,7 @@ import com.cloverframework.core.util.lambda.CreateSon;
  * @author yl
  *
  */
-public interface SonCreator{
+public interface SonCreator extends LiteralSetter{
 	public AbstractCourse getCurrCourse();
 	
 	
@@ -25,7 +25,9 @@ public interface SonCreator{
 		while(last.next!=null) {
 			last = last.next;
 		}
-		return constructor.apply(last,true,obj);
+		R son = constructor.apply(last,true,obj);
+		$();
+		return son;
 	}
 
 	/**

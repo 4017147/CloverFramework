@@ -12,6 +12,11 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
+/**
+ * 字面值参数设置器
+ * @author yl
+ *
+ */
 public interface LiteralSetter extends Constant{
 	
 	
@@ -20,7 +25,8 @@ public interface LiteralSetter extends Constant{
 	 */
 	default void beginLiteral(AbstractCourse course,int var) {
 		Thread t = Thread.currentThread();
-		System.out.println(t.getStackTrace().length+"-"+var+" "+course.type);
+		//System.out.println(t.getStackTrace().length+"-"+var+" "+course.type);
+		//int i = t.getStackTrace().length;
 		setLevel(course==null?0:course.hashCode(),t.getStackTrace().length-var);
 	}
 	
@@ -29,6 +35,8 @@ public interface LiteralSetter extends Constant{
 	}
 	
 	default void setThread(int var) {
+		Thread t = Thread.currentThread();
+		System.out.println(t.getStackTrace().length+"-"+var);
 		setLevel(0,Thread.currentThread().getStackTrace().length-var);
 	}
 	
@@ -50,13 +58,22 @@ public interface LiteralSetter extends Constant{
 	
 	
 	default List<String> getLiteral() {
-		return Processor.literal.get();
+		return Processor.getLiteral();
 	}
 	
 	default List<String> getLiteral_te() {
-		return Processor.literal_te.get();
+		return Processor.getLiteral_te();
 	}
 
+	default void clearLiteral() {
+		if(getLiteral()!=null)
+			getLiteral().clear();
+		if(getLiteral_te()!=null) {
+			getLiteral_te().clear();
+		}
+	}
+	
+	
 	/**
 	 * 一系列的字面值参数的开头，例如：如果在GET($(),user.getName(),user.getId())之前，
 	 * 在course方法以外的地方使用了User.getName()等方法，
@@ -91,8 +108,8 @@ public interface LiteralSetter extends Constant{
 	}
 	
 	/**
-	 * 可获取三元运算结果的字面值
-	 * @param obj @see {@link CourseProxy#$(Literal...)}
+	 * 可获取lambda三元运算结果的字面值
+	 * @param 
 	 * @return
 	 */
 	default public Object te(Literal lt) {
@@ -102,6 +119,11 @@ public interface LiteralSetter extends Constant{
 		return null;
 	}
 	
+	/**
+	 * 获取方法三元字面值
+	 * @param obj
+	 * @return
+	 */
 	default public Object te(Object obj) {
 		int size = getLiteral().size();
 		getLiteral_te().add(getLiteral().get(size-1));
@@ -110,7 +132,11 @@ public interface LiteralSetter extends Constant{
 		return AbstractCourse.Te.te;
 	}
 	
-	
+	/**
+	 * 产生一个样板的实体类，使用该类的getter方法可以给节点传入该方法的字面值
+	 * @param E
+	 * @return
+	 */
 	default <E> E getStaple(Class<E> E) {
 		return Processor.getStaple(E);
 	}
@@ -133,6 +159,7 @@ public interface LiteralSetter extends Constant{
 	}
 
 	class Processor{
+		/**填充模式*/
 		private static ThreadLocal<Integer> model = new ThreadLocal<Integer>();
 		private static Enhancer enhancer = new Enhancer();
 		private static EntityMethodInterceptor interceptor = new EntityMethodInterceptor();
@@ -150,10 +177,7 @@ public interface LiteralSetter extends Constant{
 			enhancer.setCallback(interceptor);
 		}
 		
-		private Processor() {}
-		
-		static void setLiteral(String literalName,int length) throws Exception {
-			System.out.println(length+literalName);
+		static void init() {
 			if(Processor.literal.get()==null)
 				Processor.literal.set(new ArrayList<>());
 			if(Processor.literal_te.get()==null)
@@ -162,6 +186,13 @@ public interface LiteralSetter extends Constant{
 				model.set(METHOD);
 			if(lengthMap.get()==null) 
 				lengthMap.set(new int[2]);
+		}
+		
+		Processor() {}
+		
+		static void setLiteral(String literalName,int length) throws Exception {
+			//System.out.println(length+literalName);
+			init();
 			int courseLength = lengthMap.get()[1];
 			if(length==courseLength) {
 				literal.get().add(literalName);
@@ -181,6 +212,19 @@ public interface LiteralSetter extends Constant{
 			
 		}
 		
+		static List<String> getLiteral() {
+			if(literal.get()==null)
+				literal.set(new ArrayList<>());
+			return literal.get();
+		}
+		
+		static List<String> getLiteral_te() {
+			if(literal_te.get()==null)
+				literal_te.set(new ArrayList<>());
+			return literal_te.get();
+		}
+		
+		
 		static int addLevel(int hashCode, int length) {
 			lengthMap.get()[0] = hashCode;
 			lengthMap.get()[1] = lengthMap.get()[1]+length;
@@ -188,13 +232,15 @@ public interface LiteralSetter extends Constant{
 		}
 		
 		static int setLevel(int hashCode, int length) {
+			init();
 			lengthMap.get()[0] = hashCode;//hashCode用于在course中判断是否为当前course
 			lengthMap.get()[1] = length;
-			return lengthMap.get()[1];
+			return lengthMap.get()[1];				
+			
 		}
 	
 		static void reSetLevel(int hashCode) {
-			if(lengthMap.get()[0]==hashCode) {
+			if(lengthMap.get()!=null&&lengthMap.get()[0]==hashCode) {
 				lengthMap.get()[0] = 0;
 				lengthMap.get()[1] = 0;				
 			}

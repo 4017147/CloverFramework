@@ -1,9 +1,7 @@
 package com.cloverframework.core.dsl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.interfaces.CourseOperation;
@@ -11,7 +9,8 @@ import com.cloverframework.core.dsl.interfaces.CourseOperation;
 /**
  * Action是一个支持多线程的course代理，在服务程序中建议使用该类来创建业务过程而非使用CourseProxy，
  * 该类还提供了批量提交并执行业务过程的特性。原则上，不建议方法中创建action对象，因为那样会消耗大量内存，
- * 而是让业务组件继承action。例如：UserService extends Action
+ * 而是让业务组件继承action。例如：UserService extends Action，还有一点，通过继承Action实现的业务组件，
+ * 必需通过其对应的一个application组件来调用，以避免暴露其内部逻辑和方法。
  * @author yl
  * @param <T>
  *
@@ -19,31 +18,18 @@ import com.cloverframework.core.dsl.interfaces.CourseOperation;
  * @param <C>
  */
 public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> implements CourseOperation<C>{
-//	{
-//		/** 用于计算产生字面值的方法栈长是否合法，
-//		 * 如果别的方法中调用该类中的START()或START(args)方法（仅开发过程中可设置，对外隐藏），需要相应的+1*/
-//		level +=1;		
-//	}
 	
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
 	private ThreadLocal<C> newest = new ThreadLocal<C>();
 	
-	/** share区，用于缓存每个线程产生的course*/
-	private ConcurrentHashMap<String,C> shareSpace = new ConcurrentHashMap<String,C>();
-	
-//	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
-//	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
 	/** work区，每个线程持有的一个相互独立的work集合，并且会被批量的提交至仓储执行*/
-	private ThreadLocal<LinkedHashMap<String, C>> workSpace = new ThreadLocal<LinkedHashMap<String, C>>();
+	private ThreadLocal<List<C>> workSpace = new ThreadLocal<List<C>>();
 	
 	/** 每个work集合初始大小*/
 	private static byte workSize = 20;
 	
 	/** 只有当workable为1的时候，course才会被填入work区*/
 	private static ThreadLocal<Byte> workable = new  ThreadLocal<Byte>();
-	
-
-	
 	
 	public Action() {}
 	
@@ -69,27 +55,12 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 		newest.set(course);
 	}
 	
-	@Override
-	public C getCourse(String id) {
-		return shareSpace.get(id);
-	}
-	
-	@Override
-	public void setCourse(String id,C course) {
-		shareSpace.put(id, course);
-	}
-	
-	@Override
-	public C removeCourse(String id) {
-		return shareSpace.remove(id);
-	}
-	
 
 	/**
 	 * 获取当前线程的work区
 	 * @return
 	 */
-	public LinkedHashMap<String, C> getWorkSpace() {
+	public List<C> getWorkSpace() {
 		return workSpace.get();
 	}
 
@@ -114,7 +85,7 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 */
 	public void startWork() {
 		workSpace.remove();
-		workSpace.set(new LinkedHashMap<String, C>(workSize));
+		workSpace.set(new ArrayList<C>(workSize));
 		workable.remove();
 		workable.set((byte)1);
 	}
@@ -125,8 +96,8 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	 */
 	public int endWork() {
 		if(workSpace.get()!=null) {
-			for(C course:workSpace.get("")) {
-				course.destroy();
+			for(C course:workSpace.get()) {
+				course.destroy();//销毁或重置
 			}
 			workSpace.get().clear();
 		}
@@ -136,61 +107,54 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	}
 	
 	/**
-	 * {@inheritDoc}
+	 * 将当前proxy对象移交仓储，仓储根据不用的proxy实例和泛化执行对应的操作
+	 * @return
 	 */
 	public int push() {
-		return repository.fromAction(this);
+		return repository.fromProxy(this);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
+	
 	@Override
-	public C Master() {
-		//必需
-		return super.Master();
+	public void ready(C course) {
+		if(workable.get()!=null && workable.get()==1 && course.getStatus()>Course.END)
+			workSpace.get().add(course);
 	}
 
-	/**
-	 * {@inheritDoc}，
-	 * 当 {@link Action#startWork()}开启，匹配到的course会填入workspace
-	 */
+	
+	
 	@Override
-	public C Master(String id) {
-		//必需
-		C course = super.Master(id);
-		return course;
+	public C $(String key) {
+		C course = super.$(key);
+		if(course!=null) {
+			return course;
+		}else {
+			$(key,null);
+		}
+		return null;
 	}
 
-	/**
-	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
-	 * 则进行分支，否则不进行分支，分支的course将存入workspace
-	 */
-	public C Branch(String id) {
-		//必需
-		C course = super.Branch(id);
-		return course;
+	public C $(String key,int scope) {
+		if(scope==domain)
+			return super.$(key);
+		else if(scope==local)
+			return $(key,null);
+		return null;
 	}
 	
-	/**
-	 * {@inheritDoc}，
-	 * 当 {@link Action#startWork()}开启，将fork或无给定id的course加入工作区
-	 */
-	public void END() {
-		//必需
-		super.END();
-		C course = getCurrCourse();
-		if(workable.get()!=null && workable.get()==1 && course.getStatus()==Course.END)
-			workSpace.get().put(course.id,course);
-	}	
+	public C $(String key,String head) {
+		for(C c:workSpace.get()) {
+			if(head==null&&c.id.equals(key))
+				return c;
+			if(c.id.equals(key)&&c.head.equals(head))
+				return c;		
+		}
+		return null;
+	}
+	
 	
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();	
-		for(String key:shareSpace.keySet()) {
-			C course = shareSpace.get(key);
-			sb.append(course.toString()+"\n");
-		}
-		return sb.toString();			
+		return super.toString();		
 	}
 }

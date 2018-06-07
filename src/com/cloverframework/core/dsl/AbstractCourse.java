@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.cloverframework.core.data.interfaces.CourseResult;
 import com.cloverframework.core.data.interfaces.CourseValues;
@@ -26,7 +27,6 @@ import com.cloverframework.core.util.json.JsonUtil;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
- * 当status属性级别低于或等于END，对Elements和status的任何操作都必需是无效的。
  * @author yl
  * 
  * 
@@ -144,12 +144,9 @@ public abstract class AbstractCourse implements CourseInterface{
 	 */
 	private volatile int status = UNLOCKED;//上级传递
 	
+	/**是否构造完成*/
+	AtomicBoolean isComplete = new AtomicBoolean(false);
 
-	/**当前线程方法栈帧基准累计数，用于计算产生字面值的方法栈长是否合法*/
-	ThreadLocal<Integer> level = new ThreadLocal<Integer>();
-	{
-		level.set(4);
-	}
 	
 	/*----------------------private method-------------------- */
 	
@@ -165,7 +162,6 @@ public abstract class AbstractCourse implements CourseInterface{
 			isForkm = course.isForkm;
 			origin = course.origin;
 			argsMather = course.argsMather;	
-			level = course.level;
 		}
 	}
 	
@@ -177,7 +173,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
-		try {
 			args = elements;
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
@@ -208,10 +203,6 @@ public abstract class AbstractCourse implements CourseInterface{
 				}
 				buildData(true);
 			}
-		}finally {
-			getLiteral().clear();
-			getLiteral_te().clear();
-		}
 	}
 
 	void setValueElement(Object... elements){
@@ -384,6 +375,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		Optional<List<AbstractCourse>> sons = Optional.ofNullable(this.sons);
 		Optional<List<Object>> entities = Optional.ofNullable(this.entities);
 		Optional<String> optype = Optional.ofNullable(this.optype);
+		//assert this.values.get()==null;
 		Optional<CourseValues> values = Optional.ofNullable(this.values.get());
 		Optional<AbstractCourse> next = Optional.ofNullable(this.next);
 		StringBuilder builder = new StringBuilder(56);
@@ -394,29 +386,29 @@ public abstract class AbstractCourse implements CourseInterface{
 			builder.append(nextline+"\u001b[94m").append(type).append("\u001b[0m ");
 		else
 			builder.append(nextline).append(type);
-		if(id!=null && type==CourseType.root)builder.append("id:"+id);
-			fields.ifPresent((field)->{
-				field.forEach((f)->builder.append(f).append(','));
-				if(!sons.isPresent()&&!entities.isPresent())
-					builder.deleteCharAt(builder.length()-1);
-			});
-			sons.ifPresent((son)->{
-				son.forEach((s)->builder.append(s).append(','));
-				if(!entities.isPresent())
-					builder.deleteCharAt(builder.length()-1);
-			});
-			entities.ifPresent((entity)->{
-				entity.forEach((s)->builder.append(s).append(','));
+		if(id!=null && type==CourseType.root)
+			builder.append("id:"+id+" ");
+		fields.ifPresent((field)->{
+			field.forEach((f)->builder.append(f).append(','));
+			if(!sons.isPresent()&&!entities.isPresent())
 				builder.deleteCharAt(builder.length()-1);
-			});
-			optype.ifPresent((s)->builder.append(' ').append(s).append(' '));
-			values.ifPresent((s)->builder.append(" values:").append(s.toString()));
-			next.ifPresent((s)->builder.append(s));
+		});
+		sons.ifPresent((son)->{
+			son.forEach((s)->builder.append(s).append(','));
+			if(!entities.isPresent())
+				builder.deleteCharAt(builder.length()-1);
+		});
+		entities.ifPresent((entity)->{
+			entity.forEach((s)->builder.append(s).append(','));
+			builder.deleteCharAt(builder.length()-1);
+		});
+		optype.ifPresent((s)->builder.append(' ').append(s).append(' '));
+		values.ifPresent((s)->builder.append(" values:").append(s.toString()));
+		next.ifPresent((s)->builder.append(s));
 		return builder.toString();
 	}
 
 	/**
-	 * Warning!If the status is less than END,you can not change status
 	 * @param status
 	 */
 	void setStatus(int status) {
@@ -452,10 +444,6 @@ public abstract class AbstractCourse implements CourseInterface{
 		this.type = courseType;
 		previous.next = this;
 		this.previous = previous;
-		if(this.previous.type!=CourseType.root) 
-			beginLiteral(this, level.get()+1);
-		else
-			beginLiteral(this, level.get());
 		setElements(obj);
 	}
 	
@@ -473,7 +461,6 @@ public abstract class AbstractCourse implements CourseInterface{
 			this.parent = parent;
 		}
 		this.previous = this.parent;//传递previous参数
-		beginLiteral(this, level.get());
 		setElements(obj);
 		this.previous = null;
 	}

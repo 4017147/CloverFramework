@@ -47,7 +47,7 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 		Map<String,C> map = proxy.getShareSpace();
 		for(String key:map.keySet()) {
 			C course = map.get(key);
-			if(course.getType()==CourseType.get)
+			if(course.getNextType()==CourseType.get)
 				doQuery(course,mode);
 			else
 				doUpdate(course,mode);
@@ -58,7 +58,7 @@ public abstract class AbstractRepository<T,C extends AbstractCourse>{
 	public final int fromAction(Action<T,C> action,CourseMode<T> mode) {
 		List<C> list = action.getWorkSpace();
 		for(C course:list) {
-			if(course.getType()==CourseType.get)
+			if(course.getNextType()==CourseType.get)
 				doQuery(course,mode);
 			else
 				doUpdate(course,mode);

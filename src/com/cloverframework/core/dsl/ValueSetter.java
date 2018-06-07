@@ -7,7 +7,7 @@ import com.cloverframework.core.exceptions.ArgsCountNotMatch;
 import com.cloverframework.core.exceptions.ExceptionFactory;
 
 /**
- * 节点参数值对象创建器接口
+ * 节点参数值对象创建器
  * @author yl
  *
  */
@@ -55,8 +55,7 @@ public interface ValueSetter extends Accessable{
 				}else if(!AbstractCourse.ifCountValues && count<1) {
 					throw new ArgsCountNotMatch(c.fields.size(),count);
 				}
-				c.values.remove();
-				c.values.set(new Values(values));
+				setValues(new Values(values));
 			} catch (ArgsCountNotMatch e) {
 				throw ExceptionFactory.wrapException("Error setting values in "+c.id+",cause：", e);
 			}

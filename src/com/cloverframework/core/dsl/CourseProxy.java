@@ -15,7 +15,6 @@ import com.cloverframework.core.exceptions.ExceptionFactory;
 import com.cloverframework.core.factory.CourseFactory;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.interfaces.CourseType;
-import com.cloverframework.core.util.interfaces.ELType;
 import com.cloverframework.core.util.lambda.DSLFunction;
 /**
  * 泛型C extends AbstractCourse，内部统称course，而对于测试和用户可称为DSL
@@ -24,12 +23,12 @@ import com.cloverframework.core.util.lambda.DSLFunction;
  * @author yl
  *
  */
-public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>,LiteralSetter,SonCreator,ELType{
+public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>{
 	
-	/**最后产生的course对象，无论什么方法，要求每次产生新的course都必须移除旧的course*/
+	/**最后产生的course对象*/
 	C newest;
 	
-	/**share区，用于缓存course对象*/
+	/**course缓存，在缓存中每一个course和对应的id都应当是唯一的，不存在任何副本*/
 	Map<String,C> shareSpace = new ConcurrentHashMap<String,C>();
 	
 	protected DomainService domainService;
@@ -74,26 +73,30 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 如果查找的course为null，则返回新建的course，如果新建的course为fork则不缓存
 	 * @return
 	 */
-	protected C addCourse(String id,boolean isFork,int option) {
-		setThread(1);
-		C old = getCourse(id);
+	protected C addCourse(String key,boolean isFork,int option) {
+		//reSetLevel(0);
+		C old = getCourse(key);
+		if(old!=null&& old.getStatus()>LOCKED) {
+			return old;
+		}
 		C newc = createCourse();
-		newc = initCourse(id,newc,this,option);//必需先经过初始化再入缓存
+		newc = initCourse(key,newc,this,option);//必需先经过初始化再入缓存
+		beginLiteral(newc,1);
+		if(old!=null && old.getStatus()<=LOCKED) {
+			setCurrCourse(newc);
+			//newc.next = old.next;
+			return newc;
+		} 
 		if(old==null){
 			setCurrCourse(newc);
-			if(isFork==true||id.equals("")) {
+			if(isFork==true||key.equals("")) {
 				newc.isFork = true;
 				return newc;
 			}
 			setCourse(newc.id, newc);	
 			return newc;
 		}
-		if(old!=null && old.getStatus()<=LOCKED) {
-			setCurrCourse(newc);
-			//newc.next = old.next;
-			return newc;
-		} 
-		return old;
+		return null;
 	}
 	
 
@@ -231,7 +234,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	
 	
 	/**
-	 * 创建一个DSL头部，通过该方法可以链式执行GET ADD PUT REMVE等方法
+	 * 创建一个DSL头部，通过该方法可以链式执行GET ADD PUT REMVE等方法。
+	 * 该方法创建的course并不会缓存，通常创建的course可能是多变的，即动态DSL。
+	 * 每次创建或修改DSL都是一个全新的course。
 	 * @return 返回一个根节点
 	 */
 	public C Master() {
@@ -239,82 +244,85 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 如果缓存的course不存在则执行DSL，否则返回已缓存的course
-	 * @param id
+	 * 如果缓存的course不存在则执行DSL，否则返回已缓存的course,
+	 * 而不是重复执行DSL的创建，如：{@link #Master(String)}
+	 * @param key
 	 * @param f
 	 * @return
 	 */
-	public C Master(String id,DSLFunction f) {
-		if(getCourse(id)==null)
-			f.build(id);
-		return getCourse(id);
+	public C Master(String key,DSLFunction f) {
+		if(getCourse(key)==null)
+			f.build(key);
+		return getCourse(key);
 	}
 	
 	
 	/**
 	 * 创建一个DSL头部，通过该方法可以链式执行GET ADD PUT REMVE等方法。
-	 * 
-	 * @param id 这个course的标识，不能包含空格
+	 * 通过该方法创建的course是无锁的，如果你确定多线程环境下仅仅是重复执行一条相同
+	 * 的DSL创建代码，那么此course是线程安全的，因为器值和结果存于本地线程中；
+	 * 如果不能保证这一点，那么你的course应当使用动态DSL来对待，不应该使用该方法创建
+	 * @param key 这个course的标识，不能包含空格
 	 * @return
 	 */
-	public C Master(String id) {
+	public C Master(String key) {
 		String reg = "^[\\S]*$";
-		if(id!=null && id.matches(reg))
-			return addCourse(id,false,UNLOCKED);
+		if(key!=null && key.matches(reg))
+			return addCourse(key,false,UNLOCKED);
 		else 
-			throw ExceptionFactory.wrapException("Course id should not be empty or contains space", new CourseIdException(id));
+			throw ExceptionFactory.wrapException("Course id should not be empty or contains space", new CourseIdException(key));
 	}
 	
 	/**
 	 * 带缓存的FORK，
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
 	 * 则进行分支，否则不进行分支，并且按照Master(id)模式进行
-	 * @param id
+	 * @param key
 	 * @return
 	 */
-	public C BranchM(String id) {
-		C ori = getCourse(id);
+	public C BranchM(String key) {
+		C ori = getCourse(key);
 		if(ori!=null) {
-			C fork = addCourse(id+"_FM_"+System.currentTimeMillis(),false,UNLOCKED);
+			C fork = addCourse(key+"_FM_"+System.currentTimeMillis(),false,UNLOCKED);
 			fork.isForkm = true;
 			cross(ori,fork);
 			return fork;
 		}else {
-			return addCourse(id+"_NFM_"+System.currentTimeMillis(),false,UNLOCKED);
+			return addCourse(key+"_NFM_"+System.currentTimeMillis(),false,UNLOCKED);
 		}
 	}
 	
 	/**
 	 * 根据sharespace中的一个course创建分支引用，如果对应id的course存在，
 	 * 则进行分支，否则不进行分支，并且按照Master()模式进行
-	 * @param id
+	 * @param key
 	 * @return
 	 */
-	public C Branch(String id) {
-		C ori = getCourse(id);
+	public C Branch(String key) {
+		C ori = getCourse(key);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
+			C fork = addCourse(key+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
 			cross(ori,fork);
 			return fork;
 		}else {
-			return addCourse(id+"_NF_"+System.currentTimeMillis(),true,UNLOCKED);
+			return addCourse(key+"_NF_"+System.currentTimeMillis(),true,UNLOCKED);
 		}		
 	}
 	
 	/**
 	 * 内部使用，如果master已存在，则返回新建fork，否则返回新建master
-	 * @param id
+	 * @param key
 	 * @param var
 	 * @return
 	 */
-	private C Branch(String id,int var) {
-		C ori = getCourse(id);
+	private C Branch(String key,int var) {
+		C ori = getCourse(key);
 		if(ori!=null) {
-			C fork = addCourse(id+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
+			C fork = addCourse(key+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
 			cross(ori,fork);
 			return fork;
 		}else {
-			C master = addCourse(id,true,UNLOCKED);
+			C master = addCourse(key,true,UNLOCKED);
 			return master;
 		}		
 	}
@@ -330,22 +338,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 接收course的回调参数，根据course的status执行对应的操作
-	 */
-	@Override
-	public Object receive(C c,int option) {
-		switch(option) {
-		case rebase:return Branch(c.getId(),1);
-		case UNLOCKED:unLock(c);break;
-		case LOCKED:lock(c);break;
-		case END:END(c);break;
-		}
-		return option;
-	}
-
-	
-	/**
-	 * 执行当前的一条course语句
+	 * 执行最后操作的course语句
 	 * @return
 	 */
 	public T execute() {
@@ -376,7 +369,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 	
 	/**
-	 * 提交当前的一条course语句
+	 * 提交最后操作的course语句
 	 * @return
 	 */
 	public int commit() {
@@ -388,7 +381,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return repository.commit(course);
 	}
 
-	
+	/**
+	 * 异步执行最后操作的course语句
+	 */
 	@Override
 	public T executeFuture() {
 		T t = null;
@@ -399,6 +394,9 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		return t;
 	}
 
+	/**
+	 * 异步提交最后操作的course语句
+	 */
 	@Override
 	public int commitFuture() {
 		int t = 0;
@@ -408,34 +406,60 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		}
 		return t;
 	}
+	
+	/**
+	 * 接收course的回调参数，根据course的status执行对应的操作
+	 */
+	@Override
+	public C receive(C c,int option) {
+		switch(option) {
+		case ready:ready(c);break;
+		case rebase:return Branch(c.getId(),1);
+		case UNLOCKED:unLock(c);break;
+		case LOCKED:lock(c);break;
+		case END:end(c);break;
+		}
+		return null;
+	}
 
 	/**
-	 * 将当前proxy对象移交仓储，仓储根据不用的proxy实例和泛化执行对应的操作
-	 * @return
+	 * 对一个course进行上锁，上锁后该course不可追加节点和重新创建，
+	 * 任何重新执行DSL的构造都将被创建为一个新的course并且不会缓存，
+	 * 在共享模式下，建议上锁保确保线程安全。
+	 * @param course
 	 */
-	public int push() {
-		return repository.fromProxy(this);
-	}
-	
 	public void lock(C course) {
 		synchronized (course) {
 			toEnd(course,LOCKED);
 		}
 	}
 	
+	/**
+	 * 解锁一个course，那么该course将回到共享状态，任何线程都可能修改其状态。
+	 * @param course
+	 */
 	public void unLock(C course) {
 		synchronized (course) {
 			toEnd(course,UNLOCKED);
 		}
 	}
 	
-	public void END(C course) {
+	/**
+	 * 将一个course标记为end状态，那么具有锁的作用并且包括value和result均无法被修改
+	 * @param course
+	 */
+	public void end(C course) {
 		synchronized (course) {
 			toEnd(course,END);
 		}
 	}
 	
+	public void ready(C course) {
+		//do nothing if extends by other
+	}
+	
 	private void toEnd(AbstractCourse course,int type) {
+		//对于非缓存的course只会是unlock，因为本地线程中lock或者end是无意义的
 		course = getCourse(course.id);
 		if(course!=null && course.type==CourseType.root) {
 			do {
@@ -452,6 +476,14 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		}				
 	}
 	
+	/**
+	 * 获取缓存中的一个course
+	 * @param key
+	 * @return
+	 */
+	public C $(String key) {
+		return getCourse(key);
+	}
 	
 	
 }
