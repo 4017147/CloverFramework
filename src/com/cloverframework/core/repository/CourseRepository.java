@@ -1,5 +1,6 @@
 package com.cloverframework.core.repository;
 
+import com.cloverframework.core.data.interfaces.Result;
 import com.cloverframework.core.dsl.AbstractCourse;
 import com.cloverframework.core.dsl.Action;
 import com.cloverframework.core.dsl.CourseProxy;
@@ -39,4 +40,8 @@ public class CourseRepository<T,C extends AbstractCourse> extends AbstractReposi
 		return super.commit(course, mode);
 	}
 
+	public Result<T> result(C course) {
+		return super.doResult(course, mode);
+	}
+	
 }

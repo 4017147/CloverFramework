@@ -52,20 +52,16 @@ public interface Callback extends Accessable,Constant{
 	}
 	
 	default public Object execute() {
-		return getThis().proxy.execute();
+		return getThis().proxy.receive(getThis().getRoot(), execute);
 	}
 	
-	default public Object executeFuture() {
-		return getThis().proxy.executeFuture();
+	default public void resultAsync() {
+		getThis().proxy.receive(getThis().getRoot(), async);
 	}
 	
 	
 	default public int commit() {
-		return getThis().proxy.commit();
-	}
-	
-	default public int commitFuture() {
-		return getThis().proxy.commitFuture();
+		return (Integer)(getThis().proxy.receive(getThis().getRoot(), commit));
 	}
 	
 }

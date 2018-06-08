@@ -80,7 +80,7 @@ public interface LiteralSetter extends Constant{
 	 * 则$()方法是必需出现在参数的第一位，以抹除之前无关的字面值。
 	 * @return null
 	 */
-	default public Object $() {
+	default public Object $$() {
 		if(getLiteral()!=null && getLiteral().size()>0)
 			getLiteral().clear();
 		return null;
@@ -98,7 +98,7 @@ public interface LiteralSetter extends Constant{
 	 * 需要多加留意。并且，在其他层面（如domainMatch、EntityFactory）会对该问题进行原则上的处理。
 	 * @return null
 	 */
-	default public Object $(Literal ...lt) {
+	default public Object $$(Literal ...lt) {
 		setLiteralModel(LAMBDA, 1);
 		for(Literal li:lt) {
 			li.literal();

@@ -7,7 +7,7 @@ import java.util.List;
  * @author yl
  *
  */
-public interface CourseValues {
+public interface Values {
 	boolean[] getBoolean();
 	byte[] getByte();
 	short[] getShort();

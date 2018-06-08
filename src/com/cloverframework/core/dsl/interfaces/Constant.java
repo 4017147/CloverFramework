@@ -46,14 +46,11 @@ public interface Constant {
 	/**更新*/
 	int commit 			= 12;
 	
-	/**无阻塞查询*/
-	int executeFuture 	= 13;
-	
-	/**无阻塞更新*/
-	int commitFuture 	= 14;
+	/**async*/
+	int async 			= 13;
 	
 	/**重建分支*/
-	int rebase 			= 15;
+	int rebase 			= 14;
 	
 	//-----------------------domainScope--------------------------
 	

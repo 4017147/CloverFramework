@@ -1,6 +1,7 @@
 package com.cloverframework.core.repository.interfaces;
 
-import com.cloverframework.core.data.interfaces.DataSwap;
+import com.cloverframework.core.data.interfaces.Result;
+import com.cloverframework.core.data.interfaces.Swaper;
 
 /**
 * @author yl  
@@ -8,6 +9,7 @@ import com.cloverframework.core.data.interfaces.DataSwap;
 *    
 */
 public interface CourseMode<T> {
-	T query(DataSwap<T> swaper);
-	int update(DataSwap<T> swaper);
+	T query(Swaper<T> swaper);
+	int update(Swaper<T> swaper);
+	Result<T> result(Swaper<T> swaper);
 }

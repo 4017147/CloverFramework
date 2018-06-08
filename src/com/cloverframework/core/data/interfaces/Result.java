@@ -9,7 +9,7 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface CourseResult<T> {
+public interface Result<T> {
 	List<T> getList();
 	List<Object> getObjectList();
 	Map<String, Object> getMap();

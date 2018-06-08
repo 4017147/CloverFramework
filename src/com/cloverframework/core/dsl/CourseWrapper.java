@@ -4,22 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.cloverframework.core.data.interfaces.CourseResult;
-import com.cloverframework.core.data.interfaces.CourseValues;
-import com.cloverframework.core.data.interfaces.CourseWrapper;
+import com.cloverframework.core.data.interfaces.Result;
+import com.cloverframework.core.data.interfaces.Values;
+import com.cloverframework.core.data.interfaces.Wrapper;
+
+/**
+ * 此类对course进行了包装，框架之外可以通过该类对course进行合法访问
+ * @author yl
+ *
+ */
 @SuppressWarnings("rawtypes")
-public class Wrapper implements CourseWrapper{
+public class CourseWrapper implements Wrapper{
 	
 	private AbstractCourse course;
 	private AbstractCourse head;
-
-//	public Wrapper(Course course) {
-//		super();
-//		this.course = course;
-//		this.head = course;
-//	}
 	
-	public Wrapper(AbstractCourse course) {
+	public CourseWrapper(AbstractCourse course) {
 		super();
 		this.course = course;
 		this.head = course;
@@ -41,25 +41,25 @@ public class Wrapper implements CourseWrapper{
 	}
 
 	@Override
-	public CourseWrapper previous() {
-		return new Wrapper(course.previous);
+	public Wrapper previous() {
+		return new CourseWrapper(course.previous);
 	}
 
 	@Override
-	public CourseWrapper next() {
-		return new Wrapper(course.next);
+	public Wrapper next() {
+		return new CourseWrapper(course.next);
 	}
 
 	@Override
-	public CourseWrapper parent() {
-		return new Wrapper(course.parent);
+	public Wrapper parent() {
+		return new CourseWrapper(course.parent);
 	}
 
 	@Override
-	public List<CourseWrapper> sons() {
-		List<CourseWrapper> list = new ArrayList<CourseWrapper>();
+	public List<Wrapper> sons() {
+		List<Wrapper> list = new ArrayList<Wrapper>();
 		for(AbstractCourse c:(List<AbstractCourse>)course.sons) {
-			list.add(new Wrapper(c));
+			list.add(new CourseWrapper(c));
 		}
 		return list;
 	}
@@ -80,7 +80,7 @@ public class Wrapper implements CourseWrapper{
 	}
 
 	@Override
-	public CourseValues value() {
+	public Values value() {
 		return course.getValues();
 	}
 
@@ -94,10 +94,17 @@ public class Wrapper implements CourseWrapper{
 		return course.next==null?false:true;
 	}
 
+	/**
+	 * 设置course的result为当前result，返回原来的result
+	 */
 	@Override
-	public CourseResult result(CourseResult result) {
-		// TODO Auto-generated method stub
-		return null;
+	public Result getResult() {
+		return head.getResult();
+	}
+
+	@Override
+	public void setResult(Result result) {
+		head.setResult(result);
 	}
 
 

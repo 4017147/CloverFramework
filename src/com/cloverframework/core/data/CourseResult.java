@@ -3,15 +3,22 @@ package com.cloverframework.core.data;
 import java.util.List;
 import java.util.Map;
 
-import com.cloverframework.core.data.interfaces.CourseResult;
+import com.cloverframework.core.data.interfaces.Result;
 
-public class Result<T> implements CourseResult<T>{
+public class CourseResult<T> implements Result<T>{
 	private final List<T> list;
 	private final List<Object> objectList;
 	private final Map<String, Object> map;
 	private final Object value;
 	
-	public Result(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
+	/**
+	 * 创建一个返回结果对象，其中value可以是基本类型，在getResult可获取相应的类型
+	 * @param list
+	 * @param objectList
+	 * @param map
+	 * @param value
+	 */
+	public CourseResult(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
 		super();
 		this.list = list;
 		this.objectList = objectList;

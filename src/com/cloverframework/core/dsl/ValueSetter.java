@@ -1,7 +1,7 @@
 package com.cloverframework.core.dsl;
 
-import com.cloverframework.core.data.Values;
-import com.cloverframework.core.data.interfaces.CourseValues;
+import com.cloverframework.core.data.CourseValues;
+import com.cloverframework.core.data.interfaces.Values;
 import com.cloverframework.core.dsl.interfaces.Accessable;
 import com.cloverframework.core.exceptions.ArgsCountNotMatch;
 import com.cloverframework.core.exceptions.ExceptionFactory;
@@ -14,7 +14,7 @@ import com.cloverframework.core.exceptions.ExceptionFactory;
 public interface ValueSetter extends Accessable{
 
 
-	default public CourseValues getValues() {
+	default public Values getValues() {
 		return getThis().values.get();
 	}
 	
@@ -55,7 +55,7 @@ public interface ValueSetter extends Accessable{
 				}else if(!AbstractCourse.ifCountValues && count<1) {
 					throw new ArgsCountNotMatch(c.fields.size(),count);
 				}
-				setValues(new Values(values));
+				setValues(new CourseValues(values));
 			} catch (ArgsCountNotMatch e) {
 				throw ExceptionFactory.wrapException("Error setting values in "+c.id+",cause：", e);
 			}
@@ -67,7 +67,7 @@ public interface ValueSetter extends Accessable{
 	 * @param values
 	 * @return
 	 */
-	default public AbstractCourse setValues(CourseValues values) {
+	default public AbstractCourse setValues(Values values) {
 		getThis().values.remove();
 		getThis().values.set(values);
 		return getThis();
@@ -75,42 +75,42 @@ public interface ValueSetter extends Accessable{
 	
 	
 	default public AbstractCourse setBoolean(boolean... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
 	default public AbstractCourse setByte(byte... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
 	default public AbstractCourse setShort(short... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
 	default public AbstractCourse setInt(int... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
 	default public AbstractCourse setLong(long... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 
 	default public AbstractCourse setFloat(float... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 
 	default public AbstractCourse setDouble(double... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
 	default public AbstractCourse setString(String... val) {
-		getThis().setValues(new Values(val));
+		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	

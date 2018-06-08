@@ -4,53 +4,53 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.cloverframework.core.data.Result;
-import com.cloverframework.core.data.interfaces.CourseResult;
-import com.cloverframework.core.data.interfaces.CourseWrapper;
+import com.cloverframework.core.data.CourseResult;
+import com.cloverframework.core.data.interfaces.Result;
+import com.cloverframework.core.data.interfaces.Wrapper;
 import com.cloverframework.core.data.interfaces.DataSet;
-import com.cloverframework.core.data.interfaces.DataSwap;
+import com.cloverframework.core.data.interfaces.Swaper;
 import com.cloverframework.core.dsl.AbstractCourse;
-import com.cloverframework.core.dsl.Wrapper;
+import com.cloverframework.core.dsl.CourseWrapper;
 
-@SuppressWarnings("unchecked")
-public class DataSwaper<T> implements DataSwap<T>,Iterable<CourseWrapper>{
-	private CourseWrapper wrapper;
+
+public class DataSwaper<T> implements Swaper<T>,Iterable<Wrapper>{
+	private Wrapper wrapper;
 	
 	
 	
 	public DataSwaper(AbstractCourse course) {
 		super();
-		this.wrapper = new Wrapper(course);
+		this.wrapper = new CourseWrapper(course);
 	}
 	
-	public DataSwaper(CourseWrapper wrapper) {
+	public DataSwaper(Wrapper wrapper) {
 		super();
 		this.wrapper = wrapper;
 	}
 
 	@Override
 	public void setResult(DataSet<T> data) {
-		wrapper.result(new Result<T>(data.toList(),data.toObjectList(),data.toMap(),data.value()));
+		wrapper.setResult(new CourseResult<T>(data.toList(),data.toObjectList(),data.toMap(),data.value()));
 		
 	}
 
 	@Override
 	public void setResult(List<T> list, List<Object> objectList, Map<String, Object> map, Object value) {
-		wrapper.result(new Result<T>(list, objectList, map, value));
+		wrapper.setResult(new CourseResult<T>(list, objectList, map, value));
 	}
 
 	@Override
-	public void setResult(CourseResult<T> result) {
-		wrapper.result(result);
+	public void setResult(Result<T> result) {
+		wrapper.setResult(result);
 	}
 
 	@Override
-	public Iterator<CourseWrapper> iterator() {
+	public Iterator<Wrapper> iterator() {
 		return wrapper;
 	}
 
 	@Override
-	public CourseWrapper open() {
+	public Wrapper open() {
 		return wrapper;
 	}
 

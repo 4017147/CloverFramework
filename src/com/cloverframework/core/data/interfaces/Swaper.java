@@ -1,6 +1,5 @@
 package com.cloverframework.core.data.interfaces;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,10 +9,10 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface DataSwap<T> extends Iterable<CourseWrapper>{
-	CourseWrapper open();
+public interface Swaper<T> extends Iterable<Wrapper>{
+	Wrapper open();
 	void setResult(DataSet<T> data);
 	void setResult(List<T> list, List<Object> objectList, Map<String, Object> map, Object value);
-	void setResult(CourseResult<T> result);
+	void setResult(Result<T> result);
 	void close();
 }

@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.cloverframework.core.data.interfaces.CourseResult;
-import com.cloverframework.core.data.interfaces.CourseValues;
+import com.cloverframework.core.data.interfaces.Result;
+import com.cloverframework.core.data.interfaces.Values;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.Course.Condition;
 import com.cloverframework.core.dsl.interfaces.CourseInterface;
@@ -83,14 +83,14 @@ public abstract class AbstractCourse implements CourseInterface{
 	List<Object> entities;
 	
 	/**参数值,该值线程独立*/
-	ThreadLocal<CourseValues> values = new ThreadLocal<CourseValues>();
+	ThreadLocal<Values> values = new ThreadLocal<Values>();
 	
 	/**
 	 * 返回数据接口
 	 */
-	ThreadLocal<CourseResult> result;
+	ThreadLocal<Result<?>> result;
 	
-	ThreadLocal<CompletableFuture<CourseResult>> futureResult;
+	ThreadLocal<CompletableFuture<Result<?>>> asyncResult;
 
 	/**json输出工具*/
 	static JsonUtil jutil;
@@ -376,7 +376,7 @@ public abstract class AbstractCourse implements CourseInterface{
 		Optional<List<Object>> entities = Optional.ofNullable(this.entities);
 		Optional<String> optype = Optional.ofNullable(this.optype);
 		//assert this.values.get()==null;
-		Optional<CourseValues> values = Optional.ofNullable(this.values.get());
+		Optional<Values> values = Optional.ofNullable(this.values.get());
 		Optional<AbstractCourse> next = Optional.ofNullable(this.next);
 		StringBuilder builder = new StringBuilder(56);
 		String nextline = "\n";
@@ -536,12 +536,12 @@ public abstract class AbstractCourse implements CourseInterface{
 	
 	void createResult(){
 		if(result==null && type == CourseType.root) 
-			result = new ThreadLocal<CourseResult>();
+			result = new ThreadLocal<Result<?>>();
 	}
 	
-	void createFutureResult(){
+	void createAsyncResult(){
 		if(result==null && type == CourseType.root) 
-			futureResult = new ThreadLocal<CompletableFuture<CourseResult>>();
+			asyncResult = new ThreadLocal<CompletableFuture<Result<?>>>();
 	}
 	
 
@@ -551,10 +551,17 @@ public abstract class AbstractCourse implements CourseInterface{
 	}
 
 	public String getNextType() {
-		if(next!=null)
-			return next.type;
-		return "";
+		return next!=null?next.type:"";
 	}
+	
+	public AbstractCourse getRoot() {
+		AbstractCourse root = this;
+		while(root.previous!=null) {
+			root = root.previous;
+		}
+		return root;
+	}
+	
 
 	public String getOptype() {
 		return optype;

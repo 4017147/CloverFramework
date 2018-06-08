@@ -9,18 +9,19 @@ import java.util.Set;
  *
  */
 
-import com.cloverframework.core.data.Result;
-public interface CourseWrapper extends Iterator<CourseWrapper>{
+import com.cloverframework.core.data.CourseResult;
+public interface Wrapper extends Iterator<Wrapper>{
 	String id();
 	String type();
 	String opType();
-	CourseWrapper previous();
-	CourseWrapper parent();
-	List<CourseWrapper> sons();
+	Wrapper previous();
+	Wrapper parent();
+	List<Wrapper> sons();
 	List<String> fields();
 	Set<String> types();
 	List<Object> entities();
-	CourseValues value();
+	Values value();
 	String json();
-	CourseResult result(CourseResult result);
+	Result getResult();
+	void setResult(Result result);
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.cloverframework.core.data.interfaces.CourseResult;
+import com.cloverframework.core.data.interfaces.Result;
 import com.cloverframework.core.domain.DomainService;
 import com.cloverframework.core.dsl.interfaces.CourseOperation;
 import com.cloverframework.core.dsl.interfaces.CourseProxyInterface;
@@ -107,21 +107,57 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * @param t
 	 * @return
 	 */
-	private <K> CompletableFuture<CourseResult> applyFutureResult(C course,K k){
+	private CompletableFuture<Result<?>> applyAsyncResult(C course){
 		return CompletableFuture.supplyAsync(()->{
-			setObject(k,executeGeneral(course));
-			return course.getResult();
+			return repository.result(course);
 		});
 	}
 
 	/**
-	 * 闭包变量final赋值
-	 * @param <K>
-	 * @param obj
-	 * @param t
+	 * 内部使用，如果master已存在，则返回新建fork，否则返回新建master
+	 * @param key
+	 * @param var
+	 * @return
 	 */
-	private <K> void setObject(K k,Object obj) {
-		k = (K) obj;
+	private C Branch(String key,int var) {
+		C ori = getCourse(key);
+		if(ori!=null) {
+			C fork = addCourse(key+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
+			cross(ori,fork);
+			return fork;
+		}else {
+			C master = addCourse(key,true,UNLOCKED);
+			return master;
+		}		
+	}
+
+	private void toEnd(AbstractCourse course,int type) {
+		//对于非缓存的course只会是unlock，因为本地线程中lock或者end是无意义的
+		course = getCourse(course.id);
+		if(course!=null && course.type==CourseType.root) {
+			do {
+				if(course.getStatus()!=type) {
+					course.setStatus(type);
+				}
+				if(course.sons!=null)
+					for(AbstractCourse c:course.sons) {
+						c.setStatus(type);
+					}				
+				course = course.next;
+			}
+			while (course.next!=null);			
+		}				
+	}
+
+	/**
+	 * 将branch和master关联
+	 * @param id
+	 * @param course
+	 * @return
+	 */
+	private C cross(C ori,C fork) {
+		fork.origin = ori.next;
+		return fork;
 	}
 
 	@Override
@@ -309,71 +345,22 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		}		
 	}
 	
-	/**
-	 * 内部使用，如果master已存在，则返回新建fork，否则返回新建master
-	 * @param key
-	 * @param var
-	 * @return
-	 */
-	private C Branch(String key,int var) {
-		C ori = getCourse(key);
-		if(ori!=null) {
-			C fork = addCourse(key+"_F_"+System.currentTimeMillis(),true,UNLOCKED);
-			cross(ori,fork);
-			return fork;
-		}else {
-			C master = addCourse(key,true,UNLOCKED);
-			return master;
-		}		
-	}
-	/**
-	 * 将branch和master关联
-	 * @param id
-	 * @param course
-	 * @return
-	 */
-	public C cross(C ori,C fork) {
-		fork.origin = ori.next;
-		return fork;
-	}
-	
-	/**
-	 * 执行最后操作的course语句
-	 * @return
-	 */
-	public T execute() {
-		return execute(getCurrCourse());
-	}
-	
 	@Override
 	public T execute(C course) {
 		return repository.query(course);
 	}
 	
-	@Override
 	public Object execute(String id) {
 		C course = getCourse(id);
 		return executeGeneral(course);
 	}
 
 	/**
-	 * 通用执行方法
-	 * @param course
+	 * 执行最后操作的course语句
 	 * @return
 	 */
-	public Object executeGeneral(C course) {
-		if(course!=null && course.next.type==CourseType.get) 
-			return execute(course);
-		else
-			return commit(course);
-	}
-	
-	/**
-	 * 提交最后操作的course语句
-	 * @return
-	 */
-	public int commit() {
-		return commit(getCurrCourse());
+	public T execute() {
+		return execute(getCurrCourse());
 	}
 
 	@Override
@@ -382,42 +369,61 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	}
 
 	/**
-	 * 异步执行最后操作的course语句
+	 * 提交最后操作的course语句
+	 * @return
 	 */
-	@Override
-	public T executeFuture() {
-		T t = null;
-		C course = getCurrCourse();
-		if(course.getFutureResult()==null) {
-			course.setResult(applyFutureResult(course,t));
-		}
-		return t;
+	public int commit() {
+		return commit(getCurrCourse());
+	}
+
+	public int commit(String key) {
+		return commit(getCourse(key));
+	}
+	
+	/**
+	 * 通用执行方法
+	 * @param course
+	 * @return
+	 */
+	public Object executeGeneral(C course) {
+		if(course!=null && course.getNextType()==CourseType.get) 
+			return execute(course);
+		else
+			return commit(course);
 	}
 
 	/**
-	 * 异步提交最后操作的course语句
+	 * 异步执行最后操作的course语句
 	 */
 	@Override
-	public int commitFuture() {
-		int t = 0;
-		C course = getCurrCourse();
-		if(course.getFutureResult()==null) {
-			course.setResult(applyFutureResult(course,t));
+	public void resultAsync(C course) {
+		if(course.getAsyncResult()==null) {
+			course.setResult(applyAsyncResult(course));
 		}
-		return t;
+	}
+	
+	public void resultAsync() {
+		resultAsync(getCurrCourse());
+	}
+	
+	public void resultAsync(String key) {
+		resultAsync(getCourse(key));
 	}
 	
 	/**
 	 * 接收course的回调参数，根据course的status执行对应的操作
 	 */
 	@Override
-	public C receive(C c,int option) {
+	public Object receive(C c,int option) {
 		switch(option) {
-		case ready:ready(c);break;
-		case rebase:return Branch(c.getId(),1);
-		case UNLOCKED:unLock(c);break;
-		case LOCKED:lock(c);break;
-		case END:end(c);break;
+		case ready		:ready(c);		break;
+		case async		:resultAsync();	break;
+		case UNLOCKED	:unLock(c);		break;
+		case LOCKED		:lock(c);		break;
+		case END		:end(c);		break;
+		case commit		:return commit(c);
+		case execute	:return execute(c);
+		case rebase		:return Branch(c.getId(),1);
 		}
 		return null;
 	}
@@ -456,24 +462,6 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	
 	public void ready(C course) {
 		//do nothing if extends by other
-	}
-	
-	private void toEnd(AbstractCourse course,int type) {
-		//对于非缓存的course只会是unlock，因为本地线程中lock或者end是无意义的
-		course = getCourse(course.id);
-		if(course!=null && course.type==CourseType.root) {
-			do {
-				if(course.getStatus()!=type) {
-					course.setStatus(type);
-				}
-				if(course.sons!=null)
-					for(AbstractCourse c:course.sons) {
-						c.setStatus(type);
-					}				
-				course = course.next;
-			}
-			while (course.next!=null);			
-		}				
 	}
 	
 	/**

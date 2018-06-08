@@ -15,24 +15,17 @@ public interface CourseProxyInterface<T,C extends AbstractCourse> extends SonCre
 	
 	void setDomainService(DomainService domainService);
 	
-	C receive(C c,int option);
+	Object receive(C c,int option);
 	
 	void setRepository(CourseRepository<T,C> repository);
 	
 	C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,int status);
 	
-	T execute();
-	
 	T execute(C course);
 	
-	T executeFuture();
-	
-	Object execute(String id);
-	
-	int commit();
+	void resultAsync(C course);
 	
 	int commit(C course);
 	
-	int commitFuture();
 	
 }

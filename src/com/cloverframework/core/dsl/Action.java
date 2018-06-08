@@ -122,7 +122,9 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	}
 
 	
-	
+	/**
+	 * 从缓存中获取key对应的course，优先从共享区中获取
+	 */
 	@Override
 	public C $(String key) {
 		C course = super.$(key);
@@ -134,6 +136,12 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 		return null;
 	}
 
+	/**
+	 * 根据给定的范围从范围内获取key对应的course
+	 * @param key
+	 * @param scope
+	 * @return
+	 */
 	public C $(String key,int scope) {
 		if(scope==domain)
 			return super.$(key);
@@ -142,11 +150,17 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 		return null;
 	}
 	
+	/**
+	 * 从工作区中获取key对应的course,如果没有给定head则返回第一个key对应的course
+	 * @param key
+	 * @param head
+	 * @return
+	 */
 	public C $(String key,String head) {
 		for(C c:workSpace.get()) {
-			if(head==null&&c.id.equals(key))
+			if(c.id.equals(key) && head==null)
 				return c;
-			if(c.id.equals(key)&&c.head.equals(head))
+			if(c.id.equals(key) && c.head.equals(head))
 				return c;		
 		}
 		return null;

@@ -26,7 +26,7 @@ public interface SonCreator extends LiteralSetter{
 			last = last.next;
 		}
 		R son = constructor.apply(last,true,obj);
-		$();
+		$$();
 		return son;
 	}
 
@@ -35,7 +35,7 @@ public interface SonCreator extends LiteralSetter{
 	 * @param obj
 	 * @return
 	 */
-	default Condition $(Object...obj){
+	default Condition $$(Object...obj){
 		//TODO 当操作类型eq中作为子节点如何处置其中的entity等信息
 		return create(Condition::new,true,obj);
 	}

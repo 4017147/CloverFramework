@@ -41,12 +41,12 @@ public class CourseProxyTest implements DomainService{
 	 * 方法字面值获取
 	 * 非节点范围的方法字面值不获取
 	 */
-	//@Test
+	@Test
 	public void test1() {
 		Demo de = new Demo();
 		de.getF10();de.getF9();
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this);
-		cp.Master("a").get(cp.$(),
+		cp.Master("a").get(cp.$$(),
 				demo.getF1(),
 				demo.getF2(),
 				demo.getF3(),
@@ -54,7 +54,7 @@ public class CourseProxyTest implements DomainService{
 						demo.getF5(),
 						demo.getF6()).and(demo.getF5());
 		
-		Get get = cp.Master("b").get(cp.$(),
+		Get get = cp.Master("b").get(cp.$$(),
 				demo.getF1(),
 				demo.getF2(),
 				demo.getF3(),
@@ -70,15 +70,15 @@ public class CourseProxyTest implements DomainService{
 	 * 内部类
 	 * 实体方法+实体对象+字典
 	 */
-	//@Test
+	@Test
 	public void test2() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
-			Master("a").get($(),
+			Master("a").get($$(),
 					demo.getF1(),
 					demo.getF2(),
 					demo,demo,
 					Demo_D.f3,
-					Demo_D.f4).by($(),
+					Demo_D.f4).by($$(),
 							demo.getF1(),
 							demo.getF2(),
 							demo,demo,//
@@ -95,11 +95,11 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * toJsonString测试
 	 */
-	//@Test
+	@Test
 	public void test3() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b1111").get(
-					$(demo::getF5,demo::getF6),
+					$$(demo::getF5,demo::getF6),
 					Demo_D.f1,
 					Demo_D.f2,
 					demo.getF3(),
@@ -118,16 +118,16 @@ public class CourseProxyTest implements DomainService{
 	 * 实体方法+实体对象+字典+lambda
 	 * 三元表达式
 	 */
-	//@Test
+	@Test
 	public void test4() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("b").get(
-					$(demo::getF5,demo::getF6,demo::getF9),
+					$$(demo::getF5,demo::getF6,demo::getF9),
 					Demo_D.f1,//顺序
 					demo.getF7(),
 					demo.getF8(),
-					$(demo!=null?demo::getF4:demo::getF3),
-					$(demo==null?demo::getF4:demo::getF3),
+					$$(demo!=null?demo::getF4:demo::getF3),
+					$$(demo==null?demo::getF4:demo::getF3),
 					te(demo.getF5()==null?demo.getF3():demo.getF4()),
 					te(demo.getF5()!=null?demo.getF3():demo.getF4()),
 					Demo_D.f2,
@@ -143,7 +143,7 @@ public class CourseProxyTest implements DomainService{
 	 * sharespace区缓存测试
 	 * 只缓存生产的第一个DSL
 	 */
-	//@Test
+	@Test
 	public void test5() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a").get(Demo_D.f2);
@@ -160,7 +160,7 @@ public class CourseProxyTest implements DomainService{
 	 * FROK()不缓存分支
 	 * FORKM()存入sharespace
 	 */
-	//@Test
+	@Test
 	public void test6() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a").get(Demo_D.f1,Demo_D.f2).END();
@@ -174,7 +174,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * FORK模式测试
 	 */
-	//@Test
+	@Test
 	public void test7() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).END();
@@ -208,7 +208,7 @@ public class CourseProxyTest implements DomainService{
 	 * 首个参数用来开启FORK模式，参数不匹配不开启
 	 * 节点类型不匹配则关闭该节点和后续节点的FORK模式
 	 */
-	//@Test
+	@Test
 	public void test8() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			//Master("a").get(Demo_D.f1,Demo_D.f2,Demo_D.f3,Demo_D.f4).by(Demo_D.f10).END();
@@ -227,14 +227,14 @@ public class CourseProxyTest implements DomainService{
 	 * 子节点测试
 	 * 子节点应当包含在父节点内
 	 */
-	//@Test
+	@Test
 	public void test9() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
 			.get(Demo_D.f1)
 			.by(Demo_D.f10).eq(20)
-			.and($(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
-			.or(Demo_D.f3,$(Demo_D.f5).gt(33).or(Demo_D.f6).lt(11))//condition节点共存问题
+			.and($$(Demo_D.f9).eq(33).or(Demo_D.f8).le(11)).eq(10)
+			.or(Demo_D.f3,$$(Demo_D.f5).gt(33).or(Demo_D.f6).lt(11))//condition节点共存问题
 			.END();
 			
 		}}; 
@@ -246,7 +246,7 @@ public class CourseProxyTest implements DomainService{
 	 * 聚合子节点测试
 	 * 子节点应当包含在父节点内
 	 */
-	//@Test
+	@Test
 	public void test10() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
@@ -263,7 +263,7 @@ public class CourseProxyTest implements DomainService{
 	 * 参数值设置测试
 	 * 参数值应当正常输出，重复的设置应当覆盖之前的值
 	 */
-	//@Test
+	@Test
 	public void test11() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
@@ -281,12 +281,12 @@ public class CourseProxyTest implements DomainService{
 	 * 值参数（包括$取的值）只能为1个或者跟字段值个数相同，否则抛出异常
 	 * 当单个字段值时，参数不能为空但是个数没有限制
 	 */
-	//@Test
+	@Test
 	public void test12() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
 			.get(demo.getF5(),count(Demo_D.f2),Demo_D.f1,Demo_D.f4,count(Demo_D.f3))
-			.by(Demo_D.f10,Demo_D.f8).eq(40,$(demo.getF5())).and(demo.getF5()).eq(1,2)
+			.by(Demo_D.f10,Demo_D.f8).eq(40,$$(demo.getF5())).and(demo.getF5()).eq(1,2)
 			.END();
 		}}; 
 		println(cp.toString());
@@ -296,7 +296,7 @@ public class CourseProxyTest implements DomainService{
 	/**
 	 * 回调测试
 	 */
-	//@Test
+	@Test
 	public void test13() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			Master("a")
@@ -316,7 +316,7 @@ public class CourseProxyTest implements DomainService{
 	 * 如果DSL已存在则不执行当前DSL,
 	 * 测试10000次执行效率
 	 */
-	//@Test
+	@Test
 	public void test14() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			int k = 10;

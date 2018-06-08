@@ -34,7 +34,7 @@ public interface MainCreator extends LiteralSetter{
 				System.out.println("waiting");
 			}
 			//NOTE 
-			$();
+			$$();
 			setLevel(previous,old);
 			return old;
 		}else {
@@ -43,7 +43,7 @@ public interface MainCreator extends LiteralSetter{
 				//
 				System.out.println("isComletet");
 			}
-			$();
+			$$();
 			setLevel(previous,newo);
 			return newo;			
 		}
@@ -80,7 +80,7 @@ public interface MainCreator extends LiteralSetter{
 		 if(head!=null&&cur.head!=null&&cur.head.equals(head))
 			return previous;
 		 AbstractCourse next = cur.next;
-		 cur = previous.proxy.receive(cur, rebase);
+		 cur = (AbstractCourse) previous.proxy.receive(cur, rebase);
 		 while(next!=null&&next!=previous) {
 			 cur.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(cur, next.getArgs());
 			 cur = cur.next;

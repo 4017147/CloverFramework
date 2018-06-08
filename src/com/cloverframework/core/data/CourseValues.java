@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.cloverframework.core.data.interfaces.CourseValues;
+import com.cloverframework.core.data.interfaces.Values;
 import com.cloverframework.core.exceptions.ArgsCountNotMatch;
 
-public final class Values implements CourseValues{
+public final class CourseValues implements Values{
 	private  boolean[] v_boolean;
 	private  byte[] v_byte;
 	private  short[] v_short;
@@ -49,7 +49,7 @@ public final class Values implements CourseValues{
 	 * @param val
 	 * @throws ArgsCountNotMatch
 	 */
-	public Values(Object... val) throws ArgsCountNotMatch {
+	public CourseValues(Object... val) throws ArgsCountNotMatch {
 		objects = new ArrayList<>();
 		objects.addAll(Arrays.asList(val));			
 	}
@@ -57,50 +57,50 @@ public final class Values implements CourseValues{
 
 	
 	
-	public  Values(boolean... val) {
+	public  CourseValues(boolean... val) {
 		super();	
 		v_boolean = new boolean[val.length];
 		System.arraycopy(val, 0, v_boolean, 0, val.length);
 	}
 	
-	public  Values(byte... val) {
+	public  CourseValues(byte... val) {
 		super();	
 		v_byte = new byte[val.length];
 		System.arraycopy(val, 0, v_byte, 0, val.length);
 	}
 	
-	public  Values(short... val) {
+	public  CourseValues(short... val) {
 		super();	
 		v_short = new short[val.length];
 		System.arraycopy(val, 0, v_short, 0, val.length);
 	}
 	
 
-	public  Values(int... val) {
+	public  CourseValues(int... val) {
 		super();	
 		v_int = new int[val.length];
 		System.arraycopy(val, 0, v_int, 0, val.length);
 	}
 	
-	public  Values(long... val) {
+	public  CourseValues(long... val) {
 		super();	
 		v_long = new long[val.length];
 		System.arraycopy(val, 0, v_long, 0, val.length);
 	}
 	
-	public  Values(float... val) {
+	public  CourseValues(float... val) {
 		super();	
 		v_float = new float[val.length];
 		System.arraycopy(val, 0, v_float, 0, val.length);
 	}
 	
-	public  Values(double... val) {
+	public  CourseValues(double... val) {
 		super();	
 		v_double = new double[val.length];
 		System.arraycopy(val, 0, v_double, 0, val.length);
 	}
 	
-	public  Values(String... val) {
+	public  CourseValues(String... val) {
 		super();	
 		v_String = new String[val.length];
 		System.arraycopy(val, 0, v_String, 0, val.length);
