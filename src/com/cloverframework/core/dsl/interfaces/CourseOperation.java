@@ -7,7 +7,7 @@ import com.cloverframework.core.dsl.AbstractCourse;
  * 在实际中，根据需要，使用合适的集合和对应的操作，如并发、或者队列，
  * 子类和父类都必需实现该接口，避免courseProxy子类继承发生的委托影响。
  */
-public interface CourseOperation<C extends AbstractCourse> {
+public interface CourseOperation<C extends AbstractCourse<?>> {
 	
 	public C getCurrCourse();
 	

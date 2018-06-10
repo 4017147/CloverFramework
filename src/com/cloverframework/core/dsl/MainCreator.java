@@ -9,6 +9,7 @@ import com.cloverframework.core.util.lambda.CreateMain;
 /**
  * 主线节点创建器
  * @author yl
+ * @param <A>
  *
  */
 public interface MainCreator extends LiteralSetter{
@@ -18,13 +19,14 @@ public interface MainCreator extends LiteralSetter{
 	/**
 	 * 通过输入的节点创建函数表达式执行节点创建，如果相同位置的节点已存在
 	 * 则返回已有节点
+	 * @param <A>
 	 * @param old
 	 * @param constructor
 	 * @param previous
 	 * @param obj
 	 * @return
 	 */
-	default <O extends AbstractCourse> O create(O old,CreateMain<O> constructor,AbstractCourse previous,Object ...obj) {
+	default <O extends AbstractCourse<?>> O create(O old,CreateMain<O> constructor,AbstractCourse<?> previous,Object ...obj) {
 		if(previous.getStatus()<=END)
 			throw ExceptionFactory.wrapException("Course create error,id:"+previous.getId(), new CourseIsClosed(previous.getType()));	
 		
@@ -48,13 +50,14 @@ public interface MainCreator extends LiteralSetter{
 			return newo;			
 		}
 	}
+	
 
 	/**
 	 * 该方法尽量用在同一个方法中，因为栈长需要固定的数
 	 * @param previous
 	 * @param newc
 	 */
-	default void setLevel(AbstractCourse previous,AbstractCourse newc) {
+	default void setLevel(AbstractCourse<?> previous,AbstractCourse<?> newc) {
 		//int l = newc.level.get();
 		if(previous.type!=CourseType.root) 
 			beginLiteral(newc, level+2);
@@ -69,20 +72,21 @@ public interface MainCreator extends LiteralSetter{
 	 * @param <P>
 	 * @return
 	 */
-	 static AbstractCourse rebase(AbstractCourse previous) {
+	@Deprecated
+	 static AbstractCourse<?> rebase(AbstractCourse<?> previous) {
 		 if(previous.isSon==true)
 			 return previous;
-		 String head = ((CourseProxy)previous.proxy).getCourse(previous.id).head;//优化
-		 AbstractCourse cur = previous;
+		 String head = ((CourseProxy<?, ?>)previous.proxy).getCourse(previous.id).head;//优化
+		 AbstractCourse<?> cur = previous;
 		 while(cur.previous!=null&&cur.previous.isSon==false) {
 			 cur = cur.previous;
 		 }
 		 if(head!=null&&cur.head!=null&&cur.head.equals(head))
 			return previous;
-		 AbstractCourse next = cur.next;
-		 cur = (AbstractCourse) previous.proxy.receive(cur, rebase);
+		 AbstractCourse<?> next = cur.next;
+		 cur = (AbstractCourse<?>) previous.proxy.receive(cur, rebase);
 		 while(next!=null&&next!=previous) {
-			 cur.next = (AbstractCourse) CourseFactory.getConstructor(next.getType()).apply(cur, next.getArgs());
+			 cur.next = (AbstractCourse<?>) CourseFactory.getConstructor(next.getType()).apply(cur, null);
 			 cur = cur.next;
 			 next = next.next;
 		 }
@@ -95,7 +99,8 @@ public interface MainCreator extends LiteralSetter{
 	  * @param b
 	  * @return
 	  */
-	 static boolean equals(AbstractCourse a,AbstractCourse b) {
+	@Deprecated
+	 static boolean equals(AbstractCourse<?> a,AbstractCourse<?> b) {
 		 if(a==null||b==null)
 			 return false;
 		 while(a.previous!=null) {

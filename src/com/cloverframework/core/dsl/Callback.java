@@ -13,7 +13,8 @@ public interface Callback extends Accessable,Constant{
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default public void END() {
 		AbstractCourse c = getThis();
 		if(c.getStatus()>END) {
@@ -24,7 +25,7 @@ public interface Callback extends Accessable,Constant{
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default public void LOCK() {
 		AbstractCourse c = getThis();
 		if(c.getStatus()>LOCKED) {
@@ -35,7 +36,7 @@ public interface Callback extends Accessable,Constant{
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default public void UNLOCK() {
 		AbstractCourse c = getThis();
 		if(c.getStatus()<UNLOCKED) {
@@ -43,7 +44,7 @@ public interface Callback extends Accessable,Constant{
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	default public void READY() {
 		AbstractCourse c = getThis();
 		if(c.getStatus()>END) {

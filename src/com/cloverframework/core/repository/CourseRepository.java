@@ -12,7 +12,7 @@ import com.cloverframework.core.repository.interfaces.CourseMode;
 * 
 *    
 */
-public class CourseRepository<T,C extends AbstractCourse> extends AbstractRepository<T,C>{
+public class CourseRepository<T,C extends AbstractCourse<C>> extends AbstractRepository<T,C>{
 	//建议使用IOC容器注入
 	private CourseMode<T> mode;
 	public void setMode(CourseMode<T> mode) {

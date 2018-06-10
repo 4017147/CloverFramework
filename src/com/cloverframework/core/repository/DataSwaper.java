@@ -18,7 +18,7 @@ public class DataSwaper<T> implements Swaper<T>,Iterable<Wrapper>{
 	
 	
 	
-	public DataSwaper(AbstractCourse course) {
+	public DataSwaper(AbstractCourse<?> course) {
 		super();
 		this.wrapper = new CourseWrapper(course);
 	}

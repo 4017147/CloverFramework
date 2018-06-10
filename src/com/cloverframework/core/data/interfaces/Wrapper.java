@@ -8,8 +8,6 @@ import java.util.Set;
  * @author yl
  *
  */
-
-import com.cloverframework.core.data.CourseResult;
 public interface Wrapper extends Iterator<Wrapper>{
 	String id();
 	String type();
@@ -22,6 +20,6 @@ public interface Wrapper extends Iterator<Wrapper>{
 	List<Object> entities();
 	Values value();
 	String json();
-	Result getResult();
-	void setResult(Result result);
+	Result<?> getResult();
+	void setResult(Result<?> result);
 }

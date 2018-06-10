@@ -333,5 +333,20 @@ public class CourseProxyTest implements DomainService{
 		//println(cp.toString());
 	}
 	
+	@Test
+	public void test15() {
+		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
+			User user = new User();
+			Master("dynamic").get(Demo_D.f1,Demo_D.f4)
+				.te(user.getId()==1,
+					(t1)->{t1.by(Demo_D.f3).eq(1)
+						.te(user.getUsername()!=null,
+							(t2)->{t2.and(Demo_D.f1).eq(1);});},
+					(otherwise)->{otherwise.by(Demo_D.f4).eq(1);
+					});
+		}};
+		println(cp);
+	}
+	
 	
 }

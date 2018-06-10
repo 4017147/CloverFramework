@@ -8,7 +8,7 @@ import com.cloverframework.core.util.interfaces.CourseType;
  * 通过方法和标识的使用能够组装一个业务过程。
  * @author yl  
  */
-public final class Course extends AbstractCourse{
+public final class Course extends AbstractCourse<Course>{
 	 /*
 	  * 为了保证闭包性，此类和内部类的构造方法修饰为protected,类则是static final
 	  */
@@ -57,9 +57,9 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Get extends AbstractCourse{
+	public static final class Get extends AbstractCourse<Get>{
 		
-		public Get(AbstractCourse previous, Object... obj) {
+		public Get(AbstractCourse<?> previous, Object... obj) {
 			super(previous,CourseType.get, obj);
 		}
 		
@@ -84,11 +84,11 @@ public final class Course extends AbstractCourse{
 		 * @author yl
 		 *
 		 */
-	public static class Aggregate extends AbstractCourse{
+	public static class Aggregate extends AbstractCourse<Aggregate>{
 
 		//注意方法的签名，由于最后的参数类型是可变长的，可能会优先匹配到参数个数较少的那一个，
 		//所以当你定义了多个构造方法，最好通过用函数接口引用对应的方法签名避免该问题
-		public Aggregate(AbstractCourse previous,String type,boolean isSon,Object... obj) {
+		public Aggregate(AbstractCourse<?> previous,String type,boolean isSon,Object... obj) {
 			super(previous, type,isSon, obj);
 		}
 		
@@ -109,7 +109,7 @@ public final class Course extends AbstractCourse{
 	
 	public static final class Count extends Aggregate{
 
-		public Count(AbstractCourse parent, boolean isSon,Object... obj) {
+		public Count(AbstractCourse<?> parent, boolean isSon,Object... obj) {
 			super(parent, CourseType.count, true, obj);
 		}	
 	}
@@ -120,9 +120,9 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Add extends AbstractCourse{
+	public static final class Add extends AbstractCourse<Add>{
 
-		public Add(AbstractCourse previous,Object... obj){
+		public Add(AbstractCourse<?> previous,Object... obj){
 			super(previous,CourseType.add, obj);
 		}
 		
@@ -142,9 +142,9 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static final class Put extends AbstractCourse{
+	public static final class Put extends AbstractCourse<Put>{
 
-		public Put(AbstractCourse previous,Object... obj){
+		public Put(AbstractCourse<?> previous,Object... obj){
 			super(previous,CourseType.put, obj);
 		}
 		//-------------------------------------------------------
@@ -158,9 +158,9 @@ public final class Course extends AbstractCourse{
 	* @author yl
 	*
 	*/
-	public static final class Remove extends AbstractCourse{
+	public static final class Remove extends AbstractCourse<Remove>{
 
-		public Remove(AbstractCourse previous,Object... obj){
+		public Remove(AbstractCourse<?> previous,Object... obj){
 			super(previous,CourseType.remove, obj);
 		}
 		//-------------------------------------------------------
@@ -174,14 +174,14 @@ public final class Course extends AbstractCourse{
 	 * @author yl
 	 *
 	 */
-	public static class Condition extends AbstractCourse{
+	public static class Condition extends AbstractCourse<Condition>{
 		
 		/**
 		 * 用于创建主节点
 		 * @param previous
 		 * @param obj
 		 */
-		public Condition(AbstractCourse previous,Object... obj){
+		public Condition(AbstractCourse<?> previous,Object... obj){
 			super(previous,CourseType.con, obj);
 		}
 		
@@ -190,7 +190,7 @@ public final class Course extends AbstractCourse{
 		 * @param previous
 		 * @param obj
 		 */
-		public Condition(AbstractCourse previous,String type,Object... obj){
+		public Condition(AbstractCourse<?> previous,String type,Object... obj){
 			super(previous,type, obj);
 		}
 	
@@ -201,7 +201,7 @@ public final class Course extends AbstractCourse{
 		 * @param isSon
 		 * @param obj
 		 */
-		protected Condition(AbstractCourse parent,boolean isSon, Object... obj) {
+		protected Condition(AbstractCourse<?> parent,boolean isSon, Object... obj) {
 			super(parent, CourseType.con,isSon, obj);
 		}
 		
@@ -243,14 +243,14 @@ public final class Course extends AbstractCourse{
 	*/
 	public static final class By extends Condition{
 
-		public By(AbstractCourse previous, Object... obj) {
+		public By(AbstractCourse<?> previous, Object... obj) {
 			super(previous,CourseType.by, obj);
 		}	
 	}
 		
 	public static final class AND extends Condition{
 
-		public AND(AbstractCourse previous, Object... obj) {
+		public AND(AbstractCourse<?> previous, Object... obj) {
 			//注意如果非可变入参，此处会形成二维数组，需要转换后入参,如(Object[])obj
 			super(previous,CourseType.and,obj);
 		}
@@ -259,7 +259,7 @@ public final class Course extends AbstractCourse{
 	public static final class OR extends Condition{
 
 
-		public OR(AbstractCourse previous, Object... obj) {
+		public OR(AbstractCourse<?> previous, Object... obj) {
 			super(previous,CourseType.or, obj);
 		}
 		
@@ -267,7 +267,7 @@ public final class Course extends AbstractCourse{
 	
 	public static final class NOT extends Condition{
 
-		public NOT(AbstractCourse previous, Object... obj) {
+		public NOT(AbstractCourse<?> previous, Object... obj) {
 			super(previous,CourseType.not,obj);
 		}
 		
@@ -279,9 +279,9 @@ public final class Course extends AbstractCourse{
 		 * @author yl
 		 *
 		 */
-	public static final class GroupBy extends AbstractCourse{
+	public static final class GroupBy extends AbstractCourse<GroupBy>{
 
-		public GroupBy(AbstractCourse previous,Object... obj){
+		public GroupBy(AbstractCourse<?> previous,Object... obj){
 			super(previous,CourseType.groupBy, obj);
 		}
 			//-------------------------------------------------------
@@ -294,9 +294,9 @@ public final class Course extends AbstractCourse{
 		* @author yl
 		*
 		*/
-		public static final class OrderBy extends AbstractCourse{
+		public static final class OrderBy extends AbstractCourse<OrderBy>{
 
-			public OrderBy(AbstractCourse previous,Object... obj){
+			public OrderBy(AbstractCourse<?> previous,Object... obj){
 				super(previous,CourseType.orderBy, obj);
 			}
 			//-------------------------------------------------------
@@ -310,10 +310,10 @@ public final class Course extends AbstractCourse{
 	* @author yl
 	*
 	*/
-	public static final class Limit extends AbstractCourse{
+	public static final class Limit extends AbstractCourse<Limit>{
 		@SuppressWarnings("unused")
 		private Object[] element;
-		public Limit(AbstractCourse previous,int start,int end){
+		public Limit(AbstractCourse<?> previous,int start,int end){
 			String obj = String.valueOf(start)+","+String.valueOf(end);
 			this.previous = previous;
 			setElements(obj);

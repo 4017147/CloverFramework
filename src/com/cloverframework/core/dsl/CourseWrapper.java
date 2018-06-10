@@ -16,10 +16,10 @@ import com.cloverframework.core.data.interfaces.Wrapper;
 @SuppressWarnings("rawtypes")
 public class CourseWrapper implements Wrapper{
 	
-	private AbstractCourse course;
-	private AbstractCourse head;
+	private AbstractCourse<?> course;
+	private AbstractCourse<?> head;
 	
-	public CourseWrapper(AbstractCourse course) {
+	public CourseWrapper(AbstractCourse<?> course) {
 		super();
 		this.course = course;
 		this.head = course;
@@ -98,7 +98,7 @@ public class CourseWrapper implements Wrapper{
 	 * 设置course的result为当前result，返回原来的result
 	 */
 	@Override
-	public Result getResult() {
+	public Result<?> getResult() {
 		return head.getResult();
 	}
 

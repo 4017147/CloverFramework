@@ -13,6 +13,8 @@ import com.cloverframework.core.dsl.ValueSetter;
  */
 public interface CourseInterface extends HeadCreator,Callback,MainCreator,ValueSetter,ResultSetter{
 	
+	void reset();
+	
 	void destroy();
 	
 	String getType();

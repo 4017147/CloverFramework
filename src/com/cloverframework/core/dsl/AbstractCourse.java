@@ -27,15 +27,16 @@ import com.cloverframework.core.util.json.JsonUtil;
 
 /**
  * 定义了一种双向链表结构属性，并实现了大部分基础特性,需要注意的是，
+ * 如果确定不再使用该对象，最好使用reset或destroy方法析构，避免内存泄漏
  * @author yl
  * 
  * 
  */
 
-public abstract class AbstractCourse implements CourseInterface{
+public abstract class AbstractCourse<A> extends DynamicCreator<A> implements CourseInterface{
 	
 	/**course代理*/
-	CourseProxyInterface proxy;//上级传递
+	CourseProxyInterface<?, ?> proxy;//上级传递
 	
 	/**命名标识*/
 	protected String id;
@@ -50,8 +51,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	/**节点元素*/
 	private Object[] elements;	
 	
-	private Object[] args;
-	
 	/**节点类型*/
 	protected String type;
 	
@@ -59,15 +58,16 @@ public abstract class AbstractCourse implements CourseInterface{
 	protected String optype;
 	
 	/**前级*/
-	AbstractCourse previous;
+	AbstractCourse<?> previous;
 	
 	/**后级*/
-	AbstractCourse next;
+	AbstractCourse<?> next;
 	
 	/**父级*/
-	AbstractCourse parent;
+	AbstractCourse<?> parent;
 	
 	/**子级*/
+	@SuppressWarnings("rawtypes")
 	List<AbstractCourse> sons;
 	
 	/**是否是一个子级*/
@@ -108,16 +108,16 @@ public abstract class AbstractCourse implements CourseInterface{
 	static CourseOpt opt;
 	
 	/** 是否是一个fork*/
-	protected boolean isFork;
+	protected boolean isFork = false;
 	
 	/** 是否是一个forkm*/
-	protected boolean isForkm;
+	protected boolean isForkm = false;
 	
 	/**fork模式*/
 	private String model;
 	
 	/** 基线course*/
-	protected AbstractCourse origin;
+	protected AbstractCourse<?> origin;
 
 	IArgsMatcher argsMather = new ArgsMatcher();
 	
@@ -154,7 +154,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * 初始化数据依赖于前置节点
 	 * @param course
 	 */
-	protected void init(AbstractCourse course) {
+	protected void init(AbstractCourse<?> course) {
 		if(course!=null) {
 			id = course.id;
 			proxy = course.proxy;
@@ -173,7 +173,6 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param elements
 	 */
 	protected void setElements(Object... elements) {
-			args = elements;
 			status = previous==null?null:previous.status;
 			//TODO 该异常情况下如何处理
 			if(status>LOCKED) {
@@ -229,6 +228,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * 恢复当前节点跟previous的关系，因为子节点的创建语法上先于当前节点
 	 * @param object
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void setSon(Object object) {
 		AbstractCourse node =  (AbstractCourse)object;
 		if(node.isSon==false) {
@@ -310,6 +310,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * 创建一个包含该节点所在的树的courseData
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	protected JsonFields buildJsonNode() {
 		List<JsonFields> sonList = null;
 		JsonFields next = null;
@@ -372,12 +373,13 @@ public abstract class AbstractCourse implements CourseInterface{
 	 */
 	private String DataString(Object[] elements,boolean condition1,boolean condition2) {
 		Optional<List<String>> fields = Optional.ofNullable(this.fields);
+		@SuppressWarnings("rawtypes")
 		Optional<List<AbstractCourse>> sons = Optional.ofNullable(this.sons);
 		Optional<List<Object>> entities = Optional.ofNullable(this.entities);
 		Optional<String> optype = Optional.ofNullable(this.optype);
 		//assert this.values.get()==null;
 		Optional<Values> values = Optional.ofNullable(this.values.get());
-		Optional<AbstractCourse> next = Optional.ofNullable(this.next);
+		Optional<AbstractCourse<?>> next = Optional.ofNullable(this.next);
 		StringBuilder builder = new StringBuilder(56);
 		String nextline = "\n";
 		if(isSon)
@@ -428,7 +430,7 @@ public abstract class AbstractCourse implements CourseInterface{
 
 	/*----------------------public method-------------------- */
 	@Override
-	public AbstractCourse getThis() {
+	public AbstractCourse<A> getThis() {
 		return this;
 	}
 	
@@ -440,7 +442,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param courseType
 	 * @param obj
 	 */
-	public AbstractCourse(AbstractCourse previous,String courseType,Object ...obj) {
+	public AbstractCourse(AbstractCourse<?> previous,String courseType,Object ...obj) {
 		this.type = courseType;
 		previous.next = this;
 		this.previous = previous;
@@ -454,7 +456,7 @@ public abstract class AbstractCourse implements CourseInterface{
 	 * @param isSon
 	 * @param obj
 	 */
-	public AbstractCourse(AbstractCourse parent,String courseType,boolean isSon,Object...obj) {
+	public AbstractCourse(AbstractCourse<?> parent,String courseType,boolean isSon,Object...obj) {
 		this.type = courseType;
 		if(isSon) {
 			this.isSon = true;
@@ -463,23 +465,69 @@ public abstract class AbstractCourse implements CourseInterface{
 		this.previous = this.parent;//传递previous参数
 		setElements(obj);
 		this.previous = null;
-	}
+	}	
+	
+//	public void term(IFCreate<A> f) {
+//		f.apply((A) this);
+//	}
 	
 	/**
-	 * 销毁该Course
+	 * 重置
 	 */
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void reset() {
+		if(next!=null) {
+			next.reset();
+		}
+		if(sons!=null) {
+			for(AbstractCourse c:sons) {
+				c.reset();
+			}
+		}	
+		if(result!=null) {
+			result.remove();
+			result = null;			
+		}
+		if(values!=null) {
+			values.remove();
+			values = null;			
+		}
+		if(asyncResult!=null) {
+			asyncResult.remove();
+			asyncResult = null;			
+		}
+	}
+	
+	
+	/**
+	 * 销毁
+	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void destroy() {
+		reset();
 		//TODO
-		if(next!=null) 
+		if(next!=null) {
 			next.destroy();
+			next = null;
+		}
+		if(sons!=null) {
+			for(AbstractCourse c:sons) {
+				c.destroy();
+			}
+			sons = null;
+		}	
+		result = null;			
+		values = null;			
+		asyncResult = null;	
 		
+		courseData = null;	
 		proxy = null;
 		elements = null;
 		previous = null;
 		next = null;
 		parent = null;
-		sons = null;
 		fields = null;
 		types = null;
 		entities = null;
@@ -487,7 +535,6 @@ public abstract class AbstractCourse implements CourseInterface{
 		courseData = null;
 		origin = null;
 		argsMather = null;
-		args = null;
 	}
 
 	
@@ -554,8 +601,8 @@ public abstract class AbstractCourse implements CourseInterface{
 		return next!=null?next.type:"";
 	}
 	
-	public AbstractCourse getRoot() {
-		AbstractCourse root = this;
+	public AbstractCourse<?> getRoot() {
+		AbstractCourse<?> root = this;
 		while(root.previous!=null) {
 			root = root.previous;
 		}
@@ -626,9 +673,6 @@ public abstract class AbstractCourse implements CourseInterface{
 		return fields;
 	}
 
-	public Object[] getArgs() {
-		return args;
-	}
 
 
 	

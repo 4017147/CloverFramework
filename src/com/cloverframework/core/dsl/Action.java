@@ -11,13 +11,14 @@ import com.cloverframework.core.dsl.interfaces.CourseOperation;
  * 该类还提供了批量提交并执行业务过程的特性。原则上，不建议方法中创建action对象，因为那样会消耗大量内存，
  * 而是让业务组件继承action。例如：UserService extends Action，还有一点，通过继承Action实现的业务组件，
  * 必需通过其对应的一个application组件来调用，以避免暴露其内部逻辑和方法。
+ * 如果该对象处于线程池环境中，在丢弃的时候请使用reset或destory进行释放。
  * @author yl
  * @param <T>
  *
  * @param <T>
  * @param <C>
  */
-public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> implements CourseOperation<C>{
+public class Action<T,C extends AbstractCourse<C>> extends CourseProxy<T,C> implements CourseOperation<C>{
 	
 	/** 每个线程操作的course对象是相互独立的，对course操作前会先将course设置到local中，确保线程安全。*/
 	private ThreadLocal<C> newest = new ThreadLocal<C>();
@@ -116,9 +117,9 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	
 	
 	@Override
-	public void ready(C course) {
-		if(workable.get()!=null && workable.get()==1 && course.getStatus()>Course.END)
-			workSpace.get().add(course);
+	public void ready(AbstractCourse<?> c) {
+		if(workable.get()!=null && workable.get()==1 && c.getStatus()>Course.END)
+			workSpace.get().add((C) c);
 	}
 
 	
@@ -171,4 +172,22 @@ public class Action<T,C extends AbstractCourse> extends CourseProxy<T,C> impleme
 	public String toString() {
 		return super.toString();		
 	}
+
+	@Override
+	public void reset() {
+		newest.remove();
+		workSpace.remove();
+		super.reset();
+	}
+
+	@Override
+	public void destroy() {
+		reset();
+		newest = null;
+		workSpace = null;
+		super.destroy();
+	}
+	
+	
+	
 }

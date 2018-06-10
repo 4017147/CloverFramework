@@ -23,17 +23,19 @@ public interface LiteralSetter extends Constant{
 	/**
 	 * 调整该方法的位置需要修改length的值，每多一个上级方法调用，var+1
 	 */
-	default void beginLiteral(AbstractCourse course,int var) {
+	default void beginLiteral(AbstractCourse<?> course,int var) {
 		Thread t = Thread.currentThread();
 		//System.out.println(t.getStackTrace().length+"-"+var+" "+course.type);
 		//int i = t.getStackTrace().length;
 		setLevel(course==null?0:course.hashCode(),t.getStackTrace().length-var);
 	}
 	
+	@Deprecated
 	default int getThread() {
 		return Thread.currentThread().getStackTrace().length;
 	}
 	
+	@Deprecated
 	default void setThread(int var) {
 		Thread t = Thread.currentThread();
 		System.out.println(t.getStackTrace().length+"-"+var);

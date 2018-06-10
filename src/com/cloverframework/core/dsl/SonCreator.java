@@ -11,7 +11,7 @@ import com.cloverframework.core.util.lambda.CreateSon;
  *
  */
 public interface SonCreator extends LiteralSetter{
-	public AbstractCourse getCurrCourse();
+	public AbstractCourse<?> getCurrCourse();
 	
 	
 	/**
@@ -20,7 +20,7 @@ public interface SonCreator extends LiteralSetter{
 	 * @return
 	 */
 	default <R> R create(CreateSon<R> constructor,boolean isSon,Object ...obj) {
-		AbstractCourse last = getCurrCourse();
+		AbstractCourse<?> last = getCurrCourse();
 		//搜索最后主干节点
 		while(last.next!=null) {
 			last = last.next;

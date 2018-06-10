@@ -2,6 +2,7 @@ package com.cloverframework.core.dsl;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,11 +20,11 @@ import com.cloverframework.core.util.lambda.DSLFunction;
 /**
  * 泛型C extends AbstractCourse，内部统称course，而对于测试和用户可称为DSL
  * course代理提供了面向用户的course操作和管理方法，通常使用该类创建业务过程普适的course，
- * 该类大部分方法是线程不安全的。
+ * 该类大部分方法是线程不安全的。如果该对象处于线程池环境中，在丢弃的时候请使用reset或destory进行释放。
  * @author yl
  *
  */
-public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<C>,CourseProxyInterface<T,C>{
+public class CourseProxy<T,C extends AbstractCourse<C>> implements CourseOperation<C>,CourseProxyInterface<T,C>{
 	
 	/**最后产生的course对象*/
 	C newest;
@@ -131,7 +132,7 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 		}		
 	}
 
-	private void toEnd(AbstractCourse course,int type) {
+	private void toEnd(AbstractCourse<?> course,int type) {
 		//对于非缓存的course只会是unlock，因为本地线程中lock或者end是无意义的
 		course = getCourse(course.id);
 		if(course!=null && course.type==CourseType.root) {
@@ -139,10 +140,14 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 				if(course.getStatus()!=type) {
 					course.setStatus(type);
 				}
-				if(course.sons!=null)
-					for(AbstractCourse c:course.sons) {
-						c.setStatus(type);
-					}				
+				@SuppressWarnings("rawtypes")
+				Iterator<AbstractCourse> i;
+				if(course.sons!=null) {
+					i = course.sons.iterator();
+					while(i.hasNext()) {
+						i.next().setStatus(type);
+					}
+				}			
 				course = course.next;
 			}
 			while (course.next!=null);			
@@ -414,15 +419,15 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 接收course的回调参数，根据course的status执行对应的操作
 	 */
 	@Override
-	public Object receive(C c,int option) {
+	public Object receive(AbstractCourse<?> c,int option) {
 		switch(option) {
 		case ready		:ready(c);		break;
 		case async		:resultAsync();	break;
 		case UNLOCKED	:unLock(c);		break;
 		case LOCKED		:lock(c);		break;
 		case END		:end(c);		break;
-		case commit		:return commit(c);
-		case execute	:return execute(c);
+		case commit		:return commit((C) c);
+		case execute	:return execute((C) c);
 		case rebase		:return Branch(c.getId(),1);
 		}
 		return null;
@@ -432,35 +437,35 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 * 对一个course进行上锁，上锁后该course不可追加节点和重新创建，
 	 * 任何重新执行DSL的构造都将被创建为一个新的course并且不会缓存，
 	 * 在共享模式下，建议上锁保确保线程安全。
-	 * @param course
+	 * @param c
 	 */
-	public void lock(C course) {
-		synchronized (course) {
-			toEnd(course,LOCKED);
+	public void lock(AbstractCourse<?> c) {
+		synchronized (c) {
+			toEnd(c,LOCKED);
 		}
 	}
 	
 	/**
 	 * 解锁一个course，那么该course将回到共享状态，任何线程都可能修改其状态。
-	 * @param course
+	 * @param c
 	 */
-	public void unLock(C course) {
-		synchronized (course) {
-			toEnd(course,UNLOCKED);
+	public void unLock(AbstractCourse<?> c) {
+		synchronized (c) {
+			toEnd(c,UNLOCKED);
 		}
 	}
 	
 	/**
 	 * 将一个course标记为end状态，那么具有锁的作用并且包括value和result均无法被修改
-	 * @param course
+	 * @param c
 	 */
-	public void end(C course) {
-		synchronized (course) {
-			toEnd(course,END);
+	public void end(AbstractCourse<?> c) {
+		synchronized (c) {
+			toEnd(c,END);
 		}
 	}
 	
-	public void ready(C course) {
+	public void ready(AbstractCourse<?> c) {
 		//do nothing if extends by other
 	}
 	
@@ -471,6 +476,32 @@ public class CourseProxy<T,C extends AbstractCourse> implements CourseOperation<
 	 */
 	public C $(String key) {
 		return getCourse(key);
+	}
+	
+	/**
+	 * 获取缓存中的一个course并返回其尾部节点
+	 * @param key
+	 * @return
+	 */
+	public C $E(String key) {
+		C c = $(key);
+		if(c.next!=null)
+			c = (C) c.next;
+		return c;
+	}
+
+	@Override
+	public void reset() {
+		newest = null;
+		shareSpace.clear();	
+	}
+
+	@Override
+	public void destroy() {
+		reset();
+		shareSpace = null;
+		repository = null;
+		domainService = null;
 	}
 	
 	

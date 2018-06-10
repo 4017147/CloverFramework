@@ -8,5 +8,5 @@ import com.cloverframework.core.dsl.AbstractCourse;
  *
  */
 public interface Accessable {
-	AbstractCourse getThis();
+	AbstractCourse<?> getThis();
 }

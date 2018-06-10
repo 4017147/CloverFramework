@@ -31,8 +31,8 @@ public interface ValueSetter extends Accessable{
 	 * @param <V>
 	 * @throws ArgsCountNotMatch 检查当前节点字段参数跟值参数个数，值参数只能为1或者与之相等，否则抛出异常
 	 */
-	default public  AbstractCourse setValues(Object... values){
-		AbstractCourse c = getThis();
+	default public  AbstractCourse<?> setValues(Object... values){
+		AbstractCourse<?> c = getThis();
 			byte n = 0;
 			int size = 0;
 			int count = 0;
@@ -40,7 +40,7 @@ public interface ValueSetter extends Accessable{
 				for(Object o:values) {
 					if(o instanceof AbstractCourse) {
 						n++;
-						size = size + ((AbstractCourse)o).getElements().length;
+						size = size + ((AbstractCourse<?>)o).getElements().length;
 					}
 					count = size+values.length-n;
 				}
@@ -67,49 +67,49 @@ public interface ValueSetter extends Accessable{
 	 * @param values
 	 * @return
 	 */
-	default public AbstractCourse setValues(Values values) {
+	default public AbstractCourse<?> setValues(Values values) {
 		getThis().values.remove();
 		getThis().values.set(values);
 		return getThis();
 	}
 	
 	
-	default public AbstractCourse setBoolean(boolean... val) {
+	default public AbstractCourse<?> setBoolean(boolean... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
-	default public AbstractCourse setByte(byte... val) {
+	default public AbstractCourse<?> setByte(byte... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
-	default public AbstractCourse setShort(short... val) {
+	default public AbstractCourse<?> setShort(short... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
-	default public AbstractCourse setInt(int... val) {
+	default public AbstractCourse<?> setInt(int... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
-	default public AbstractCourse setLong(long... val) {
+	default public AbstractCourse<?> setLong(long... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 
-	default public AbstractCourse setFloat(float... val) {
+	default public AbstractCourse<?> setFloat(float... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 
-	default public AbstractCourse setDouble(double... val) {
+	default public AbstractCourse<?> setDouble(double... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}
 	
-	default public AbstractCourse setString(String... val) {
+	default public AbstractCourse<?> setString(String... val) {
 		getThis().setValues(new CourseValues(val));
 		return getThis();
 	}

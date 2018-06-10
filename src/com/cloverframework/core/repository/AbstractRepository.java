@@ -20,7 +20,7 @@ import com.cloverframework.core.util.interfaces.CourseType;
  * @author yl
  *
  */
-public abstract class AbstractRepository<T,C extends AbstractCourse>{
+public abstract class AbstractRepository<T,C extends AbstractCourse<C>>{
 	private final T doQuery(C course,CourseMode<T> mode) {
 		Wrapper wrapper = new CourseWrapper(course);
 		String type = wrapper.next().type();

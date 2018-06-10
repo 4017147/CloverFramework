@@ -22,7 +22,7 @@ public interface ResultSetter extends Accessable{
 	 * @param result
 	 */
 	default public void setResult(Result<?> result) {
-		AbstractCourse root = getThis().getRoot();
+		AbstractCourse<?> root = getThis().getRoot();
 		root.createResult();
 		root.result.remove();
 		root.result.set(result);
@@ -33,7 +33,7 @@ public interface ResultSetter extends Accessable{
 	 * @param futureResult
 	 */
 	default public void setResult(CompletableFuture<Result<?>> asyncResult) {
-		AbstractCourse root = getThis().getRoot();
+		AbstractCourse<?> root = getThis().getRoot();
 		root.createAsyncResult();
 		root.asyncResult.remove();
 		root.asyncResult.set(asyncResult);
@@ -48,10 +48,10 @@ public interface ResultSetter extends Accessable{
 	 * ，最后将接收的result存入local的result中
 	 */
 	default public Result<?> getResult(int timeout,boolean isCancelled){
-		AbstractCourse root = getThis().getRoot();
+		AbstractCourse<?> root = getThis().getRoot();
 		Result<?> result = null;
 		if(root.result!=null) {
-			result = root.result.get();
+			result = (Result<?>) root.result.get();
 			return result;			
 		}
 		if(getAsyncResult()!=null) {

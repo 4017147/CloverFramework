@@ -6,7 +6,7 @@ import com.cloverframework.core.dsl.SonCreator;
 import com.cloverframework.core.repository.CourseRepository;
 import com.cloverframework.core.util.interfaces.ELType;
 
-public interface CourseProxyInterface<T,C extends AbstractCourse> extends SonCreator,ELType{
+public interface CourseProxyInterface<T,C extends AbstractCourse<C>> extends SonCreator,ELType{
 	/**
 	 * proxy和service必需是一对一的关系
 	 * @return
@@ -15,17 +15,21 @@ public interface CourseProxyInterface<T,C extends AbstractCourse> extends SonCre
 	
 	void setDomainService(DomainService domainService);
 	
-	Object receive(C c,int option);
+	Object receive(AbstractCourse<?> c,int option);
 	
 	void setRepository(CourseRepository<T,C> repository);
 	
-	C initCourse(String id,C course,CourseProxyInterface<T,C> proxy,int status);
+	C initCourse(String id,C c,CourseProxyInterface<T,C> proxy,int status);
 	
-	T execute(C course);
+	T execute(C c);
 	
-	void resultAsync(C course);
+	void resultAsync(C c);
 	
-	int commit(C course);
+	int commit(C c);
+	
+	void reset();
+	
+	void destroy();
 	
 	
 }
