@@ -357,7 +357,7 @@ public class CourseProxy<T,C extends AbstractCourse<C>> implements CourseOperati
 	
 	public Object execute(String id) {
 		C course = getCourse(id);
-		return executeGeneral(course);
+		return executeOrCommit(course);
 	}
 
 	/**
@@ -390,7 +390,7 @@ public class CourseProxy<T,C extends AbstractCourse<C>> implements CourseOperati
 	 * @param course
 	 * @return
 	 */
-	public Object executeGeneral(C course) {
+	public Object executeOrCommit(C course) {
 		if(course!=null && course.getNextType()==CourseType.get) 
 			return execute(course);
 		else
