@@ -6,7 +6,7 @@ package com.dict.entity;
  * 
  */
 
-public enum Demo_D{
+public enum DEMO{
     
 	Demo,
     f1
