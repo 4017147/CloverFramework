@@ -29,28 +29,28 @@ public final class Course extends AbstractCourse<Course>{
 	 * @param obj
 	 * @return
 	 */
-	public Get get(Object... obj){return get = create(get,Get::new,this,obj);}
+	public final Get get(Object... obj){return get = create(get,Get::new,this,obj);}
 	
 	/**
 	 * 开启一个ADD描述的Course，代表在数据提供方添加相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Add add(Object... obj){return add = create(add, Add::new,this,obj);}
+	public final Add add(Object... obj){return add = create(add, Add::new,this,obj);}
 	
 	/**
 	 * 开启一个PUT描述的Course，代表在数据提供方更新/替换相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Put put(Object... obj){return put = create(put, Put::new,this,obj);}
+	public final Put put(Object... obj){return put = create(put, Put::new,this,obj);}
 	
 	/**
 	 * 开启一个REMOVE描述的Course，代表在数据提供方删除相应的内容
 	 * @param obj
 	 * @return
 	 */
-	public Remove remove(Object... obj){return remove = create(remove, Remove::new,this,obj);}
+	public final Remove remove(Object... obj){return remove = create(remove, Remove::new,this,obj);}
 
 	/**
 	 * Get
@@ -65,17 +65,17 @@ public final class Course extends AbstractCourse<Course>{
 		
 		//-------------------------------------------------------
 		private By 		by;
-		private AND 	and;
+		//private AND 	and;
 		private GroupBy groupBy;
 		private OrderBy orderBy;
 		@SuppressWarnings("unused")
 		private Limit 	limit;
 		
-		public By 		by(Object... obj)		{return by = create(by,By::new,this,obj);}
-		public AND 		and(Object... obj)		{return and = create(and,AND::new,this,obj);}
-		public OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
-		public GroupBy 	groupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
-		public Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
+		public final By 		by(Object... obj)		{return by = create(by,By::new,this,obj);}
+//		public final AND 		and(Object... obj)		{return and = create(and,AND::new,this,obj);}
+		public final OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
+		public final GroupBy 	groupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
+		public final Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
 	}
 		
 		
@@ -100,11 +100,11 @@ public final class Course extends AbstractCourse<Course>{
 		@SuppressWarnings("unused")
 		private Limit 	limit;
 
-		public By 		by(Object... obj)		{return by = create(by,By::new,this,obj);}
-		public AND 		and(Object... obj)		{return and = create(and,AND::new,this,obj);}
-		public OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
-		public GroupBy 	groupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
-		public Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
+		public final By 		by(Object... obj)		{return by = create(by,By::new,this,obj);}
+		public final AND 		and(Object... obj)		{return and = create(and,AND::new,this,obj);}
+		public final OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
+		public final GroupBy 	groupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
+		public final Limit 	limit(int start,int end){return limit = new Limit(this,start,end);}
 	}
 	
 	public static final class Count extends Aggregate{
@@ -134,7 +134,7 @@ public final class Course extends AbstractCourse<Course>{
 
 		//-------------------------------------------------------
 		private By by;
-		public By By(Object... obj){return by = create(by,By::new,this,obj);}
+		public final By By(Object... obj){return by = create(by,By::new,this,obj);}
 		}
 		
 	/**
@@ -150,7 +150,7 @@ public final class Course extends AbstractCourse<Course>{
 		//-------------------------------------------------------
 		//预留By
 		private By by;
-		public By By(Object... obj){return by = create(by,By::new,this,obj);}
+		public final By By(Object... obj){return by = create(by,By::new,this,obj);}
 	}
 		
 	/**
@@ -165,7 +165,7 @@ public final class Course extends AbstractCourse<Course>{
 		}
 		//-------------------------------------------------------
 		private By by;
-		public By By(Object... obj){return by = create(by,By::new,this,obj);}
+		public final By By(Object... obj){return by = create(by,By::new,this,obj);}
 		}
 		
 		
@@ -206,17 +206,17 @@ public final class Course extends AbstractCourse<Course>{
 		}
 		
 		/**=*/
-		public Condition eq(Object... value) {optype = CourseOpt.eq;setValues(value);return this;}
+		public final Condition eq(Object... value) {optype = CourseOpt.eq;setValues(value);return this;}
 		/**!=*/
-		public Condition ne(Object... value) {optype = CourseOpt.ne;setValues(value);return this;}
+		public final Condition ne(Object... value) {optype = CourseOpt.ne;setValues(value);return this;}
 		/**>*/
-		public Condition gt(Object... value) {optype = CourseOpt.gt;setValues(value);return this;}
+		public final Condition gt(Object... value) {optype = CourseOpt.gt;setValues(value);return this;}
 		/**<*/
-		public Condition lt(Object... value) {optype = CourseOpt.lt;setValues(value);return this;}
+		public final Condition lt(Object... value) {optype = CourseOpt.lt;setValues(value);return this;}
 		/**>=*/
-		public Condition ge(Object... value) {optype = CourseOpt.ge;setValues(value);return this;}
+		public final Condition ge(Object... value) {optype = CourseOpt.ge;setValues(value);return this;}
 		/**<=*/
-		public Condition le(Object... value) {optype = CourseOpt.le;setValues(value);return this;}
+		public final Condition le(Object... value) {optype = CourseOpt.le;setValues(value);return this;}
 		
 		//-------------------------------------------------------
 		private Limit 	limit;
@@ -226,12 +226,12 @@ public final class Course extends AbstractCourse<Course>{
 		private OrderBy orderBy;
 		private GroupBy groupBy;
 		
-		public AND 		and(Object... obj) 		{return and = create(and, AND::new,this,obj);}
-		public OR 		or(Object... obj)		{return or = create(or,OR::new,this,obj);}
-		public NOT 		not(Object... obj)		{return not = create(not,NOT::new,this,obj);}
-		public OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
-		public GroupBy 	GroupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
-		public Limit 	LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
+		public final AND 		and(Object... obj) 		{return and = create(and, AND::new,this,obj);}
+		public final OR 		or(Object... obj)		{return or = create(or,OR::new,this,obj);}
+		public final NOT 		not(Object... obj)		{return not = create(not,NOT::new,this,obj);}
+		public final OrderBy 	orderBy(Object... obj)	{return orderBy = create(orderBy, OrderBy::new,this,obj);}
+		public final GroupBy 	GroupBy(Object... obj)	{return groupBy = create(groupBy, GroupBy::new,this,obj);}
+		public final Limit 	LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 	}
 	
 	
@@ -286,7 +286,7 @@ public final class Course extends AbstractCourse<Course>{
 		}
 			//-------------------------------------------------------
 		private Limit limit;
-		public Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
+		public final Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 	}
 		
 	/**
@@ -301,7 +301,7 @@ public final class Course extends AbstractCourse<Course>{
 			}
 			//-------------------------------------------------------
 			private Limit limit;
-			public Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
+			public final Limit LIMIT(int start,int end){limit = new Limit(this,start,end);return limit;}
 		}
 
 
@@ -320,7 +320,7 @@ public final class Course extends AbstractCourse<Course>{
 		}
 
 		@Override
-		public void setElements(Object... element) {
+		public final void setElements(Object... element) {
 			this.element = element;
 		}
 		

@@ -1,9 +1,9 @@
 CloverFramework
 ==
 
-CloverFramework是一个领域层框架，以组装DSL的方式来实现结构化数据查询statement，应用在web开发,符合领域驱动的设计理念，并简化了过程。其直接的作用是可用来代替ORM框架的statement配置文件，如hibernate的<kbd>hql</kbd>，或者是mybatis的<kbd>mapper.xml</kbd>，理论上可以减少80%这样的脚本。而它更有意义的是可以构建一个完整的service层核心，并且不依赖于DAO层接口，开发人员可以更专注和全面的对待业务逻辑，更专注于DML优化。
+CloverFramework是一个业务层DSL框架，以组装DSL的方式来实现结构化数据查询statement，应用在web开发，符合领域驱动的设计理念，并简化了过程。其直接的作用是可用来代替ORM框架的statement配置文件，如hibernate的<kbd>hql</kbd>，或者是mybatis的<kbd>mapper.xml</kbd>，理论上可以减少80%这样的脚本。而它更有意义的是可以构建一个完整的service层核心，并且不依赖于DAO层接口，开发人员可以更专注和全面的对待业务逻辑，更加专注于DML优化。
 
-在进行web应用开发时，你可能时候经常需要跟这种xml配置接触：
+在进行web应用开发时，你可能经常需要跟这种xml配置接触：
 
 ```xml
 <select id="selectByName" parameterType="Integer" resultType="user">
@@ -47,10 +47,10 @@ Master().get(USER.id,USER.password,USER.type).by(USER.name).eq(username);
 这对于DSL是小事一桩：
 ```java
 Master().get(BLOG).by(BLOG.state).eq("ACTIVE")
-  .te(blog.getTitle()!=null,(then)->{then.and(BLOG.title).like(blog.getTitle)});
+  .IS(blog.getTitle()!=null,(then)->{then.and(BLOG.title).like(blog.getTitle)});
 ```
 
-又如，对于下面这种xml构建的动态sql,AND关键词的位置是有限制的，你可能被这种问题困扰过：
+又如，对于下面这种xml构建的动态sql，AND关键词的位置是有限制的，你也许还被这种问题困扰过：
 ```xml
 <select id="findActiveBlogLike"
      resultType="Blog">
@@ -72,9 +72,9 @@ Master().get(BLOG).by(BLOG.state).eq("ACTIVE")
 但是具备语法校验的DSL可以痛快的完成这些构建：
 ```java
 Master().get(BLOG).by(BLOG.state).
-  .te(blog.getState()!=null,(then)->{then.by(BLOG.state).eq(blog.getState())
-  .te(blog.getTitle()!=null,(so)->{so.and(BLOG.title).like(blog.getTitle())
-  .te(blog.getAuthor()!=null && author.getName()!=null,
+  .IS(blog.getState()!=null,(then)->{then.by(BLOG.state).eq(blog.getState())
+  .IS(blog.getTitle()!=null,(so)->{so.and(BLOG.title).like(blog.getTitle())
+  .IS(blog.getAuthor()!=null && author.getName()!=null,
                             (that)->{that.and(AUTHOR.name).like(author.getName())}});
 ```
 如果你对这些改变抱有想法，尽可能了解下面更多有关CloverFramework的内容:)
@@ -116,14 +116,16 @@ public class Demo {
 		this.f1 = f1;
 	}
   ......setter and getter
-}```
+}
+```
 
 对应于实体的字典：
 ```java
 public enum DEMO{
 	Demo,
     f1,f2,f3,f4,f5,f6,f7,f8,f9,f10
-}```
+}
+```
 
 对应于实体的领域服务：
 ```java
@@ -216,7 +218,7 @@ DSL所构建的是一种领域内通用的语言，需要将其转换为数据�
 Working
 --
 
-也许这是你更加感兴趣的是如何构建各种DSL，but，我想此时还是先对CloverFramerwork的工作方式进行了解，这有助于你更快的确定它是否适用于你的情况，从而为你节省时间。
+也许此时你更加感兴趣的是如何构建各种DSL，but，我想此时还是先对CloverFramerwork的工作方式进行了解，这有助于你更快的确定它是否适用于你的情况，从而为你节省时间。
 
 ### A simple work
 你可以按照经典三层架构的方式来实现一个业务过程，但你无须太多改变，并且节省更多代码。例如我们简单的实现一个用户注册的过程：
@@ -244,7 +246,7 @@ service方法实现：
     			result2 = Master("addUser").add(User_d.username,User_d.password,User_d.email)
     			.setValues(user.getUsername(),user.getPassword(),user.getEmail()).commit();
     		}
-        println("result:"+result);
+            println("result:"+result);
     		println("result2:"+result2);
     		println(toString());
 
@@ -267,7 +269,7 @@ public class UserDao implements CourseMode<User>{
 	public int update(Swaper<User> swaper) {
 		String id = swaper.open().id();
 		System.out.println("Dao got the course:"+id);
-    //do something
+        //do something
 		return 0;
 	}
 ```
@@ -309,9 +311,32 @@ by User.username eq  values:[jackson]
 - 这些方法里面的参数描述；
 - 还有这些方法的注释说明；
 
-我们所做的仅仅是用DSL的方式吧这些Dao接口方法抄袭一遍而已:)
+我们所做的仅仅是用DSL的方式将这些Dao接口方法抄袭了一遍而已:)
 
 接下来你要做的事情我想也是水到渠成了，你只需将DSL转为SQL或其他statement，然后提交数据库查询，最后返回结果，对了，尽量翻译成prepareStatement，相信这对于你而言不是什么难事。CloverFramerwork提供了一系列的DSL访问接口和迭代器，帮助你顺利的完成翻译。详见<kbd>API</kbd>。
+
+同时，这并不意味着全盘放弃经典的DAO接口方式，你仍然可以利用经典Dao仓储按以前的方式操作：
+```java
+//for example use Mybatis sql mapper
+public class ClassicalGeneralDaoImpl implements IClassicalMode{
+
+	@Override
+	public <E> E get(Class<E> Class,Integer key) {
+		SqlSession session = factory.openSession();
+		E e = session.selectOne(Tools.pre(namespace, Class)+"selectOne", key);
+		session.close();
+		return e;
+	}
+......
+```
+
+```java
+ClassicalRepository repository = new ClassicalRepository();
+repository.setMode(new ClassicalGeneralDaoImpl());//your daoimpl
+blog = repository.get(Blog.class, id, this);
+System.out.println(blog.getContent());
+```
+
 
 ### Working model
 不用着急，DSL构建工作模式，了解一下。
@@ -394,7 +419,8 @@ Master("getUser").get(User_d.username,User_d.password,User_d.email).by(User_d.us
 
 如果使用基本数据类型，可以通过基本类型来设置value而无需隐含的转换：
 ```java
-Master("A").get(count(DEMO.f2),DEMO.f1,DEMO.f4,count(DEMO.f3)).by(DEMO.f10).eq(20).setInt(30).setString("hello");//最后的值覆盖新的值
+Master("A").get(count(DEMO.f2),DEMO.f1,DEMO.f4,count(DEMO.f3))
+.by(DEMO.f10).eq(20).setInt(30).setString("hello");//最后的值覆盖新的值
 ```
 
 #### Result
@@ -466,7 +492,6 @@ $("A").END();
 
 //加入工作区
 $("A").READY();
-
 ```
 如果你确定个DSL是用于共享的，那么应当确保在服务内它的创建语句只会出现一次，而非多处修改，否则无法保证共享安全性。对于上锁的DSL尽可能在初始化方法中，尽可能通过$操作方法来提取，然后你可以进行Branch或者执行之，避免无谓的重复新建。除了READY，其他修改DSL状态的操作都需要获得锁，所以你应当避免频繁的修改状态。
 
@@ -474,7 +499,8 @@ $("A").READY();
 ```java
 //如果DSL已存在，则不会执行lambda
 Master("A",(a)->{
-			Master(a).get(count(DEMO.f2),DEMO.f1,DEMO.f4,count(DEMO.f3)).by(DEMO.f10,DEMO.f8).eq(k,b).and(demo.getF5()).eq(user.getId(),2);
+			Master(a).get(count(DEMO.f2),DEMO.f1,DEMO.f4,count(DEMO.f3))
+      .by(DEMO.f10,DEMO.f8).eq(k,b).and(demo.getF5()).eq(user.getId(),2);
 			});
 ```
 
@@ -492,22 +518,30 @@ Master("A").get(DEMO.f1,DEMO.f2,DEMO.f3,DEMO.f4).commit();//会导致异常
 
 在service中提供了几种重载的执行方法和提取DSL的方法：
 ```java
-$("A");//从缓存中获取key对应的course，优先从共享区中获取
+//从缓存中获取key对应的course，优先从共享区中获取
+$("A");
 //根据给定的范围从范围内获取key对应的course
-$("A",domain);//service范围
-$("A",local);//本地线程范围
-
-execute();//执行最后操作的course语句
-execute($("A"));//执行一个DSL
-execute("A");//提取并执行DSL
-executeOrCommit($("A"));//自动根据DSL类型执行或提交操作
+//service范围
+$("A",domain);
+//本地线程范围
+$("A",local);
+//执行最后操作的course语句
+execute();
+//执行一个DSL
+execute($("A"));
+//提取并执行DSL
+execute("A");
+//自动根据DSL类型执行或提交操作
+executeOrCommit($("A"));
 ```
 
 对于上述的提取和执行方法，你还可以用类似的方式进行异步执行,你不必阻塞的等待DAO返回result，此时你可以干别的事情，当你调用getResult(...)的时候，如果异步结果已经返回，则直接返回result，否则根据给定的等待超时、是否取消任务来工作：
 ```java
 $("A").resultAsync();
 
-$("A").getResult(4000,true).getString();//等待超时4秒，如果没有完成，则取消异步的任务，如果输入0，那么会一直阻塞直到返回，如果你没有提供这些数值，那么默认会一直阻塞
+$("A").getResult(4000,true).getString();
+//等待超时4秒，如果没有完成，则取消异步的任务，如果输入0，那么会一直阻塞直到返回，
+//如果你没有提供这些数值，那么默认会一直阻塞
 ```
 
 Workspace
@@ -541,8 +575,136 @@ WorkSpace:[]
 Dynamic DSL
 --
 
+动态是一个语言灵活性的灵魂，内部DSL结合宿主语言，就能够轻易实现动态构建，然而一些ORM框架，如mybatis，通过xml来构建动态的sql，编写体验可以说是相当拙劣的，不客观的讲，XML应该被用于数据交换，编写脚本不是它的擅长。又如mybatis以及hibernate等延迟加载功能，实际上就是业务IO和statement无法调和的补救措施，通过构建动态DSL，你会发现所谓的延迟加载在这里只是一个非常寻常的简单动态DSL而已。
 
+CloverFramerwork内部DSL提供一种宿主语言风格的动态构建手段，无须记忆额外的关键词，与DSL语义没有冲突的方式来构建动态DSL。理论上来说，只要宿主语言能实现的算法逻辑，动态DSL都能实现。
 
+> **if...**
+
+```java
+Master().get(BLOG).IS(
+    blog.getTitle()!=null,
+    (then)->{then.by(BLOG.title).eq(blog.getTitle());}
+    );
+
+// OR like this
+Master().get(BLOG).IS(blog.getTitle(),null,
+    (then)->{then.by(BLOG.title).eq(blog.getTitle());}
+    );
+```
+
+如上面的if单分支例子，有两种条件书写方式，第一种直接提供一个boolean的判断结果，第二种省略了==判断符，而它门的顺序是没有影响的。如果你比较的是字符串，建议用第一种方式。同样的，后面的各种分支判定都具有这两种书写方式。
+
+> **if...else...**
+
+```java
+Master().get(BLOG).IS(blog.getTitle(),null,
+    (then)->{then.by(BLOG.title).eq(blog.getTitle());},
+    (orthen)->{orthen.by(AUTHOR.name).eq(author.getName());}
+    );
+```
+
+> **choose...** 相当于switch case break;只要有其中一条满足即结束，没有满足的case则执行default
+
+```java
+Master().get(BLOG).choose(
+    Case(),
+    Case(),
+    Case()
+);
+
+//for example
+Master().get(BLOG).choose(
+    Case(blog.getTitle()!=null,(then)->{then.by(BLOG.title).eq(blog.getTitle());}),
+    Case(author.getName()!=null,(then)->{then.by(AUTHOR.name).eq(author.getName());}),
+    Case(blog.getState()!=null,(then)->{then.by(BLOG.state).eq(blog.getState());})
+);
+
+Master().get(BLOG).choose(
+    (def)->{def.by(BLOG.featured).eq(1)},  //default optional
+    Case(blog.getTitle()!=null,(then)->{then.by(BLOG.title).eq(blog.getTitle());}),
+    Case(author.getName()!=null,(then)->{then.by(AUTHOR.name).eq(author.getName());}),
+    Case(blog.getState()!=null,(then)->{then.by(BLOG.state).eq(blog.getState());})
+);
+
+```
+
+> **Switch...** 相当于switch case  no break;不进行break直到语句结束，节点相同则会替换值，否则被后面的节点替换，如果所有case都为false，就会执行default
+
+```java
+//for example
+Master().get(BLOG).Switch(
+    (def)->{def.by(BLOG.featured).eq(1)},  //default optional
+    Case(blog.getTitle(),null,(then)->{then.by(BLOG.title).eq("notitle");}),
+    Case(blog.getTitle()!=null,(then)->{then.by(BLOG.title).eq(blog.getTitle());}),
+    Case(blog.getState(),"",(then)->{then.by(BLOG.title).eq("temp");})
+);
+
+```
 
 Complex DSL
 --
+
+欲构建复杂的DSL，首先确保你真的需要复杂的DSL来完成，否则尽可能拆分或者用简单的DSL来完成，因为当中的嵌套、子节点、类型判断将会变得复杂多变，对可读性有一定的影响，也可能增加犯错的几率。不过在CloverFramerwork中，构建复杂DSL并非难事。如果存在难处，那一般是这些复杂DSL对于翻译器可能有较大的考验吧。
+
+首先来看一个纯方法字面值构造的DSL的粗暴方式，此方式用于应对那些比较变态的编码需求：
+> $$() 清除无效字面值，你可以看到，在DSL节点构造以外执行的方法是不被当做元素加进去的。当然，如果你确定没有这些无效的方法，是无须$$()的。
+
+```java
+Demo demo= getStaple(Demo.class);
+demo.getF10();//invalid
+demo.getF9();//invalid
+
+Master("a").get($$(),demo.getF1(),demo.getF2(),demo.getF3(),demo.getF4())
+.by(demo.getF5(),demo.getF6()).and(demo.getF5());
+
+Get get = Master("b").get($$(),demo.getF1(),demo.getF2(),demo.getF3(),demo.getF4());
+
+demo.getF10();//invalid
+demo.getF9();//invalid
+
+get.by(demo.getF5(),demo.getF6()).LIMIT(0, 10);
+```
+
+```
+root id:a
+get Demo.f1,Demo.f2,Demo.f3,Demo.f4
+by Demo.f5,Demo.f6
+and Demo.f5
+
+root id:b
+get Demo.f1,Demo.f2,Demo.f3,Demo.f4
+by Demo.f10,Demo.f9,Demo.f5,Demo.f6 Limit 0,10
+```
+
+现在来一个正常复杂的DSL：
+> count 聚合函数，你可以自定义所需的聚合函数
+
+> $$(DEMO.f5) 相当于增设一个字段，例如下面的语句中相当于 where DEMO.f10 = DEMO.f5，其实它们跟count等聚合函数一样，都是增加子节点的方式，只是名称不一样而已。你可以在字段部分或者value的部分插入子节点，前提是你的翻译器支持这种语法。
+
+```java
+Master("a")
+.get(DEMO.f1,DEMO.f4,count(DEMO.f2),count(DEMO.f3))
+.by(DEMO.f10).eq($$(DEMO.f5)).and(DEMO.f6).eq(1,2);
+```
+
+下面是对应的字符串表达，我想你一定在想象如何跟sql对应起来，然而并不太一样是吧？一般而言，DSL的语义模型限制要比具体的目标语言宽松，而非严格的映射，不然就无法满足通用化、扩展和灵活性的需要。但这并不意味着它跟具体语言之间存在必然的失联，仔细观察你会发现这只是一种宽松状态的sql，稍作加工就可以变为合法的sql，总而言之，目前所使用的DSL基本上都是基于结构化查询模式的，和mysqlsql hql等等都是相通的，翻译器只需要根据差别修正即可重用。
+```
+root id:a
+get Demo.f1,Demo.f4,count Demo.f2,count Demo.f3
+by Demo.f10 eq  values:[con Demo.f5]
+and Demo.f6 eq  values:[1, 2]
+```
+
+当然，我并不推荐书写这样一种混搭风格的DSL，反正如果你喜欢就好:)
+```java
+Master("a")
+		.get(demo.getF5(),count(DEMO.f2),DEMO.f1,DEMO.f4,count(DEMO.f3))
+		.by(DEMO.f10,DEMO.f8).eq(40,$$(demo.getF5())).and(demo.getF5()).eq(1,2)
+		.END();
+```
+
+MORE AND MORE
+--
+
+CloverFramework的大致内容前面已经阐述了一些，后期我将继续增加更多新功能特性，如领域树、缓存架构、日志模块、消息模块、默认结果、存储过程支持等等，同时感谢您的支持和参与。

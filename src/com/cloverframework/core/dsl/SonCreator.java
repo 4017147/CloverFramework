@@ -29,7 +29,7 @@ public interface SonCreator extends LiteralSetter{
 		$$();
 		return son;
 	}
-
+	
 	/**
 	 * 创建condition类型节点,用于字段=字段
 	 * @param obj

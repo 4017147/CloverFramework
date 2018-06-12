@@ -24,7 +24,8 @@ import com.cloverframework.core.util.lambda.DSLFunction;
  * @author yl
  *
  */
-public class CourseProxy<T,C extends AbstractCourse<C>> implements CourseOperation<C>,CourseProxyInterface<T,C>{
+public class CourseProxy<T,C extends AbstractCourse<C>> implements CourseOperation<C>,
+CourseProxyInterface<T,C>,PureFunction{
 	
 	/**最后产生的course对象*/
 	C newest;

@@ -44,7 +44,7 @@ public class CourseProxyTest implements DomainService{
 	@Test
 	public void test1() {
 		Demo de = new Demo();
-		de.getF10();de.getF9();
+		demo.getF10();demo.getF9();
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this);
 		cp.Master("a").get(cp.$$(),
 				demo.getF1(),
@@ -59,7 +59,7 @@ public class CourseProxyTest implements DomainService{
 				demo.getF2(),
 				demo.getF3(),
 				demo.getF4());
-		de.getF10();de.getF9();
+		demo.getF10();demo.getF9();
 		get.by(demo.getF5(),
 				demo.getF6()).LIMIT(0, 10);//实体对象，limit
 		println(cp.toString());
@@ -333,17 +333,42 @@ public class CourseProxyTest implements DomainService{
 		//println(cp.toString());
 	}
 	
+	/**
+	 * 动态DSL测试
+	 */
 	@Test
 	public void test15() {
 		CourseProxy<User,Course> cp = new CourseProxy<User,Course>(this) {{
 			User user = new User();
-			Master("dynamic").get(DEMO.f1,DEMO.f4)
-				.te(user.getId()==1,
+			Master("a").get(DEMO.f1,DEMO.f4)
+				.IS(user.getId()==1,
 					(t1)->{t1.by(DEMO.f3).eq(1)
-						.te(user.getUsername()!=null,
+						.IS(user.getUsername()!=null,
 							(t2)->{t2.and(DEMO.f1).eq(1);});},
 					(otherwise)->{otherwise.by(DEMO.f4).eq(1);
 					});
+			
+			Master("b").get(DEMO.f1,DEMO.f4)
+			.IS(user.getId(),1,
+				(t1)->{t1.by(DEMO.f3).eq(1)
+					.IS(user.getUsername(),null,
+						(t2)->{t2.and(DEMO.f1).eq(1);});},
+				(otherwise)->{otherwise.by(DEMO.f4).eq(1);
+				});
+			
+			Master("c").get(DEMO.f1,DEMO.f4)			
+			.Switch(
+					Case(user.getId(),10,(t1)->{t1.by(DEMO.f3).eq(100);}),
+					Case(user.getUsername(),null,(t2)->{t2.by(DEMO.f1).eq(1);}),
+					Case(user.getPassword(),0,(t2)->{t2.by(DEMO.f5).eq("333");})
+					);
+			
+			Master("d").get(DEMO.f1,DEMO.f4)			
+			.Switch((def)->{def.by(DEMO.f4).eq(1);},
+					Case(user.getId(),10,(then)->{then.by(DEMO.f3).eq(100);}),
+					Case(user.getUsername(), null,(then)->{then.by(DEMO.f1).eq(1);}),
+					Case(user.getPassword(),1,(then)->{then.orderBy(DEMO.f5);})
+					);	
 		}};
 		println(cp);
 	}
