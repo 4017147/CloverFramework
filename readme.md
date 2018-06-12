@@ -1,4 +1,4 @@
-CloverFramework 
+CloverFramework
 ==
 
 CloverFramework是一个业务层DSL框架，以组装DSL的方式来实现结构化数据查询statement，应用在web开发，符合领域驱动的设计理念，并简化了过程。其直接的作用是可用来代替ORM框架的statement配置文件，如hibernate的<kbd>hql</kbd>，或者是mybatis的<kbd>mapper.xml</kbd>，理论上可以减少80%这样的脚本。而它更有意义的是可以构建一个完整的service层核心，并且不依赖于DAO层接口，开发人员可以更专注和全面的对待业务逻辑，更加专注于DML优化。
@@ -92,6 +92,15 @@ features
 - 支持参数映射
 - 支持并发、异步、函数式
 - 开放的DSL-SQL优化接口
+
+Dependence
+--
+
+- cglib-nodep-3.2.5.jar
+- jackson-annotations-2.8.0.jar
+- jackson-core-2.8.10.jar
+- jackson-databind-2.8.9.jar
+
 
 Quick begin
 --
