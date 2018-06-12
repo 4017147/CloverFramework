@@ -1,4 +1,4 @@
-CloverFramework 
+CloverFramework
 ==
 
 CloverFramework是一个业务层DSL框架，以组装DSL的方式来实现结构化数据查询statement，应用在web开发，符合领域驱动的设计理念，并简化了过程。其直接的作用是可用来代替ORM框架的statement配置文件，如hibernate的<kbd>hql</kbd>，或者是mybatis的<kbd>mapper.xml</kbd>，理论上可以减少80%这样的脚本。而它更有意义的是可以构建一个完整的service层核心，并且不依赖于DAO层接口，开发人员可以更专注和全面的对待业务逻辑，更加专注于DML优化。
@@ -91,6 +91,7 @@ features
 - 支持值对象映射
 - 支持参数映射
 - 支持并发、异步、函数式
+- 开放的DSL-SQL优化接口
 
 Quick begin
 --
@@ -335,6 +336,10 @@ ClassicalRepository repository = new ClassicalRepository();
 repository.setMode(new ClassicalGeneralDaoImpl());//your daoimpl
 blog = repository.get(Blog.class, id, this);
 System.out.println(blog.getContent());
+
+//or
+UserDao userDao = new UserDaoImpl();
+blog = userDao.getById(id);
 ```
 
 
@@ -544,7 +549,7 @@ $("A").getResult(4000,true).getString();
 //如果你没有提供这些数值，那么默认会一直阻塞
 ```
 
-Workspace
+Workspace And Namespace
 --
 
 工作区实际上是一个本地线程执行的DSL的上下文，多线程环境下，每个线程持有和需要执行的DSL是不一样，这些DSL会有条件的被加入工作区，有点像一个FIFO类型的栈：
@@ -555,14 +560,15 @@ Workspace
 		Master("A").get(User_d.type).groupBy(User_d.type).READY();
 		Master("B").get(count(User_d.id)).READY();
 		Master("C").get(count(User_d.id)).by(User_d.type).eq(1).READY();
-		System.out.println("WorkSize:"+getWorkSize());
+		println("WorkSize:"+getWorkSize());
 		push();
 		endWork();
-		System.out.println("WorkSpace:"+getWorkSpace());
+        println("WorkSpace:"+getWorkSpace());
+        println("namespace:"+$("B").getNameSpace());//get the namespace
 	}
 ```
 
-通过READY()将DSL标记后，这些DSL会被加入工作区，然后可以使用push推送到仓储，便可一次性顺序执行这些DSL：
+通过READY()将DSL标记后，这些DSL会被加入工作区，然后可以使用push推送到仓储，便可一次性顺序执行这些DSL，工作区可以理解为一级缓存，然而通常情况下你无须管理它，当方法退出前执行endwork()，工作区就被重置了，或者在下一次startWork的时候会进行重置：
 ```
 ===================== workSpace
 WorkSize:20
@@ -570,7 +576,12 @@ Dao got the course:A
 Dao got the course:B
 Dao got the course:C
 WorkSpace:[]
+namespace:com.cloverframework.core.dsl.Action.startWork
 ```
+
+命名空间类似于Mybatis配置文件中mapper的命名空间，而在这里的作用是一个包含了DSL调用者信息的字符串，通过对命名空间的过滤或标记，你的Dao层或翻译器就可以针对某条DSL语句进行优化。前提就是你在每个方法内startWork(),那么处于这个工作区的上下文中的DSL都将拥有相同的命名空间。这个命名空间你可以通过getNameSpace来获得。
+
+
 
 Dynamic DSL
 --
@@ -642,6 +653,28 @@ Master().get(BLOG).Switch(
 
 ```
 
+实际上，你还有更精确的手段来确定字段结构，例如三元运算:
+```java
+Master("b").get(
+        demo.getF5()==null?DEMO.f4:DEMO.f5,
+		demo.getF6()!=null?DEMO.F6:DEMO.F4);
+```
+
+或者：
+```java
+Master("b").get(
+        te(demo.getF5()==null?demo.getF3():demo.getF4()),
+		te(demo.getF5()!=null?demo.getF3():demo.getF4()));//方法字面值三元
+```
+
+你还会有更多种风格写法：
+```java
+Master("b").get($$(demo::getF5,demo::getF6,demo::getF9));//lambda方法引用
+
+Master("b").get($$(blog!=null?blog::getTitle:user::getRemark));
+```
+
+
 Complex DSL
 --
 
@@ -696,6 +729,7 @@ by Demo.f10 eq  values:[con Demo.f5]
 and Demo.f6 eq  values:[1, 2]
 ```
 
+
 当然，我并不推荐书写这样一种混搭风格的DSL，反正如果你喜欢就好:)
 ```java
 Master("a")
@@ -707,4 +741,4 @@ Master("a")
 MORE AND MORE
 --
 
-CloverFramework的大致内容前面已经阐述了一些，后期我将继续增加更多新功能特性，如领域树、缓存架构、日志模块、消息模块、默认结果、存储过程支持等等，同时感谢您的支持和参与。
+CloverFramework的大致内容前面已经阐述了一些，后期我将继续增加更多新功能特性，如领域树、缓存架构、日志模块、消息模块、默认结果、存储过程支持，优化接口管理等等，同时感谢您的支持和参与。
